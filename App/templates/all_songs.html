@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/all_songs.css' %}">
+{% endblock %}
+
+{% block content %}
+
+  <div class="row">
+    <div class="col-12">
+      <h2 class="text-center">Songs</h2>
+    </div>
+  </div>
+  
+  
+  <div class="col-12 col-lg-8 offset-lg-2 border border-dark px-0">
+  <table class="table table-bordered table-sm">
+    <thead class="thead-dark">
+      <tr>
+        <th class="text-center">Artist</th>
+        <th class="text-center">Title</th>
+        <th class="text-center">Dance</th>
+        <th class="text-center">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+    
+      <form class="mx-auto" method="get">
+        {% csrf_token %}
+        <tr class="table-primary">
+          <td class="text-center">{{ filter.form.artist }}</td>
+          <td class="text-center">{{ filter.form.title }}</td>
+          <td class="text-center">{{ filter.form.dance_type }}</td>
+          <td class="text-center">
+            <input class="btn btn-dark btn-sm" type="submit" name="submit" value="Filter"/>
+          </td>
+        </tr>
+      </form>
+      
+      {% for song in page_obj %}
+      <tr>
+        <td class="text-center">{{ song.artist }}</td>
+        <td class="text-center">{{ song.title }}</td>
+        <td class="text-center">{{ song.get_dance_type_display }}</td>
+        <td class="text-center">
+          <a class="btn btn-primary btn-sm" href="{% url 'App:play_song' song.id %}">Play</a>
+          {% if show_admin_buttons %}
+            <a class="btn btn-info btn-sm" href="{% url 'App:update_song' song.id %}">Edit</a>
+            <a class="btn btn-danger btn-sm" 
+                onclick="return confirm('Deleting: {{song.title}}\n Are you sure?')" 
+                href="{% url 'App:delete_song' song.id %}">Delete</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  
+  {% include "pagination.html" %}
+  
+  <div class="text-center mt-2">
+     <a class="btn btn-primary" href="{% url 'App:add_song' %}">Add Song From File</a>
+  </div>
+
+{% endblock %}

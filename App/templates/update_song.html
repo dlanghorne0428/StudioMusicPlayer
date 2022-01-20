@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2 class='text-center my-2'>Edit Song Info</h2>
+
+<div class="row">
+  <div class="col-4 offset-md-4 border border-dark">
+    <p>{{ error }}</p>
+
+    <form method="POST">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <div class="text-center mt-3">
+        <button class="btn btn-primary" type="submit">Save</button>
+        <a class="btn btn-secondary" href="{% url 'App:all_songs' %}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+{% endblock %}

@@ -1,0 +1,33 @@
+h1 {
+    margin: 1rem;
+    font-size: 48px;
+    color: purple;
+    padding: 0 10% 1.0rem 10%;
+}
+
+h2 {
+    margin: 1rem;
+    font-size: 40px;
+    color: purple;
+    padding: 0 10% 1.0rem 10%;
+}
+
+h3 {
+    margin: 1rem;
+    font-size: 32px;
+    color: purple;
+    padding: 0 10% 1.0rem 10%;
+}
+
+.cover {
+    margin: auto;
+}
+
+.cover img {
+    width: 90%;
+}
+
+audio {
+    width: 100%;
+    margin: 1rem;
+}

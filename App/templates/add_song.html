@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <h2 class="text-center">Add Song</h2>
+
+    <h4 class="text-center">{{ error }}</h4>
+
+    <form class="text-center" enctype="multipart/form-data" method="POST">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button class="btn btn-primary" type="submit">Create</button>
+      <a class="btn btn-secondary" href="{% url 'App:all_songs' %}">Cancel</a>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
