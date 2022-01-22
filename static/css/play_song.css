@@ -1,37 +1,36 @@
-h1 {
+body {
+    background-color: MidnightBlue;
+    margin: 0 24px;
+}
+
+.dance-type {
+    margin: 1rem;
+    font-size: 72px;
+    color: Yellow;
+    padding: 0 10% 1.0rem 10%;
+}
+
+.song-title {
     margin: 1rem;
     font-size: 48px;
-    color: purple;
+    color: White;
     padding: 0 10% 1.0rem 10%;
 }
 
-h2 {
-    margin: 1rem;
-    font-size: 40px;
-    color: purple;
-    padding: 0 10% 1.0rem 10%;
-}
-
-h3 {
+.song-artist {
     margin: 1rem;
     font-size: 32px;
-    color: purple;
+    color: White;
     padding: 0 10% 1.0rem 10%;
 }
 
 .cover {
-    margin: auto;
+    margin: 1rem auto;
 }
 
 .cover img {
     width: 90%;
 }
-
-audio {
-    width: 100%;
-    margin: 1rem;
-}
-
 
 div.control-container {
     margin-top: 10px;
