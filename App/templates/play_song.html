@@ -8,62 +8,50 @@
 
 {% block content %}
 
-<div class="container row">
-  <div class = "col-8">
-    <h1 class="text-center"> {{song.get_dance_type_display}} </h1>
-  <div id="single-song-player">
- 
-    <!-- Artwork -->
-    <img data-amplitude-song-info="cover_art_url"/>
+  <div class="row player-page">
+    <div class = "col-8">
+      <h1 class="dance-type text-center"> {{song.get_dance_type_display}} </h1>
+      <h2 class="song-title text-center">{{song.title}}</h2>
+      <h3 class="song-artist text-center">{{song.artist}}</h3>
+      
+      <div id="single-song-player">
+      
+        <!-- Progress Bar -->
+        <div class="bottom-container">
+          <progress class="amplitude-song-played-progress" amplitude-main-song-played-progress="true" id="song-played-progress"></progress>
+        </div>
   
-    <!-- Progress Bar -->
-    <div class="bottom-container">
-      <progress class="amplitude-song-played-progress" amplitude-main-song-played-progress="true" id="song-played-progress"></progress>
+        <!-- Time information, current and duration -->
+        <div class="time-container">
+          <span class="current-time">
+            <span class="amplitude-current-minutes" amplitude-main-current-minutes="true"></span>:<span class="amplitude-current-seconds" amplitude-main-current-seconds="true"></span>
+          </span>
+          <span class="duration">
+            <span class="amplitude-duration-minutes" amplitude-main-duration-minutes="true"></span>:<span class="amplitude-duration-seconds" amplitude-main-duration-seconds="true"></span>
+          </span>
+        </div>
+  
+        <!-- Play/Pause this is what does the work -->
+        <div class="control-container">
+          <div class="amplitude-play-pause" amplitude-main-play-pause="true" id="play-pause"></div>
+        </div>
+
+      </div>
     </div>
-  
-    <!-- Time information, current and duration -->
-    <div class="time-container">
-      <span class="current-time">
-        <span class="amplitude-current-minutes" amplitude-main-current-minutes="true"></span>:<span class="amplitude-current-seconds" amplitude-main-current-seconds="true"></span>
-      </span>
-      <span class="duration">
-       <span class="amplitude-duration-minutes" amplitude-main-duration-minutes="true"></span>:<span class="amplitude-duration-seconds" amplitude-main-duration-seconds="true"></span>
-      </span>
-    </div>
-  
-    <!-- Play/Pause this is what does the work -->
-    <div class="control-container">
-     <div class="amplitude-play-pause" amplitude-main-play-pause="true" id="play-pause"></div
-  
-      <!-- Title and Artist --> 
-      <div class="meta-container">
-        <span data-amplitude-song-info="name" class="song-name"></span>
-        <span data-amplitude-song-info="artist"></span>
+    
+    <div class="col-4">
+      <div class="cover text-center">
+         <img alt="" src="{{song.image.url}}"/>
       </div>
     </div>
   </div>
   
-  <div>
-    <p class="text-center"><a href="{% url 'App:all_songs' %}">Back to Song List</a></p>
+  <div class="row">
+    <div class="col-12">
+      <p class="text-center mt-4"><a href="{% url 'App:all_songs' %}">Back to Song List</a></p>
+    </div>
   </div>
-  
-  </div>
-</div>
 
-     <!--<h1 class="text-center"> {{song.get_dance_type_display}} </h1>-->
-     <!--<h2 class="text-center">{{song.title}}</h2>-->
-     <!--<h3 class="text-center">{{song.artist}}</h3>-->
-     <!--<div class="lecteur">-->
-      <!--<audio autoplay controls>-->
-       <!--<source src="{{song.audio_file.url}}" type="audio/mpeg">-->
-     <!--</audio>-->
-     <!--<p class="text-center"><a href="{% url 'App:all_songs' %}">Back to Song List</a></p>-->
-    <!--</div>-->
-   <!--</div>-->
-   <!--<div class="col-6">-->
-    <!--<div class="cover text-center">-->
-     <!--<img alt="" src="{{song.image.url}}"/>-->
-    <!--</div>-->
 
 {% endblock %}
 
