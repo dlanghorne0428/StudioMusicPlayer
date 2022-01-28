@@ -1,6 +1,5 @@
 body {
     background-color: MidnightBlue;
-    margin: 0 24px;
 }
 
 /****** Song info  *****/
@@ -8,22 +7,22 @@ body {
     margin: 1rem;
     font-size: 72px;
     color: Yellow;
-    padding: 0 10% 1.0rem 10%;
 }
 
 .song-title {
-    margin: 1rem;
+    margin-bottom: 1rem;
     font-size: 48px;
     color: White;
-    padding: 0 10% 1.0rem 10%;
+    padding-bottom: 1.0rem;
 }
 
 .song-artist {
-    margin: 1rem;
+    margin-top: 1rem;
     font-size: 32px;
     color: White;
-    padding: 0 10% 1.0rem 10%;
+    padding-top: 1rem;
 }
+
 
 /****** Cover Art  *****/
 td.info {
@@ -31,16 +30,16 @@ td.info {
 }
 
 .cover img {
-    width: 30%;
+    width: 100%;
 }
 
 /****** Player  *****/
-#single-song-player {
+#player {
     border-radius: 10px;
     background-color: grey;
     margin: auto;
     box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
-    margin-top: 50px;
+    margin-top: 10px;
     width: 100%;
     -webkit-font-smoothing: antialiased; 
 }
@@ -105,13 +104,34 @@ div.control-container {
     padding-bottom: 10px; 
 }
 
+/****** Previous/Next  *****/
+div.control-container div.amplitude-prev {
+    width: 74px;
+    height: 74px;
+    cursor: pointer;
+    float: left;
+    margin-left: 5%; 
+    background: url("../img/skip-start-circle.svg");
+    background-size: cover; 
+}
+
+div.control-container div.amplitude-next {
+    width: 74px;
+    height: 74px;
+    cursor: pointer;
+    float: right;
+    margin-right: 5%; 
+    background: url("../img/skip-end-circle.svg");
+    background-size: cover; 
+}
+  
 /****** Play/Pause  *****/
 div.control-container div.amplitude-play-pause {
     width: 74px;
     height: 74px;
     cursor: pointer;
     float: left;
-    margin-left: 10px; 
+    margin-left: 20%; 
 }
   
 div.control-container div.amplitude-play-pause.amplitude-paused {
@@ -136,7 +156,7 @@ div.control-container div.amplitude-mute {
     height: 74px;
     cursor: pointer;
     float: left;
-    margin-left: 10px; 
+    margin-left: 20px; 
 }
 
 div.control-container div.amplitude-mute.amplitude-not-muted {
