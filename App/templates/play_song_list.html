@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/play_song_list.css' %}">
+{% endblock %}
+
+{% block content %}
+
+  <div class="row align-items-center">
+    <!-- Top Level Headers -->
+    <div class = "col-8">
+      <h1 class="dance-type text-center"><span data-amplitude-song-info="dance_type"></span></h1>
+    </div>
+    <div class="col-4">
+      <h2 class="playlist-title text-warning text-decoration-underline">
+        <span data-amplitude-playlist-info="title" data-amplitude-playlist="the_list"></span>
+        <span> Playlist</span>
+      </h2>
+      <h3 class="text-white">Up Next</h3>
+    </div>
+  </div>
+  
+  <div class="row align-items-center">
+    <div class = "col-5">
+      <h2 class="song-title text-center"><span data-amplitude-song-info="name"></span></h2>
+      <h3 class="song-artist text-center"><span data-amplitude-song-info="artist"></span></h3>
+    </div>
+    
+    <div class="col-3">
+      <div class="cover text-center">
+        <img data-amplitude-song-info="cover_art_url"/>
+      </div>
+    </div>
+    
+    <div class="col-4">
+      {% for i in playlist_indices %}
+        <div class="song-meta-container" id="index-{{i}}">
+          <span class="song-dance-type" data-amplitude-song-info="dance_type" data-amplitude-song-index="{{ i }}"></span>
+          <span class="song-name" data-amplitude-song-info="name" data-amplitude-song-index="{{ i }}"></span>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="row align-items-center">
+    <div class="col-8">
+      <div id="player">
+      
+        <!-- Progress Bar -->
+        <div class="bottom-container">
+          <progress class="amplitude-song-played-progress" amplitude-main-song-played-progress="true" id="song-played-progress"></progress>
+        </div>
+  
+        <!-- Time information, current and duration -->
+        <div class="time-container">
+          <span class="current-time">
+            <span class="amplitude-current-minutes" amplitude-main-current-minutes="true"></span>:<span class="amplitude-current-seconds" amplitude-main-current-seconds="true"></span>
+          </span>
+          <span class="duration">
+            <span class="amplitude-duration-minutes" amplitude-main-duration-minutes="true"></span>:<span class="amplitude-duration-seconds" amplitude-main-duration-seconds="true"></span>
+          </span>
+        </div>
+  
+        <!-- Previous, Play/Pause, Next, Volume/Mute, Volume Slider -->
+        <div class="control-container text-center">
+          <div class="amplitude-prev" id="prev"></div>
+          <div class="amplitude-play-pause" amplitude-main-play-pause="true" id="play-pause"></div>
+            
+          <div class="amplitude-next" id="next"></div>
+          
+          <div class="volume-container">
+            <div class="amplitude-mute"></div>
+            <input type="range" class="amplitude-volume-slider" step=".1"/>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  
+    <div class="col-4">
+      <p class="text-center"><a href="{% url 'App:all_songs' %}">Back to Song List</a></p>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block extra_js %}
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/amplitudejs@latest/dist/amplitude.js"></script>
+  <script>
+    Amplitude.init({
+      "bindings": {
+        37: 'prev',
+        39: 'next',
+        32: 'play_pause'
+      },
+      "songs": [
+      {% for song in song_list %}
+        {
+          "name": "{{song.title}}",
+          "artist": "{{song.artist}}",
+          "url": "{{song.audio_file.url}}",
+          "cover_art_url": "{{song.image.url}}",
+          "dance_type": "{{song.get_dance_type_display}}"
+        },
+      {% endfor %}
+      ],
+      "playlists": {
+        "the_list": {
+          songs: {{ playlist_indices }},
+          title: "Test"
+        }
+      },
+      "callbacks": {
+          'initialized': function(){
+            console.log("Player has been initialized.")
+            document.getElementById("index-1").style.display = "inline-block";
+            document.getElementById("index-2").style.display = "inline-block";
+            document.getElementById("index-3").style.display = "inline-block";
+            document.getElementById("index-4").style.display = "inline-block";
+          },
+          'prev': function() {
+            console.log("Previous Track selected.");
+            new_next_index = Amplitude.getActiveIndex() + 1;
+            new_next_name = "index-" + new_next_index;
+            document.getElementById(new_next_name).style.display = "inline-block";
+            index_to_hide = new_next_index + 4;
+            if (index_to_hide < {{ playlist_indices|length }}) {
+              hide_index_name = "index-" + index_to_hide;
+              document.getElementById(hide_index_name).style.display = "none";
+            };
+          },
+          'song_change': function(){
+            console.log("Song has been changed.");
+            curr_index = Amplitude.getActiveIndex();
+            curr_id_name = "index-" + curr_index;
+            document.getElementById(curr_id_name).style.display = "none";
+            future_index = curr_index + 4;
+            if (future_index < {{ playlist_indices|length }}) {
+              future_id_name = "index-" + future_index;
+              document.getElementById(future_id_name).style.display = "inline-block";
+            }
+          }
+      },
+      delay: 2000 
+    });
+
+    window.onkeydown = function(e) {
+        return !(e.keyCode == 32);
+    };
+
+    /* Handles a click on the song played progress bar.*/
+    document.getElementById('song-played-progress').addEventListener('click', function( e ){
+      var offset = this.getBoundingClientRect();
+      var x = e.pageX - offset.left;
+    
+      Amplitude.setSongPlayedPercentage( ( parseFloat( x ) / parseFloat( this.offsetWidth) ) * 100 );
+      }
+    );
+  </script>
+
+{% endblock %}

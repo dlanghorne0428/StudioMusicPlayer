@@ -15,4 +15,5 @@ urlpatterns = [
     path('playSong/<int:song_id>', views.play_song, name="play_song"),
     path('updateSong/<int:song_id>', views.update_song, name="update_song"),
     path('deleteSong/<int:song_id>', views.delete_song, name="delete_song"),
+    path('playSongList/', views.play_song_list, name="play_song_list"),
 ]
