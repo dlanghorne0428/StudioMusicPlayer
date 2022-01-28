@@ -3,6 +3,7 @@ body {
     margin: 0 24px;
 }
 
+/****** Song info  *****/
 .dance-type {
     margin: 1rem;
     font-size: 72px;
@@ -24,6 +25,7 @@ body {
     padding: 0 10% 1.0rem 10%;
 }
 
+/****** Cover Art  *****/
 .cover {
     margin: 1rem auto;
 }
@@ -32,95 +34,24 @@ body {
     width: 90%;
 }
 
-div.control-container {
-    margin-top: 10px;
-    padding-bottom: 10px; 
+/****** Player  *****/
+#single-song-player {
+    border-radius: 10px;
+    background-color: grey;
+    margin: auto;
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
+    margin-top: 50px;
+    width: 100%;
+    -webkit-font-smoothing: antialiased; 
 }
 
-div.control-container div.amplitude-play-pause {
-    width: 74px;
-    height: 74px;
-    cursor: pointer;
-    float: left;
-    margin-left: 10px; 
-}
-  
-div.control-container div.amplitude-play-pause.amplitude-paused {
-    background: url("https://521dimensions.com/img/open-source/amplitudejs/examples/single-song/play.svg");
-    background-size: cover; 
+/****** Progress Bar  *****/
+div.bottom-container {
+    background-color: #202136;
+    border-bottom-right-radius: 10px; 
+    border-bottom-left-radius: 10px; 
 }
 
-div.control-container div.amplitude-play-pause.amplitude-playing {
-    background: url("https://521dimensions.com/img/open-source/amplitudejs/examples/single-song/pause.svg");
-    background-size: cover; 
-}
-
-div.control-container div.meta-container {
-    float: left;
-    width: calc(100% - 84px);
-    text-align: center;
-    color: white;
-    margin-top: 10px; 
-}
-    
-div.control-container .song-name {
-    font-family: "Open Sans", sans-serif;
-    font-size: 24px;
-    color: yellow;
-    display: block; 
-}
-
-div.control-container div.meta-container span[data-amplitude-song-info="artist"] {
-    font-family: "Open Sans", sans-serif;
-    font-weight: 100;
-    font-size: 18px;
-    color: #fff;
-    display: block; 
-}
-  
-div.control-container:after {
-    content: "";
-    display: table;
-    clear: both; 
-Í}
-
-/*
-  Small only
-*/
-/*
-  Medium only
-*/
-/*
-  Large Only
-*/
-.time-container {
-    /*opacity: 0.5; */
-    font-family: "Open Sans", sans-serif;
-    font-weight: 100;
-    font-size: 24px;
-    color: #fff;
-    height: 32px; 
-}
-
-.time-container span.current-time {
-    float: left;
-    margin-left: 5px; 
-}
-
-.time-container span.duration {
-    float: right;
-    margin-right: 5px; 
-}
-
-/*
-  Small only
-*/
-/*
-  Medium only
-*/
-/*
-  Large Only
-*/
 progress.amplitude-song-played-progress {
     background-color: #313252;
     -webkit-appearance: none;
@@ -148,48 +79,169 @@ progress[value]::-webkit-progress-value {
     background-color: #00a0ff; 
 }
 
-/*
-  Small only
-*/
-/*
-  Medium only
-*/
-/*
-  Large Only
-*/
-/*
-  3. Layout
-*/
-div.bottom-container {
-    background-color: #202136;
-    border-bottom-right-radius: 10px; 
-    border-bottom-left-radius: 10px; 
+/****** Time Container  *****/
+.time-container {
+    opacity: 0.75;
+    font-family: "Open Sans", sans-serif;
+    font-weight: 100;
+    font-size: 24px;
+    color: #fff;
+    height: 32px; 
 }
 
-/*
-  Small only
-*/
-/*
-  Medium only
-*/
-/*
-  Large Only
-*/
-#single-song-player {
-    border-radius: 10px;
-    background-color: grey;
-    margin: auto;
-    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
-    margin-top: 50px;
-    width: 100%;
-/*    max-width: 460px; */
-    -webkit-font-smoothing: antialiased; 
+.time-container span.current-time {
+    float: left;
+    margin-left: 5px; 
 }
 
-#single-song-player img[data-amplitude-song-info="cover_art_url"] {
-    width: 100%;
-    border-top-right-radius: 10px;
-    border-top-left-radius: 10px; 
+.time-container span.duration {
+    float: right;
+    margin-right: 5px; 
 }
 
+/****** Control Container  *****/
+div.control-container {
+    margin-top: 10px;
+    padding-bottom: 10px; 
+}
+
+/****** Play/Pause  *****/
+div.control-container div.amplitude-play-pause {
+    width: 74px;
+    height: 74px;
+    cursor: pointer;
+    float: left;
+    margin-left: 10px; 
+}
+  
+div.control-container div.amplitude-play-pause.amplitude-paused {
+    background: url("../img/play-circle.svg");
+    background-size: cover; 
+}
+
+div.control-container div.amplitude-play-pause.amplitude-playing {
+    background: url("../img/pause-circle.svg");
+    background-size: cover; 
+}
+
+div.control-container:after {
+    content: "";
+    display: table;
+    clear: both; 
+Í}
+
+/****** Mute Button *****/
+div.control-container div.amplitude-mute {
+    width: 74px;
+    height: 74px;
+    cursor: pointer;
+    float: left;
+    margin-left: 10px; 
+}
+
+div.control-container div.amplitude-mute.amplitude-not-muted {
+    background: url("../img/volume-down-fill.svg");
+    background-size: cover; 
+}
+
+div.control-container div.amplitude-mute.amplitude-muted  {
+    background: url("../img/volume-mute-fill.svg");
+    background-size: cover; 
+}
+
+/****** Volume Slider *****/
+div.control-container .amplitude-volume-slider {
+    width: 148px;  /* calc(100% - 30px);*/
+    -webkit-appearance: none;
+    margin-left: 5px;
+    margin-top: 35px;
+    float: left; 
+}
+
+div.control-container .amplitude-volume-slider:focus {
+      outline: none; 
+}
+
+/****** Volume Slider: webkit *****/    
+div.control-container .amplitude-volume-slider::-webkit-slider-runnable-track {
+      width: 75%;
+      height: 4px;
+      cursor: pointer;
+      animate: 0.2s;
+      background: red; 
+}
+
+div.control-container .amplitude-volume-slider::-webkit-slider-thumb {
+      height: 18px;
+      width: 18px;
+      background-color: black;
+      cursor: pointer;
+      margin-top: -8px;
+      -webkit-appearance: none;
+      border-radius: 20px; 
+}
+    
+div.control-container .amplitude-volume-slider:focus::-webkit-slider-runnable-track {
+      background: red; /*#cfd8dc; */
+}
+
+/****** Volume Slider: mozilla *****/ 
+div.control-container .amplitude-volume-slider::-moz-range-track {
+    width: 75%;
+    height: 4px;
+    cursor: pointer;
+    animate: 0.2s;
+    background: red; 
+}
+
+div.control-container .amplitude-volume-slider::-moz-range-thumb {
+    height: 18px;
+    width: 18px;
+    background-color: black;
+    cursor: pointer;
+    margin-top: -8px;
+    -webkit-appearance: none;
+    border-radius: 20px; 
+}
+
+div.control-container .amplitude-volume-slider::-ms-track {
+    width: 148px;
+    height: 4px;
+    cursor: pointer;
+    animate: 0.2s;
+    background: red; 
+    border-width: 15px 0;
+    color: transparent;
+    border-color: #192029; 
+}
+
+/****** Volume Slider: microsoft *****/     
+amplitude-volume-slider::-ms-fill-lower {
+    background: transparent;
+    border-radius: 2.6px; 
+}
+
+div.control-container .amplitude-volume-slider::-ms-fill-upper {
+    background: transparent;
+    border-radius: 2.6px; 
+}
+
+div.control-container .amplitude-volume-slider::-ms-thumb {
+    height: 18px;
+    width: 18px;
+    background-color: black;
+    cursor: pointer;
+    margin-top: 0px;
+    border: 20px; 
+}
+
+.amplitude-volume-slider::-ms-tooltip {
+    display: none; 
+}
+
+.volume-container:after {
+    content: "";
+    display: table;
+    clear: both; 
+}
 
