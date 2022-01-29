@@ -22,6 +22,6 @@ def play_song_list(request, playlist_id):
         playlist_indices.append(i)
     
     return render(request, "play_song_list.html", {
-        'playlist_title': playlist.title, 
+        'playlist_info': playlist, 
         'song_list':song_list, 
         "playlist_indices": playlist_indices})   
