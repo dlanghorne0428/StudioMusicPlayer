@@ -4,7 +4,7 @@ from django.conf import settings
 import os
 
 # imported our models
-from App.models import Song
+from App.models.song import Song
 from App.forms import SongFileInputForm, SongEditForm
 
 # Create your views here.

@@ -1,6 +1,6 @@
 import django_filters
 from django import forms
-from .models import Song
+from .models.song import Song
 
 class SongFilter(django_filters.FilterSet):
 

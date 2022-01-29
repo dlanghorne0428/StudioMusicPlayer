@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.conf import settings
 
 # imported our models
-from App.models import Song
+from App.models.song import Song
 
 # Create your views here
 

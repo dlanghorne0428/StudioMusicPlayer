@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import Form, ModelForm
-from .models import Song, SongFileInput
+from .models.song import Song, SongFileInput
 
 
 class SongFileInputForm(ModelForm):
