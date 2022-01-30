@@ -80,6 +80,14 @@
     </div>
   
     <div class="col-4">
+      {% if playlist_info.max_song_duration_in_sec %}
+        <p class="text-info" id="timelimit">Song time limit: {{ playlist_info.max_song_duration_in_sec }}</p>
+      {% endif %}
+      {% if playlist_info.auto_continue %}
+        <p class="text-info">Next track played automatically</p>
+      {% else %}
+        <p class="text-info">Pause before playing next track</p>
+      {% endif %}
       <p class="text-center"><a href="{% url 'App:all_playlists' %}">Back to All Playlists</a></p>
     </div>
   </div>
@@ -89,13 +97,17 @@
 {% block extra_js %}
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/amplitudejs@latest/dist/amplitude.js"></script>
   <script>
+  
+    const startVolume = 80;
+    const time_limit_para = document.getElementById("timelimit");
+    
     Amplitude.init({
       "bindings": {
         37: 'prev',
         39: 'next',
         32: 'play_pause'
       },
-      "volume": 80,
+      "volume": startVolume,
       "songs": [
       {% for song in song_list %}
         {
@@ -121,6 +133,33 @@
             document.getElementById("index-3").style.display = "inline-block";
             document.getElementById("index-4").style.display = "inline-block";
           },
+          {% if playlist_info.max_song_duration_in_sec %}
+            'timeupdate': function(){
+              played = Amplitude.getSongPlayedSeconds();
+              if (played > {{ playlist_info.max_song_duration_in_sec }}) {
+                time_limit_para.style.backgroundColor = 'red';
+                curr_volume = Amplitude.getVolume();
+                if (curr_volume > 70) {
+                    console.log(curr_volume);
+                    Amplitude.setVolume(40);
+                } else if (curr_volume > 10) {
+                    console.log(curr_volume);
+                    Amplitude.setVolume(curr_volume - 1); 
+                } else {
+                    console.log(curr_volume);
+                    Amplitude.setVolume(0);
+                    {% if playlist_info.auto_continue %}
+                      /* fade takes about 8 sec, delay until 11 sec then play next */
+                      if (played - 11 > {{ playlist_info.max_song_duration_in_sec }}) {
+                        Amplitude.next();
+                      }
+                    {% else %}
+                      Amplitude.pause();
+                    {% endif %}
+                }
+              }
+            },
+          {% endif %}
           'prev': function() {
             console.log("Previous Track selected.");
             new_next_index = Amplitude.getActiveIndex() + 1;
@@ -134,6 +173,8 @@
           },
           'song_change': function(){
             console.log("Song has been changed.");
+            time_limit_para.style.backgroundColor = 'transparent';
+            Amplitude.setVolume(startVolume);
             curr_index = Amplitude.getActiveIndex();
             curr_id_name = "index-" + curr_index;
             document.getElementById(curr_id_name).style.display = "none";

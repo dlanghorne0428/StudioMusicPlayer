@@ -16,11 +16,9 @@ class Playlist(models.Model):
     
     # should the playlist automatically play the next track?
     auto_continue = models.BooleanField(default=True)
-    
-    # should the playlist fade the volume at the end of each track?
-    fade_volume = models.BooleanField(default=False)
 
     # should the playlist have a maximum song duration?
+    # if enabled, the volume will fade when the song hits this limit
     max_song_duration_in_sec = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
