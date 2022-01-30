@@ -49,7 +49,6 @@ def add_song(request):
 
             artist = tags.get("\xa9ART")[0]
             title = tags.get("\xa9nam")[0]
-            genre =  tags.get("\xa9gen")[0]
             duration = info.length # seconds.
             if tags.get("covr") is None:
                 pict = None
@@ -60,7 +59,6 @@ def add_song(request):
             id3_data = EasyID3(audio_file_path)
             artist = id3_data["artist"][0]
             title = id3_data["title"][0]
-            genre = id3_data["genre"][0]
             info = metadata.info
             duration =  info.length #seconds
             tags = ID3(audio_file_path)
