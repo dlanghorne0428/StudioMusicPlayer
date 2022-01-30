@@ -8,21 +8,21 @@ body {
     margin: 1rem;
     font-size: 72px;
     color: Yellow;
-    padding: 0 10% 1.0rem 10%;
 }
 
 .song-title {
     margin: 1rem;
     font-size: 48px;
     color: White;
-    padding: 0 10% 1.0rem 10%;
+    padding-top: 1.0rem;
+    padding-bottom: 1.0rem;
 }
 
 .song-artist {
     margin: 1rem;
     font-size: 32px;
     color: White;
-    padding: 0 10% 1.0rem 10%;
+    padding-top: 1rem;
 }
 
 /****** Cover Art  *****/
