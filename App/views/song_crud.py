@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
+from django.utils.text import slugify
 
 import os
 
@@ -75,14 +76,21 @@ def add_song(request):
         new_song.artist = artist
         new_song.dance_type = song_instance.dance_type
         
+        # determine name for the image file based on the name of the audio file
+        print(new_song.audio_file.url)
+        basename = os.path.basename(new_song.audio_file.url)
+        filename, ext = os.path.splitext(basename)
+        new_basename = filename + '.jpg'
+        relative_pathname = 'img/' + new_basename
+        print(relative_pathname)
+        
         if pict is None:
             # download cover art and save into "img" subfolder under MEDIA_ROOT
             folder = os.path.join(settings.MEDIA_ROOT, 'img')
-            filename = 'img/' + new_song.title + ".jpg"
             finder = CoverFinder({'art-dest': folder, 
-                                  'art-dest-filename': '{title}.jpg',
+                                  'art-dest-filename': new_basename,
                                   })
-            finder.scan_file(audio_file_path)             
+            finder.scan_file(audio_file_path)
             
         else:
             # save cover art in an "img" subfolder under MEDIA_ROOT
@@ -90,11 +98,10 @@ def add_song(request):
             print('Picture size : ' + str(im.size))
             print('Format:' + im.format)
             if im.format == "JPEG":
-                filename = 'img/' + new_song.title + ".jpeg"
-                path = os.path.join(settings.MEDIA_ROOT, filename)
+                path = os.path.join(settings.MEDIA_ROOT, relative_pathname)
                 im.save(path)
-                
-        new_song.image = filename
+
+        new_song.image = relative_pathname
         new_song.save()
         return redirect('App:all_songs')
     

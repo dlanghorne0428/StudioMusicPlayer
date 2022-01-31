@@ -1,5 +1,7 @@
 from django.db import models
-from django.utils.text import get_valid_filename
+from django.utils.text import get_valid_filename, slugify
+
+import os
 
 
 DANCE_TYPE_CHOICES = (
@@ -26,11 +28,16 @@ DANCE_TYPE_CHOICES = (
     )
 
 def create_valid_filename(instance, filename):
-    print(filename)
-    valid_filename = get_valid_filename(filename)
+    temp_filename = get_valid_filename(filename)
+    filename, ext = os.path.splitext(temp_filename)
+    filename = slugify(filename)
+    if ext:
+        valid_filename = "%s.%s" % (filename, slugify(ext))
+    else:
+        valid_filename = filename
+        
     # save music files in a "music" subfolder under MEDIA_ROOT
     path = 'music/' + valid_filename
-    print(path)
     return path
 
 class SongFileInput(models.Model):
