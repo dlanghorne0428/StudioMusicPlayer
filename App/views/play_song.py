@@ -12,4 +12,5 @@ def play_song(request, song_id):
         return render(request, 'permission_denied.html')  
     
     song = get_object_or_404(Song, pk=song_id)
-    return render(request, "play_song.html", {'song':song })   
+    default_url = settings.STATIC_URL + "img/default.jpg"
+    return render(request, "play_song.html", {'song':song, 'default_url': default_url})   

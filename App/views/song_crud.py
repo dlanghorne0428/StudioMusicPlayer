@@ -91,6 +91,9 @@ def add_song(request):
                                   'art-dest-filename': new_basename,
                                   })
             finder.scan_file(audio_file_path)
+            # if cover art not found online, use default image
+            if len(finder.files_skipped) > 0:
+                relative_pathname = None
             
         else:
             # save cover art in an "img" subfolder under MEDIA_ROOT

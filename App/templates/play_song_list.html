@@ -114,7 +114,11 @@
           "name": "{{song.title}}",
           "artist": "{{song.artist}}",
           "url": "{{song.audio_file.url}}",
-          "cover_art_url": "{{song.image.url}}",
+          {% if song.image %}
+            "cover_art_url": "{{song.image.url}}",
+          {% else %}
+            "cover_art_url": "{{default_url}}",
+          {% endif %}
           "dance_type": "{{song.get_dance_type_display}}"
         },
       {% endfor %}
