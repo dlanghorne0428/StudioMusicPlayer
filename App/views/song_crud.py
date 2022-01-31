@@ -92,7 +92,7 @@ def add_song(request):
                                   })
             finder.scan_file(audio_file_path)
             # if cover art not found online, use default image
-            if len(finder.files_skipped) > 0:
+            if len(finder.files_skipped) > 0 or len(finder.files_failed) > 0:
                 relative_pathname = None
             
         else:
@@ -106,7 +106,11 @@ def add_song(request):
 
         new_song.image = relative_pathname
         new_song.save()
-        return redirect('App:all_songs')
+        if new_song.title.lower() == "unknown title" or \
+           new_song.artist.lower() in ("unknown artist", "soundtrack"):
+            return redirect('App:update_song', new_song.id)
+        else:
+            return redirect('App:all_songs')
     
 
 def update_song(request, song_id):
