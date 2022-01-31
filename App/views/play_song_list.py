@@ -21,7 +21,7 @@ def play_song_list(request, playlist_id):
     for i in range(len(song_list)):
         playlist_indices.append(i)
         
-    default_url = settings.STATIC_URL + "img/default.jpg"
+    default_url = settings.STATIC_URL + "img/default.png"
     
     return render(request, "play_song_list.html", {
         'playlist_info': playlist, 
