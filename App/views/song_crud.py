@@ -25,21 +25,25 @@ def add_song(request):
     from PIL import Image
     from get_cover_art import CoverFinder
     
+    # must be an administrator to add songs
     if not request.user.is_superuser:
         return render(request, 'permission_denied.html')
-
-    if request.method == "GET":
+    
+    if request.method == "GET":   # display empty form
         return render(request, 'add_song.html', {'form':SongFileInputForm()})
-    else:
+    
+    else:  # process data submitted from the form
         form = SongFileInputForm(request.POST, request.FILES)
-        if form.is_valid():
-            pass; #print("Form is OK")
-        else:
+        
+        # if form data invalid, display an error on the form
+        if not form.is_valid():
             return render(request, 'add_song.html', {'form':SongInputForm(), 'error': "Invalid data submitted."})
         
+        # save the song instance into the database and get the path to the audio file uploaded by the form
         song_instance = form.save()  
         audio_file_path = song_instance.audio_file.path
     
+        # process file with mutagen and determine file type
         metadata = mutagen.File(audio_file_path)
         print(metadata.mime)
         
@@ -48,6 +52,7 @@ def add_song(request):
             info = mp4_data.info
             tags = mp4_data.tags
 
+            # get the artist, title, duration and picture from MP4 tags
             artist = tags.get("\xa9ART")[0]
             title = tags.get("\xa9nam")[0]
             duration = info.length # seconds.
@@ -58,6 +63,8 @@ def add_song(request):
             
         elif ("audio/mp3" in metadata.mime):
             id3_data = EasyID3(audio_file_path)
+            
+            # get the artist, title, duration and picture from MP3 tags
             artist = id3_data["artist"][0]
             title = id3_data["title"][0]
             info = metadata.info
@@ -67,10 +74,14 @@ def add_song(request):
                 pict = None
             else:
                 pict = tags.get("APIC:").data 
-        else:
+                
+        else:  # if some other file type, return an error. 
             return render(request, 'add_song.html', {'form':SongInputForm(), 'error': "Invalid data submitted."})
         
+        # create a new Song object
         new_song = Song()
+        
+        # save the audio file, metadata, and dance_type
         new_song.audio_file = song_instance.audio_file
         new_song.title = title
         new_song.artist = artist
@@ -96,20 +107,28 @@ def add_song(request):
                 relative_pathname = None
             
         else:
-            # save cover art in an "img" subfolder under MEDIA_ROOT
+            # extract cover art from file and save in an "img" subfolder under MEDIA_ROOT
             im = Image.open(BytesIO(pict))
             print('Picture size : ' + str(im.size))
             print('Format:' + im.format)
+            # assume JPEG cover art
             if im.format == "JPEG":
                 path = os.path.join(settings.MEDIA_ROOT, relative_pathname)
                 im.save(path)
+            else:
+                print (im.format)
+                return render(request, 'add_song.html', {'form':SongInputForm(), 'error': "Cover art was not JPEG."})                
 
+        # save the path to the image file and save the Song object
         new_song.image = relative_pathname
         new_song.save()
+        
+        # if bad metadata, redirect to update_song, allowing user to edit
         if new_song.title.lower() == "unknown title" or \
            new_song.artist.lower() in ("unknown artist", "soundtrack"):
             return redirect('App:update_song', new_song.id)
         else:
+            # return to list of songs
             return redirect('App:all_songs')
     
 
@@ -118,20 +137,26 @@ def update_song(request, song_id):
        This does not change the metadata in the music file, only the model fields
        for the selected Song object''' 
     
+    # must be an admin user to edit songs
     if not request.user.is_superuser:
         return render(request, 'permission_denied.html')   
     
+    # get the specific song object from the database
     song = get_object_or_404(Song, pk=song_id)
     
     if request.method == "GET":
+        # display form with current data
         form = SongEditForm(instance=song)
         return render(request, 'update_song.html', {'form':form})
     else:
+        # obtain information from the submitted form
         form = SongEditForm(request.POST, instance=song)
         if form.is_valid():
-            form.save() #print("Form is OK")
+            # save the updated info and return to song list
+            form.save() 
             return redirect('App:all_songs')
-        else:
+        else: 
+            # display error on form
             return render(request, 'update_song.html', {'form':SongEditForm(), 'error': "Invalid data submitted."})
     
 
@@ -142,11 +167,16 @@ def delete_song(request, song_id):
     if not request.user.is_superuser:
         return render(request, 'permission_denied.html')   
     
+    # find the specific song object
     song = get_object_or_404(Song, pk=song_id) 
+    
+    # delete the audio and image files related to this Song.
     if os.path.isfile(song.audio_file.path):
         os.remove(song.audio_file.path)
     if os.path.isfile(song.image.path):
         os.remove(song.image.path)
+    
+    # remove Song from database and redirect to song list. 
     print("Deleting " +  str(song))
     song.delete()    
     return redirect('App:all_songs')
