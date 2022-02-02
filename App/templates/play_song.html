@@ -3,13 +3,16 @@
 {% load static %}
 
 {% block extra_css %}
+  <!-- special styling needed for this page -->
   <link rel="stylesheet" href="{% static 'css/play_song.css' %}">
 {% endblock %}
 
 {% block content %}
 
   <div class="row player-page">
+    <!-- bootstrap grid, left side is 8 out of 12 columns -->
     <div class = "col-8">
+      <!-- Dance Type and metadata of current song -->
       <h1 class="dance-type text-center"><span data-amplitude-song-info="dance_type"></span></h1>
       <h2 class="song-title text-center"><span data-amplitude-song-info="name"></span></h2>
       <h3 class="song-artist text-center"><span data-amplitude-song-info="artist"></span></h3>
@@ -31,7 +34,7 @@
           </span>
         </div>
   
-        <!-- Play/Pause this is what does the work -->
+        <!-- Play/Pause, Mute button and volume slider, this is what does the work -->
         <div class="control-container">
           <div class="amplitude-play-pause" amplitude-main-play-pause="true" id="play-pause"></div>
   
@@ -44,12 +47,14 @@
     </div>
     
     <div class="col-4">
+      <!-- the right side is 4 of 12 columns and has the cover art -->
       <div class="cover text-center">
         <img data-amplitude-song-info="cover_art_url"/>
       </div>
     </div>
   </div>
   
+  <!-- this row covers all 12 columns and links back to the list of all songs -->
   <div class="row">
     <div class="col-12">
       <p class="text-center mt-4"><a href="{% url 'App:all_songs' %}">Back to Song List</a></p>
@@ -59,20 +64,24 @@
 
 {% endblock %}
 
+
 {% block extra_js %}
+  <!-- Javascript for the AmplitudeJS player -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/amplitudejs@latest/dist/amplitude.js"></script>
   <script>
+    <!-- similar to example at https://521dimensions.com/open-source/amplitudejs/docs/examples/single-song.html -->
     Amplitude.init({
-      "bindings": {
-        37: 'prev',
-        39: 'next',
-        32: 'play_pause'
+      "bindings": {  
+        37: 'prev',       /* left arrow */
+        39: 'next',       /* right arrow */
+        32: 'play_pause'  /* space */
       },
-      "volume": 80,
-      "songs": [{
+      "volume": 80,        /* starting volume 80% */
+      "songs": [{          /* list required even though only one song */
         "name": "{{song.title}}",
         "artist": "{{song.artist}}",
         "url": "{{song.audio_file.url}}",
+        /* if no cover art use the default image */
         {% if song.image %}
           "cover_art_url": "{{song.image.url}}",
         {% else %}
