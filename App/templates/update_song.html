@@ -2,19 +2,25 @@
 
 {% block content %}
 
-<h2 class='text-center my-2'>Edit Song Info</h2>
-
 <div class="row">
-  <div class="col-4 offset-md-4 border border-dark">
+  <div class="col-12">
+    <!-- page title and placeholder for form errors -->
+    <h2 class='text-center my-2'>Edit Song Info</h2>
     <p>{{ error }}</p>
 
+    <!-- display the form --> 
     <form method="POST">
       {% csrf_token %}
       {{ form.as_p }}
+      
+      <!-- top margin for buttons -->
       <div class="text-center mt-3">
+        <!-- submit the form to the view -->
         <button class="btn btn-primary" type="submit">Save</button>
+        <!-- this button cancels the edit, and redirects back to list of songs -->
         <a class="btn btn-secondary" href="{% url 'App:all_songs' %}">Cancel</a>
       </div>
+      
     </form>
   </div>
 </div>

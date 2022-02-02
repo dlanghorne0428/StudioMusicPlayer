@@ -28,6 +28,10 @@ DANCE_TYPE_CHOICES = (
     )
 
 def create_valid_filename(instance, filename):
+    ''' When uploading audio files, find a valid name that django can use.
+       slugify replaces whitespace with a dash and removes everything but alphanumerics,
+       underscores and dashes.
+       get_valid_filename finds an available filename to avoid duplicates.'''
     temp_filename = get_valid_filename(filename)
     filename, ext = os.path.splitext(temp_filename)
     filename = slugify(filename)
@@ -40,7 +44,10 @@ def create_valid_filename(instance, filename):
     path = 'music/' + valid_filename
     return path
 
+
 class SongFileInput(models.Model):
+    '''This model is for uploading audio files. It consists of the filename and the
+      dance type. '''
     audio_file = models.FileField(upload_to=create_valid_filename)
     dance_type = models.CharField(
         max_length = 10,
@@ -52,8 +59,12 @@ class SongFileInput(models.Model):
         return self.audio_file.url + ": " + self.dance_type
     
 
-# Create your models here.
 class Song(models.Model):
+    '''This the model for a song in our music database.
+       The music itself is either in a filename or link to the file. 
+       The metadata (artist and title) are stored.
+       There is also an image filename for the cover art.
+       Finally, the dance_type is also stored.'''
     
     audio_file = models.FileField(blank=True, null=True)
     audio_link = models.CharField(max_length=200,blank=True, null=True) 
@@ -62,10 +73,7 @@ class Song(models.Model):
     title = models.CharField(max_length=200,default="Unknown")
     artist = models.CharField(max_length=200,default="Unknown")
     image = models.ImageField(null=True)
-    #duration=models.CharField(max_length=20)
-    
-    #paginate_by = 2
-    
+
     dance_type = models.CharField(
         max_length = 10,
         choices = DANCE_TYPE_CHOICES,

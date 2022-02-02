@@ -2,20 +2,23 @@
 
 {% block content %}
 
-<div class="row">
-  <div class="col-4 offset-md-4 text-center">
-    <h2 class="text-center">Login</h2>
-
-    <h3>{{ error }}</h3>
-
-    <form method="POST">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <div class="text-center my-1">
-        <button type="submit">Login</button>
-      </div>
-    </form>
+  <div class="row">
+    <div class="col-12 text-center">
+      <!-- page title, and placeholder for errors -->
+      <h2 class="text-center">Login</h2>
+      <h3>{{ error }}</h3>
+  
+      <!-- display form allowing user to enter username and password -->
+      <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        
+        <!-- button to submit form data to the view-->
+        <div class="text-center my-1">
+          <button type="submit">Login</button>
+        </div>
+      </form>
+    </div>
   </div>
-</div>
 
 {% endblock %}

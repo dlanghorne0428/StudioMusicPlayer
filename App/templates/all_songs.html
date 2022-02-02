@@ -2,22 +2,20 @@
 
 {% load static %}
 
-{% block extra_css %}
-  <link rel="stylesheet" href="{% static 'css/all_songs.css' %}">
-{% endblock %}
-
 {% block content %}
 
+  <!-- first row in bootstrap grid is the page title, with some padding on the bottom -->
   <div class="row">
     <div class="col-12">
-      <h2 class="text-center">Songs</h2>
+      <h2 class="text-center pb-2">Songs</h2>
     </div>
   </div>
   
-  
-  <div class="col-12 border border-dark px-0">
+   <!-- next row in bootstrap grid is a table, with dark borders --> 
+  <div class="col-12 border border-dark">
   <table class="table table-bordered table-sm">
     <thead class="thead-dark">
+      <!-- column headers have a dark background -->
       <tr>
         <th class="text-center">Artist</th>
         <th class="text-center">Title</th>
@@ -26,28 +24,37 @@
       </tr>
     </thead>
     <tbody>
-    
+      <!-- the first row of the table is a filter -->
       <form class="mx-auto" method="get">
         {% csrf_token %}
         <tr class="table-primary">
+          <!-- user can filter on any of these columns --> 
           <td class="text-center">{{ filter.form.artist }}</td>
           <td class="text-center">{{ filter.form.title }}</td>
           <td class="text-center">{{ filter.form.dance_type }}</td>
+          <!-- the last button is used to submit filter data -->
           <td class="text-center">
             <input class="btn btn-dark btn-sm" type="submit" name="submit" value="Filter"/>
           </td>
         </tr>
       </form>
       
+      <!-- the rest of the table has one page of songs, one song per row -->
       {% for song in page_obj %}
       <tr>
         <td class="text-center">{{ song.artist }}</td>
         <td class="text-center">{{ song.title }}</td>
+        <!-- display the "readable" string for the dance type -->
         <td class="text-center">{{ song.get_dance_type_display }}</td>
+        <!-- final column is the action buttons -->
         <td class="text-center">
+          <!-- any user can play a song, may not want to allow this -->
           <a class="btn btn-primary btn-sm" href="{% url 'App:play_song' song.id %}">Play</a>
+          
           {% if show_admin_buttons %}
+            <!-- only admin users can edit or delete a song -->
             <a class="btn btn-info btn-sm" href="{% url 'App:update_song' song.id %}">Edit</a>
+            <!-- force the user to confirm before deleting a song --> 
             <a class="btn btn-danger btn-sm" 
                 onclick="return confirm('Deleting: {{song.title}}\n Are you sure?')" 
                 href="{% url 'App:delete_song' song.id %}">Delete</a>
@@ -58,8 +65,10 @@
     </tbody>
   </table>
   
+  <!-- links to previous and next, first and last pages -->
   {% include "pagination.html" %}
   
+  <!-- link to create a song from an audio file, may add other ways like Soundcloud -->
   <div class="text-center mt-2">
      <a class="btn btn-primary" href="{% url 'App:add_song' %}">Add Song From File</a>
   </div>

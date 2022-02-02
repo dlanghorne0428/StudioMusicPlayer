@@ -3,9 +3,9 @@ from django.utils.text import get_valid_filename
 from App.models.song import Song
 
 
-# Create your models here.
-
 class Playlist(models.Model):
+    '''A playlist has a short title and longer description. 
+      A many-to-many field is used to represent the list of songs.'''
     
     title = models.CharField(max_length=50)
     
@@ -26,6 +26,9 @@ class Playlist(models.Model):
     
     
 class SongInPlaylist(models.Model):
+    '''This model is used for the mapping of songs to playlists. 
+      It also provides the ordering of songs within the playlist.'''
+    
     song = models.ForeignKey(Song, on_delete=models.CASCADE)
     playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE)
     order = models.IntegerField()
