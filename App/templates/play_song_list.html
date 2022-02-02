@@ -3,6 +3,7 @@
 {% load static %}
 
 {% block extra_css %}
+  <!-- special styling needed for this page -->
   <link rel="stylesheet" href="{% static 'css/play_song_list.css' %}">
 {% endblock %}
 
@@ -11,9 +12,11 @@
   <div class="row align-items-center">
     <!-- Top Level Headers -->
     <div class = "col-8">
+      <!-- dance type on left side, 8 out of 12 columns -->
       <h1 class="dance-type text-center"><span data-amplitude-song-info="dance_type"></span></h1>
     </div>
     <div class="col-4">
+      <!-- playlist title on right side, 4 out of 12 columns -->
       <h2 class="playlist-title text-warning text-decoration-underline">
          <span>Playlist: </span>
          <span data-amplitude-playlist-info="title" data-amplitude-playlist="the_list"></span>
@@ -23,18 +26,22 @@
   </div>
   
   <div class="row align-items-center">
+    <!-- next row in bootstrap grid broken into three sections -->
     <div class = "col-5">
+      <!-- current song metadata in left section -->
       <h2 class="song-title text-center"><span data-amplitude-song-info="name"></span></h2>
       <h3 class="song-artist text-center"><span data-amplitude-song-info="artist"></span></h3>
     </div>
     
     <div class="col-3">
+      <!-- cover art in middle section -->
       <div class="cover text-center">
         <img data-amplitude-song-info="cover_art_url"/>
       </div>
     </div>
     
     <div class="col-4">
+      <!-- upcoming songs in right section, show dance_type and title only -->
       {% for i in playlist_indices %}
         <div class="song-meta-container" id="index-{{i}}">
           <span class="song-dance-type" data-amplitude-song-info="dance_type" data-amplitude-song-index="{{ i }}"></span>
@@ -45,7 +52,9 @@
   </div>
 
   <div class="row align-items-center">
+    <!-- next row in bootstrap grid broken into two sections -->
     <div class="col-8">
+      <!-- left section has the audio player and its controls -->
       <div id="player">
       
         <!-- Progress Bar -->
@@ -80,6 +89,7 @@
     </div>
   
     <div class="col-4">
+      <!-- right section has info about the current playlist and link back to all playlists page -->
       {% if playlist_info.max_song_duration_in_sec %}
         <p class="text-info" id="timelimit">Song time limit: {{ playlist_info.max_song_duration_in_sec }}</p>
       {% endif %}
@@ -95,6 +105,7 @@
 {% endblock %}
 
 {% block extra_js %}
+  <!-- Javascript for the AmplitudeJS player -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/amplitudejs@latest/dist/amplitude.js"></script>
   <script>
   
@@ -103,17 +114,21 @@
     
     Amplitude.init({
       "bindings": {
-        37: 'prev',
-        39: 'next',
-        32: 'play_pause'
+        37: 'prev',         /* left arrow */
+        39: 'next',         /* right arrow */
+        32: 'play_pause'    /* spacebar */
       },
+      
       "volume": startVolume,
+      
+      /* list of all songs in the playlist */
       "songs": [
       {% for song in song_list %}
         {
           "name": "{{song.title}}",
           "artist": "{{song.artist}}",
           "url": "{{song.audio_file.url}}",
+          /* if no cover art for a song, use default image */
           {% if song.image %}
             "cover_art_url": "{{song.image.url}}",
           {% else %}
@@ -123,77 +138,112 @@
         },
       {% endfor %}
       ],
+      
+      /* this provides the playlist title and song order */
       "playlists": {
         "the_list": {
           songs: {{ playlist_indices }},
           title: "{{ playlist_info.title }}",
         }
       },
+      
+      /* special code for various events */
       "callbacks": {
-          'initialized': function(){
-            console.log("Player has been initialized.")
-            document.getElementById("index-1").style.display = "inline-block";
-            document.getElementById("index-2").style.display = "inline-block";
-            document.getElementById("index-3").style.display = "inline-block";
-            document.getElementById("index-4").style.display = "inline-block";
-          },
-          {% if playlist_info.max_song_duration_in_sec %}
-            'timeupdate': function(){
-              played = Amplitude.getSongPlayedSeconds();
-              if (played > {{ playlist_info.max_song_duration_in_sec }}) {
-                time_limit_para.style.backgroundColor = 'red';
-                curr_volume = Amplitude.getVolume();
-                if (curr_volume > 70) {
-                    console.log(curr_volume);
-                    Amplitude.setVolume(40);
-                } else if (curr_volume > 10) {
-                    console.log(curr_volume);
-                    Amplitude.setVolume(curr_volume - 1); 
-                } else {
-                    console.log(curr_volume);
-                    Amplitude.setVolume(0);
-                    {% if playlist_info.auto_continue %}
-                      /* fade takes about 8 sec, delay until 11 sec then play next */
-                      if (played - 11 > {{ playlist_info.max_song_duration_in_sec }}) {
-                        Amplitude.next();
-                      }
-                    {% else %}
-                      Amplitude.pause();
-                    {% endif %}
-                }
-              }
-            },
-          {% endif %}
-          'prev': function() {
-            console.log("Previous Track selected.");
-            new_next_index = Amplitude.getActiveIndex() + 1;
-            new_next_name = "index-" + new_next_index;
-            document.getElementById(new_next_name).style.display = "inline-block";
-            index_to_hide = new_next_index + 4;
-            if (index_to_hide < {{ playlist_indices|length }}) {
-              hide_index_name = "index-" + index_to_hide;
-              document.getElementById(hide_index_name).style.display = "none";
-            };
-          },
-          'song_change': function(){
-            console.log("Song has been changed.");
-            time_limit_para.style.backgroundColor = 'transparent';
-            Amplitude.setVolume(startVolume);
-            curr_index = Amplitude.getActiveIndex();
-            curr_id_name = "index-" + curr_index;
-            document.getElementById(curr_id_name).style.display = "none";
-            future_index = curr_index + 4;
-            if (future_index < {{ playlist_indices|length }}) {
-              future_id_name = "index-" + future_index;
-              document.getElementById(future_id_name).style.display = "inline-block";
+        'initialized': function(){
+          /* when playlist starts, show the next four songs in 'up next' list */
+          console.log("Player has been initialized.")
+          document.getElementById("index-1").style.display = "inline-block";
+          document.getElementById("index-2").style.display = "inline-block";
+          document.getElementById("index-3").style.display = "inline-block";
+          document.getElementById("index-4").style.display = "inline-block";
+        },
+        
+        {% if playlist_info.max_song_duration_in_sec %}
+        /* if playlist has a max duration, fade volume at that time */
+        'timeupdate': function(){
+            
+          /* check how long this song has been playing */
+          played = Amplitude.getSongPlayedSeconds();
+          if (played > {{ playlist_info.max_song_duration_in_sec }}) {
+            /* highlight the time limit text when time has expired */
+            time_limit_para.style.backgroundColor = 'red';
+                
+            curr_volume = Amplitude.getVolume();
+            if (curr_volume > 70) {
+                /* drop to 40% volume when time limit hit */
+                console.log(curr_volume);
+                Amplitude.setVolume(40);
+            } else if (curr_volume > 10) {
+                /* continue fading 1% each time, until volume gets below 10% */
+                console.log(curr_volume);
+                Amplitude.setVolume(curr_volume - 1); 
+            } else {
+                /* at lower than 10%, set volume to 0 */
+                console.log(curr_volume);
+                Amplitude.setVolume(0);
+                {% if playlist_info.auto_continue %}
+                  /* fade takes about 8 sec, delay until 11 sec after limit then play next */
+                  if (played - 11 > {{ playlist_info.max_song_duration_in_sec }}) {
+                    Amplitude.next();
+                  }
+                {% else %}
+                  /* playlist not auto-continue, so pause after fading complete */
+                  Amplitude.pause();
+                {% endif %}
             }
           }
+        },
+        {% endif %}
+          
+        'prev': function() {
+          /* backing up one song in list */
+          console.log("Previous Track selected.");
+          
+          /* show the song that was playing in the 'up next' list */
+          new_next_index = Amplitude.getActiveIndex() + 1;
+          new_next_name = "index-" + new_next_index;
+          console.log(new_next_name);
+          document.getElementById(new_next_name).style.display = "inline-block";
+          
+          /* only show 4 songs in up next, so hide the one after that */
+          index_to_hide = new_next_index + 4;
+          if (index_to_hide < {{ playlist_indices|length }}) {
+            hide_index_name = "index-" + index_to_hide;
+            document.getElementById(hide_index_name).style.display = "none";
+          }
+        },
+          
+        'song_change': function(){   
+          /* song has changed, either backward or forward */
+          console.log("Song has been changed.");
+          
+          /* reset volume level and clear any highlighing */
+          Amplitude.setVolume(startVolume);
+          {% if playlist_info.max_song_duration_in_sec %}
+            time_limit_para.style.backgroundColor = 'transparent'; 
+          {% endif %}
+
+          /* don't show current song in 'up next' list */
+          curr_index = Amplitude.getActiveIndex();
+          curr_id_name = "index-" + curr_index;
+          console.log(curr_id_name);
+          document.getElementById(curr_id_name).style.display = "none";
+            
+          /* show the 4th future song in the list, if there is one */
+          future_index = curr_index + 4;
+          if (future_index < {{ playlist_indices|length }}) {
+            future_id_name = "index-" + future_index;
+            document.getElementById(future_id_name).style.display = "inline-block";
+          }
+        }
       },
+      
+      /* if entire song played and playlist set to play next song automatically */
       {% if playlist_info.auto_continue %}
-        "continue_next": true,
-        delay: 2000 
+      "continue_next": true,
+      delay: 2000           /* delay 2 seconds between songs */
       {% else %}
-        "continue_next": false,
+      "continue_next": false,
       {% endif %}
     });
 
