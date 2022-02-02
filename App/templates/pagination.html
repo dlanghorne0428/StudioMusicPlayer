@@ -1,16 +1,21 @@
 {% load my_tags %}
 
+<!-- see https://docs.djangoproject.com/en/4.0/topics/pagination/ -->
+
 <div class="pagination justify-content-center">
     <span class="step-links">
+        <!-- if not on page 1, show links to first and previous pages -->     
         {% if page_obj.has_previous %}
             <a href="?{% param_replace page=1 %}">&laquo; first</a>
             <a href="?{% param_replace page=page_obj.previous_page_number %}">&larr; prev</a>
         {% endif %}
 
+        <!-- always show current page and total number of pages, use padding in x direction -->
         <span class="current px-4">
             Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
         </span>
 
+        <!-- if not on the last, show links to next and last pages -->    
         {% if page_obj.has_next %}
             <a href="?{% param_replace page=page_obj.next_page_number %}">next &rarr;</a>
             <a href="?{% param_replace page=page_obj.paginator.num_pages %}">last &raquo;</a>
