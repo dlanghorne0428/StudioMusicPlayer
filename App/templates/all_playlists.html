@@ -9,14 +9,17 @@
 {% block content %}
 
   <div class="row">
+    <!-- first row in bootstrap grid is the page title -->
     <div class="col-12">
       <h2 class="text-center">Playlists</h2>
     </div>
   </div>
   
+  <!--- next row is the table -->
   <div class="col-12 border border-dark px-0">
   <table class="table table-bordered table-sm">
     <thead class="thead-dark">
+      <!-- define the column headers -->
       <tr>
         <th class="text-center">Title</th>
         <th class="text-center">Description</th>
@@ -25,12 +28,20 @@
     </thead>
     <tbody>
       
+      <!-- each playlist is a row in the table -->
       {% for playlist in page_obj %}
         <tr>
+          <!-- first columns are title and description -->
           <td class="text-center">{{ playlist.title }}</td>
           <td>{{ playlist.description }}</td>
+          
+          <!-- action buttons -->
           <td class="text-center">
+            
+            <!-- all users can see the play button, may want to change this -->
             <a class="btn btn-primary btn-sm" href="{% url 'App:play_song_list' playlist.id %}">Play</a>
+            
+            <!-- only admin users can edit or delete a playlist, these are not implemented yet --> 
             {% if show_admin_buttons %}
               <a class="btn btn-info btn-sm" href="#">Edit</a>
               <a class="btn btn-danger btn-sm" 
@@ -43,8 +54,10 @@
     </tbody>
   </table>
   
+  <!-- links to previous and next, first and last pages -->
   {% include "pagination.html" %}
   
+  <!-- link to create a playlist, this will change -->
   <div class="text-center mt-2">
      <a class="btn btn-primary" href="{% url 'App:create_playlist' 1 %}">Create Test Playlist</a>
   </div>
