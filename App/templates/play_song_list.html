@@ -90,8 +90,8 @@
   
     <div class="col-4">
       <!-- right section has info about the current playlist and link back to all playlists page -->
-      {% if playlist_info.max_song_duration_in_sec %}
-        <p class="text-info" id="timelimit">Song time limit: {{ playlist_info.max_song_duration_in_sec }}</p>
+      {% if playlist_info.max_song_duration %}
+        <p class="text-info" id="timelimit">Song time limit: {{ playlist_info.max_song_duration|time:"i:s" }}</p>
       {% endif %}
       {% if playlist_info.auto_continue %}
         <p class="text-info">Next track played automatically</p>
@@ -158,13 +158,13 @@
           document.getElementById("index-4").style.display = "inline-block";
         },
         
-        {% if playlist_info.max_song_duration_in_sec %}
+        {% if playlist_info.max_song_duration %}
         /* if playlist has a max duration, fade volume at that time */
         'timeupdate': function(){
             
           /* check how long this song has been playing */
           played = Amplitude.getSongPlayedSeconds();
-          if (played > {{ playlist_info.max_song_duration_in_sec }}) {
+          if (played > {{ max_song_duration_in_sec }}) {
             /* highlight the time limit text when time has expired */
             time_limit_para.style.backgroundColor = 'red';
                 
@@ -183,7 +183,7 @@
                 Amplitude.setVolume(0);
                 {% if playlist_info.auto_continue %}
                   /* fade takes about 8 sec, delay until 11 sec after limit then play next */
-                  if (played - 11 > {{ playlist_info.max_song_duration_in_sec }}) {
+                  if (played - 11 > {{ max_song_duration_in_sec }}) {
                     Amplitude.next();
                   }
                 {% else %}
@@ -219,7 +219,7 @@
           
           /* reset volume level and clear any highlighing */
           Amplitude.setVolume(startVolume);
-          {% if playlist_info.max_song_duration_in_sec %}
+          {% if playlist_info.max_song_duration %}
             time_limit_para.style.backgroundColor = 'transparent'; 
           {% endif %}
 
