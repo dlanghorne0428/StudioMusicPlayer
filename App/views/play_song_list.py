@@ -25,6 +25,13 @@ def play_song_list(request, playlist_id):
     for i in range(len(song_list)):
         playlist_indices.append(i)
     
+    # convert max_duration to seconds for javascript player
+    if playlist.max_song_duration is not None:
+        max_song_duration_in_sec = playlist.max_song_duration.minute * 60 + \
+                                   playlist.max_song_duration.second
+    else:
+        max_song_duration_in_sec = None
+    
     # pass the path to the default cover art for any songs that don't have art 
     default_url = settings.STATIC_URL + "img/default.png"
     
@@ -32,5 +39,6 @@ def play_song_list(request, playlist_id):
     return render(request, "play_song_list.html", {
         'playlist_info': playlist, 
         'song_list':song_list, 
+        'max_song_duration_in_sec': max_song_duration_in_sec,
         'default_url': default_url,
         "playlist_indices": playlist_indices})   
