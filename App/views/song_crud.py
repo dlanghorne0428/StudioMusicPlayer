@@ -171,12 +171,19 @@ def delete_song(request, song_id):
     
     # find the specific song object
     song = get_object_or_404(Song, pk=song_id) 
-    
-    # delete the audio and image files related to this Song.
-    if os.path.isfile(song.audio_file.path):
-        os.remove(song.audio_file.path)
-    if os.path.isfile(song.image.path):
-        os.remove(song.image.path)
+        
+    # delete the audio and image files related to this Song
+    if song.image is not None:
+        if song.image == "":
+            pass
+        elif os.path.isfile(song.image.path):
+            os.remove(song.image.path)
+            
+    if song.audio_file is not None:
+        if song.audio_file == "":
+            pass
+        elif os.path.isfile(song.audio_file.path):
+            os.remove(song.audio_file.path)    
     
     # remove Song from database and redirect to song list. 
     print("Deleting " +  str(song))
