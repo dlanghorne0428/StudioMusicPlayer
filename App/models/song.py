@@ -27,6 +27,21 @@ DANCE_TYPE_CHOICES = (
     ("C2S", "Country Two Step"), 
     )
 
+HOLIDAY_CHOICES = (
+    ("Xmas", "Christmas"),
+    ("Hall", "Halloween"),
+    ("Jul4", "4th of July"),
+    ("NYE",  "New Year's Eve"),
+    )
+
+
+SPECIAL_CHOICES = (
+    ("Featr", "Feature"),          # is this for solos, play entire song?
+    ("Req.O", "Request Only"),
+    ("Teach", "Teaching"),
+    )
+    
+
 def create_valid_filename(instance, filename):
     ''' When uploading audio files, find a valid name that django can use.
        slugify replaces whitespace with a dash and removes everything but alphanumerics,
@@ -53,7 +68,19 @@ class SongFileInput(models.Model):
         max_length = 10,
         choices = DANCE_TYPE_CHOICES,
         default = 'Cha'
-        )     
+        )
+    holiday = models.CharField(
+        max_length = 5,
+        choices = HOLIDAY_CHOICES,
+        blank = True,
+        default = ""
+        )
+    special = models.CharField(
+        max_length = 10,
+        choices = SPECIAL_CHOICES,
+        blank = True,
+        default = ""
+        )
     
     def __str__(self):
         return self.audio_file.url + ": " + self.dance_type
@@ -78,7 +105,22 @@ class Song(models.Model):
         max_length = 10,
         choices = DANCE_TYPE_CHOICES,
         default = 'Cha'
-        )        
+        )
+    
+    holiday = models.CharField(
+        max_length = 5,
+        choices = HOLIDAY_CHOICES,
+        blank = True,
+        default = ""
+        )  
+    
+    special = models.CharField(
+        max_length = 10,
+        choices = SPECIAL_CHOICES,
+        blank = True,
+        default = ""
+        )
+        
 
     def __str__(self):
         return self.title
