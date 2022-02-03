@@ -6,10 +6,10 @@ from .models.song import Song, SongFileInput
 class SongFileInputForm(ModelForm):
     class Meta:
         model = SongFileInput
-        fields = ['audio_file', 'dance_type']
+        fields = ['audio_file', 'dance_type', 'special', 'holiday']
 
 
 class SongEditForm(ModelForm):
     class Meta:
         model = Song
-        fields = ['title', 'artist', 'dance_type']
+        fields = ['title', 'artist', 'dance_type', 'special', 'holiday']
