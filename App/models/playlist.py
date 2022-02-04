@@ -34,4 +34,5 @@ class SongInPlaylist(models.Model):
     order = models.IntegerField()
     
     class Meta:
-        unique_together = ['song', 'playlist', 'order']    
+        unique_together = ['song', 'playlist', 'order']  
+        ordering = ['order']
