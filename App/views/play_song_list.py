@@ -18,7 +18,7 @@ def play_song_list(request, playlist_id):
     playlist = get_object_or_404(Playlist, pk=playlist_id)
     
     # obtain list of songs in this playlist
-    song_list = playlist.songs.all()
+    song_list = playlist.songs.all().order_by('songinplaylist__order')
     
     # build list of indices for the playlist
     playlist_indices = []
