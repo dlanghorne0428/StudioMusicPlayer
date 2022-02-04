@@ -98,6 +98,7 @@
       {% else %}
         <p class="text-info">Pause before playing next track</p>
       {% endif %}
+      <p class="text-center"><a href="{% url 'App:edit_playlist' playlist_info.id %}">Edit Playlist</a></p>
       <p class="text-center"><a href="{% url 'App:all_playlists' %}">Back to All Playlists</a></p>
     </div>
   </div>
