@@ -29,10 +29,10 @@
     </thead>
     <tbody>
       
-      <!-- the rest of the table has one page of songs, one song per row -->
-      {% for song in page_obj %}
+      <!-- the rest of the table has one song per row -->
+      {% for song in songs %}
       <tr>
-        <!-- show a one-based index as the first column. TODO: handle 2nd page -->
+        <!-- show a one-based index as the first column. -->
         <td class="text-center">{{ forloop.counter }}</td>
         
         <td class="text-center">{{ song.artist }}</td>
@@ -44,7 +44,7 @@
         <!-- final columns are the action buttons -->
         
         <td class="text-center">  
-          <!-- show the up arrow to move a song up one slot unless it's the first song on the page -->
+          <!-- show the up arrow to move a song up one slot unless it's the first song -->
           {% if forloop.counter > 1 %}
             <!-- add command and a zero-based index as URL parameters so the view can process -->
             <a class="btn btn-white btn-sm" 
@@ -55,8 +55,8 @@
         </td>
         
         <td class="text-center">  
-          <!-- show the down arrow to move a song down one slot unless it's the last song on the page -->
-          {% if forloop.counter < page_obj|length %}
+          <!-- show the down arrow to move a song down one slot unless it's the last song -->
+          {% if forloop.counter < songs|length %}
             <a class="btn btn-white btn-sm" 
               href="?{% param_replace cmd="down" index=forloop.counter0 %}">
               <img src={% static 'img/arrow-down.svg' %}>
@@ -77,9 +77,6 @@
       {% endfor %}
     </tbody>
   </table>
-  
-  <!-- links to previous and next, first and last pages -->
-  {% include "pagination.html" %}
   
   <!-- link to play this current playlist-->
   <div class="text-center mt-2">
