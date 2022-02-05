@@ -41,9 +41,10 @@
             <!-- all users can see the play button, may want to change this -->
             <a class="btn btn-primary btn-sm" href="{% url 'App:play_song_list' playlist.id %}">Play</a>
             
-            <!-- only admin users can edit or delete a playlist, these are not implemented yet --> 
+            <!-- only admin users can edit or delete a playlist, delete is not implemented yet --> 
+            <!-- TODO: owners should be able to edit their own playlist -->
             {% if show_admin_buttons %}
-              <a class="btn btn-info btn-sm" href="#">Edit</a>
+              <a class="btn btn-info btn-sm" href="{% url 'App:edit_playlist' playlist.id %}">Edit</a>
               <a class="btn btn-danger btn-sm" 
                   onclick="return confirm('Deleting: {{playlist.title}}\n Are you sure?')" 
                   href="#">Delete</a>

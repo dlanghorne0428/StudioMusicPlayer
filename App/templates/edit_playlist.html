@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% load my_tags %}  
+
+{% block content %}
+
+  <!-- first row in bootstrap grid has the page title and the name of the playlist we are editing.
+       There is some padding on the bottom -->
+  <div class="row">
+    <div class="col-12">
+      <h2 class="text-center">Edit Playlist</h2>
+      <h3 class="text-center pb-2">{{ playlist.title }}</h3>
+    </div>
+  </div>
+  
+   <!-- next row in bootstrap grid is a table, with dark borders --> 
+  <div class="col-12 border border-dark">
+  <table class="table table-bordered table-sm">
+    <thead class="thead-dark">
+      <!-- column headers have a dark background -->
+      <tr>
+        <th class="text-center">Index</th>
+        <th class="text-center">Artist</th>
+        <th class="text-center">Title</th>
+        <th class="text-center">Dance</th>
+        <th colspan='3' class="text-center">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+      <!-- the rest of the table has one page of songs, one song per row -->
+      {% for song in page_obj %}
+      <tr>
+        <!-- show a one-based index as the first column. TODO: handle 2nd page -->
+        <td class="text-center">{{ forloop.counter }}</td>
+        
+        <td class="text-center">{{ song.artist }}</td>
+        <td class="text-center">{{ song.title }}</td>
+        
+        <!-- display the "readable" string for the dance type -->
+        <td class="text-center">{{ song.get_dance_type_display }}</td>
+        
+        <!-- final columns are the action buttons -->
+        
+        <td class="text-center">  
+          <!-- show the up arrow to move a song up one slot unless it's the first song on the page -->
+          {% if forloop.counter > 1 %}
+            <!-- add command and a zero-based index as URL parameters so the view can process -->
+            <a class="btn btn-white btn-sm" 
+              href="?{% param_replace cmd="up" index=forloop.counter0 %}">
+              <img src={% static 'img/arrow-up.svg' %}>
+            </a>
+          {% endif %}
+        </td>
+        
+        <td class="text-center">  
+          <!-- show the down arrow to move a song down one slot unless it's the last song on the page -->
+          {% if forloop.counter < page_obj|length %}
+            <a class="btn btn-white btn-sm" 
+              href="?{% param_replace cmd="down" index=forloop.counter0 %}">
+              <img src={% static 'img/arrow-down.svg' %}>
+            </a>
+          {% endif %}
+        </td>
+        
+        <td class="text-center">      
+          <!-- show the trash can to delete a song and move all other songs up one slot -->
+          <!-- force the user to confirm before deleting a song --> 
+          <a class="btn btn-white btn-sm" 
+            onclick="return confirm('Deleting: {{song.title}}\n Are you sure?')" 
+            href="?{% param_replace cmd="delsong" index=forloop.counter0 %}">
+            <img src={% static 'img/trash3.svg' %}>
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  
+  <!-- links to previous and next, first and last pages -->
+  {% include "pagination.html" %}
+  
+  <!-- link to play this current playlist-->
+  <div class="text-center mt-2">
+     <a class="btn btn-primary" href="{% url 'App:play_song_list' playlist.id %}">Play</a>
+  </div>
+
+{% endblock %}
