@@ -107,15 +107,11 @@ def edit_playlist(request, playlist_id):
                     next.save()
                     
             # redirect to this same view in order to remove the URL parameters 
-            return redirect('App:edit_playlist', playlist_id)            
-                
-        # split the songs into pages and get the requested page
-        paginator = Paginator(song_list, 16)
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number) 
+            return redirect('App:edit_playlist', playlist_id)             
         
+        # no URL parameters, render the template as is
         return render(request, 'edit_playlist.html', {
             'playlist': playlist,
-            'page_obj': page_obj
+            'songs': song_list
         })  
     
