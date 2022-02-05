@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% load static %}
+{% load my_tags %}  
 
 {% block content %}
 
@@ -31,35 +32,44 @@
       <!-- the rest of the table has one page of songs, one song per row -->
       {% for song in page_obj %}
       <tr>
+        <!-- show a one-based index as the first column. TODO: handle 2nd page -->
         <td class="text-center">{{ forloop.counter }}</td>
+        
         <td class="text-center">{{ song.artist }}</td>
         <td class="text-center">{{ song.title }}</td>
-        <!-- display the "readable" string for the dance type, special tag, and holiday -->
+        
+        <!-- display the "readable" string for the dance type -->
         <td class="text-center">{{ song.get_dance_type_display }}</td>
-        <!-- final column is the action buttons -->
+        
+        <!-- final columns are the action buttons -->
+        
         <td class="text-center">  
+          <!-- show the up arrow to move a song up one slot unless it's the first song on the page -->
           {% if forloop.counter > 1 %}
+            <!-- add command and a zero-based index as URL parameters so the view can process -->
             <a class="btn btn-white btn-sm" 
-              href="{% url 'App:edit_playlist_move_up' playlist.id forloop.counter0 %}">
+              href="?{% param_replace cmd="up" index=forloop.counter0 %}">
               <img src={% static 'img/arrow-up.svg' %}>
             </a>
           {% endif %}
         </td>
         
-        <td class="text-center">            
+        <td class="text-center">  
+          <!-- show the down arrow to move a song down one slot unless it's the last song on the page -->
           {% if forloop.counter < page_obj|length %}
             <a class="btn btn-white btn-sm" 
-              href="{% url 'App:edit_playlist_move_down' playlist.id forloop.counter0 %}">
+              href="?{% param_replace cmd="down" index=forloop.counter0 %}">
               <img src={% static 'img/arrow-down.svg' %}>
             </a>
           {% endif %}
         </td>
         
-        <td class="text-center">         
+        <td class="text-center">      
+          <!-- show the trash can to delete a song and move all other songs up one slot -->
           <!-- force the user to confirm before deleting a song --> 
           <a class="btn btn-white btn-sm" 
             onclick="return confirm('Deleting: {{song.title}}\n Are you sure?')" 
-            href="{% url 'App:edit_playlist_delsong' playlist.id forloop.counter0 %}">
+            href="?{% param_replace cmd="delsong" index=forloop.counter0 %}">
             <img src={% static 'img/trash3.svg' %}>
           </a>
         </td>
