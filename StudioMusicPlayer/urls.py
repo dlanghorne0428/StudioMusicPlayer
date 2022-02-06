@@ -19,9 +19,19 @@ from django.conf import settings
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.contrib.staticfiles.urls import static
 
+from App.views import user_access
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include("App.urls")),    
+    path('', include("App.urls")),   
+    
+    # this include of accounts adds several common URL patterns
+    # see "Authentication Views section of https://docs.djangoproject.com/en/4.0/topics/auth/default/
+    path('accounts/', include('django.contrib.auth.urls')),
+    
+    # add patterns for user signup / creation 
+    path('accounts/signup/', user_access.SignUpView.as_view(), name='signup'),
+    path('accounts/signup/teacher/', user_access.TeacherSignUpView.as_view(), name='teacher_signup')
 ]
 
 urlpatterns += staticfiles_urlpatterns()
