@@ -7,9 +7,7 @@ app_name = "App"
 
 urlpatterns = [
     path("", views.home, name="home"),
-    path("home/", views.home, name="home"),
-    path('login/', views.loginuser, name="loginuser"),
-    path('logout/', views.logoutuser, name="logoutuser"),      
+    path("home/", views.home, name="home"),   
     path("songs/", views.all_songs, name="all_songs"),
     path("addSong/", views.add_song, name="add_song"),
     path('playSong/<int:song_id>', views.play_song, name="play_song"),
