@@ -6,6 +6,7 @@ import os
 
 # imported our models
 from App.models.song import Song
+from App.models.user import User
 from App.models.playlist import Playlist, SongInPlaylist
 
 # Create your views here.
@@ -16,17 +17,18 @@ from App.models.playlist import Playlist, SongInPlaylist
 def create_playlist(request, sort_type):
     ''' allows the superuser to create a test playlist into the database. '''
     
-    if not request.user.is_superuser:
+    if not (request.user.is_superuser or request.user.is_teacher):
         return render(request, 'permission_denied.html')
     else:
         new_playlist = Playlist()
+        new_playlist.owner = request.user
         if sort_type == 0:
             all_songs = Song.objects.all().order_by('title')
-            new_playlist.title = "Test - All in Title Order 1/28"
+            new_playlist.title = "Test: All Songs in Title Order"
             new_playlist.description = "This paylist contains all songs in the database, ordered by Title"
         else:
             all_songs = Song.objects.all().order_by('artist')  
-            new_playlist.title = "Test - All Songs - Artist Order 1/28"
+            new_playlist.title = "Test: All Songs in Artist Order"
             new_playlist.description = "This paylist contains all songs in the database, ordered by Artist"            
         new_playlist.save()
         
@@ -52,7 +54,10 @@ def edit_playlist(request, playlist_id):
         return render(request, 'permission_denied.html')
     else:        
         # get the specific playlist object from the database
-        playlist = get_object_or_404(Playlist, pk=playlist_id )
+        playlist = get_object_or_404(Playlist, pk=playlist_id)
+        
+        if playlist.owner != request.user:
+            return render(request, 'permission_denied.html')           
         
         # obtain list of songs in this playlist and its length
         song_list = playlist.songs.all().order_by('songinplaylist__order')

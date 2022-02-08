@@ -7,9 +7,6 @@ from App.models.playlist import Playlist
 def all_playlists(request):
     ''' shows all the Playlists in the database. '''
     
-    # determine if the user is admin, pass that to template
-    show_admin_buttons = request.user.is_superuser
-    
     # if there are any playlists
     if Playlist.objects.count() > 0:
         
@@ -26,6 +23,5 @@ def all_playlists(request):
     
     # render the template
     return render(request, 'all_playlists.html', 
-                  {'page_obj': page_obj, 
-                   'show_admin_buttons': show_admin_buttons })
+                  {'page_obj': page_obj})
 

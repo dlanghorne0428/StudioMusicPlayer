@@ -1,16 +1,22 @@
 from django.db import models
 from django.utils.text import get_valid_filename
 from App.models.song import Song
+from App.models.user import User
 
 
 class Playlist(models.Model):
     '''A playlist has a short title and longer description. 
       A many-to-many field is used to represent the list of songs.'''
     
+    # a short title for the playlist
     title = models.CharField(max_length=50)
     
+    # a longer description for the playlist
     description = models.TextField(blank=True)
     
+    # the owner of the playlist will be allowed to edit and delete their playlist
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+
     # a playlist has many songs, a song can be in multiple playlists
     songs = models.ManyToManyField(Song, through='SongInPlaylist')
     

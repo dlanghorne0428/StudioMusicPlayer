@@ -9,8 +9,8 @@ from App.models.song import Song
 def play_song(request, song_id):
     ''' Play the selected song.'''
     
-    # only admin users can play songs
-    if not request.user.is_superuser:
+    # only admin users or teachers can play songs
+    if not (request.user.is_superuser or request.user.is_teacher):
         return render(request, 'permission_denied.html')  
     
     # get the requested song or show "not found" page
@@ -22,4 +22,5 @@ def play_song(request, song_id):
     # render the template
     return render(request, "play_song.html", 
                   {'song':song, 
-                   'default_url': default_url})   
+                   'default_url': default_url}
+                  )   

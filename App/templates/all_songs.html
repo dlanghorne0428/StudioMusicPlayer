@@ -52,14 +52,17 @@
         <td class="text-center">{{ song.get_dance_type_display }}</td>
         <td class="text-center">{{ song.get_special_display }}</td>
         <td class="text-center">{{ song.get_holiday_display }}</td>
-        <!-- final column is the action buttons -->
+        
+        <!-- final column has the action buttons -->
         <td class="text-center">
-          <!-- any user can play a song, may not want to allow this -->
-          <a class="btn btn-primary btn-sm" href="{% url 'App:play_song' song.id %}">Play</a>
-          
-          {% if show_admin_buttons %}
-            <!-- only admin users can edit or delete a song -->
+          {% if user.is_superuser or user.is_teacher %}
+            <!-- only admin users or teachers can play or edit songs -->
+            <a class="btn btn-primary btn-sm" href="{% url 'App:play_song' song.id %}">Play</a>
             <a class="btn btn-info btn-sm" href="{% url 'App:update_song' song.id %}">Edit</a>
+          {% endif %}
+          
+          {% if user.is_superuser %}
+            <!-- only admin users can edit or delete a song -->
             <!-- force the user to confirm before deleting a song --> 
             <a class="btn btn-danger btn-sm" 
                 onclick="return confirm('Deleting: {{song.title}}\n Are you sure?')" 

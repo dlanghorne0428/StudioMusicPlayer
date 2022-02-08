@@ -91,15 +91,15 @@
     <div class="col-4">
       <!-- right section has info about the current playlist and link back to all playlists page -->
       {% if playlist_info.max_song_duration %}
-        <p class="text-info" id="timelimit">Song time limit: {{ playlist_info.max_song_duration|time:"i:s" }}</p>
+        <p class="text-info my-2" id="timelimit">Song time limit: {{ playlist_info.max_song_duration|time:"i:s" }}</p>
       {% endif %}
       {% if playlist_info.auto_continue %}
-        <p class="text-info">Next track played automatically</p>
+        <p class="text-info my-1">Next track played automatically</p>
       {% else %}
-        <p class="text-info">Pause before playing next track</p>
+        <p class="text-info my-1">Pause before playing next track</p>
       {% endif %}
-      <p class="text-center"><a href="{% url 'App:edit_playlist' playlist_info.id %}">Edit Playlist</a></p>
-      <p class="text-center"><a href="{% url 'App:all_playlists' %}">Back to All Playlists</a></p>
+      <p class="text-info my-2">Playlist owner: {{ playlist_info.owner }} <a href="{% url 'App:edit_playlist' playlist_info.id %}">Edit Playlist</a></p></p>
+      <p class="text-center my-2"><a href="{% url 'App:all_playlists' %}">Back to All Playlists</a></p>
     </div>
   </div>
 
