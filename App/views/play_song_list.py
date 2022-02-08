@@ -10,8 +10,8 @@ from App.models.playlist import Playlist
 def play_song_list(request, playlist_id):
     ''' Play the selected playlist.'''
     
-    # only admin users can play songs
-    if not request.user.is_superuser:
+    # only admin users or teachers can play songs
+    if not (request.user.is_superuser or request.user.is_teacher):
         return render(request, 'permission_denied.html')  
     
     # get the requested playlist or show "not found" page

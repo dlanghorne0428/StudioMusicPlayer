@@ -25,8 +25,8 @@ def add_song(request):
     from PIL import Image
     from get_cover_art import CoverFinder
     
-    # must be an administrator to add songs
-    if not request.user.is_superuser:
+    # must be an administrator or teacher to add songs
+    if not (request.user.is_superuser or request.user.is_teacher):
         return render(request, 'permission_denied.html')
     
     if request.method == "GET":   # display empty form
@@ -139,8 +139,8 @@ def update_song(request, song_id):
        This does not change the metadata in the music file, only the model fields
        for the selected Song object''' 
     
-    # must be an admin user to edit songs
-    if not request.user.is_superuser:
+    # must be an admin user or teacher to edit songs
+    if not (request.user.is_superuser or request.user.is_teacher):
         return render(request, 'permission_denied.html')   
     
     # get the specific song object from the database
@@ -166,6 +166,7 @@ def delete_song(request, song_id):
     ''' allows the superuser to remove a song from the database. 
         the music file and cover art are also deleted .'''
     
+    # must be an admin user to delete songs
     if not request.user.is_superuser:
         return render(request, 'permission_denied.html')   
     
