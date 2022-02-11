@@ -61,8 +61,8 @@ def create_valid_filename(instance, filename):
 
 
 class SongFileInput(models.Model):
-    '''This model is for uploading audio files. It consists of the filename and the
-      dance type. '''
+    '''This model is for uploading audio files. It consists of the filename,
+      dance type, holiday (if any) and special (if any) '''
     audio_file = models.FileField(upload_to=create_valid_filename)
     dance_type = models.CharField(
         max_length = 10,
