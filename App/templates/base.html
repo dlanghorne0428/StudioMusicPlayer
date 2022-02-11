@@ -74,7 +74,7 @@
               <li class="nav-item mx-2 dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">{{ user.username }} ... </a>
                 <div class="dropdown-menu">
-                    <a class="dropdown-item" href="#">Playlists</a>
+                    <a class="dropdown-item" href="{% url 'App:all_playlists' user.id %}">Your Playlists</a>
                     <a class="dropdown-item" href="{% url 'password_change' %}">Change Password</a>
                     <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
                 </div>
