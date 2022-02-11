@@ -64,25 +64,23 @@
             <li class="nav-item">
               <a class="nav-link" href="{% url 'App:all_playlists' %}">Playlists</a>
             </li>
-            <!-- keeping this as an example for a dropdown menu, not currently used -->
-            <!--<li class="nav-item dropdown">-->
-              <!--<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown">Other</a>-->
-              <!--<div class="dropdown-menu">-->
-                <!--<a class="dropdown-item" href="#">Couples</a>-->
-                <!--<a class="dropdown-item" href="#">Teachers</a>-->
-              <!--</div>-->
-            <!--</li>-->
           </ul>
         </div>
         <!-- this section of the navbar is right-justified and shows the logged in user or login link -->
-        <div class="collapse navbar-collapse justify-content-end" id="navbarSupportedContent">
+        <div class="collapse navbar-collapse justify-content-center" id="navbarSupportedContent">
           <ul class="navbar-nav">
             {% if user.is_authenticated %}
-              <li class="navbar-text">{{ user.username }}</li>
-              <li class="nav-item">
-                <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+              <!-- user logged in, show options in a dropdown menu -->
+              <li class="nav-item mx-2 dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">{{ user.username }} ... </a>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="#">Playlists</a>
+                    <a class="dropdown-item" href="{% url 'password_change' %}">Change Password</a>
+                    <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
+                </div>
               </li>
             {% else %}
+              <!-- Ask visitor to login or sign up -->
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'login' %}">Login</a> 
               </li>
