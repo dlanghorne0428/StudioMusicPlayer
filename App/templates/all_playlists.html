@@ -61,9 +61,9 @@
   <!-- links to previous and next, first and last pages -->
   {% include "pagination.html" %}
   
-  <!-- link to create a playlist, this will change -->
+  <!-- link to create a playlist -->
   <div class="text-center mt-2">
-     <a class="btn btn-primary" href="{% url 'App:create_playlist' 1 %}">Create Test Playlist</a>
+     <a class="btn btn-primary" href="{% url 'App:create_playlist' %}">Create Playlist</a>
   </div>
 
 {% endblock %}

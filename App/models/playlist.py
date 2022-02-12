@@ -26,6 +26,16 @@ class Playlist(models.Model):
     # should the playlist have a maximum song duration?
     # if enabled, the volume will fade when the song hits this limit
     max_song_duration = models.TimeField(null=True, blank=True)
+    
+    def add_song(self, song):
+        ''' add a song to the end of a playlist '''
+        playlist_length = self.songs.count()
+        new_playlist_entry = SongInPlaylist(
+            song = song,
+            playlist = self,
+            order = playlist_length
+        )
+        new_playlist_entry.save()           
 
     def __str__(self):
         return self.title
