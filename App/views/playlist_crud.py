@@ -9,54 +9,86 @@ from App.models.song import Song
 from App.models.user import User
 from App.models.playlist import Playlist, SongInPlaylist
 
-# Create your views here.
+
 #########################################################
 # Paylist CRUD, add, update, and delete Paylist objects #
 #########################################################
 
-def create_playlist(request, sort_type):
-    ''' allows the superuser to create a test playlist into the database. '''
+def create_playlist(request, sort_type=None):
+    ''' allows the superuser or teacher to create a new playlist. '''
     
     if not (request.user.is_superuser or request.user.is_teacher):
         return render(request, 'permission_denied.html')
+    
     else:
+        # create new playlist
         new_playlist = Playlist()
-        new_playlist.owner = request.user
-        if sort_type == 0:
-            all_songs = Song.objects.all().order_by('title')
-            new_playlist.title = "Test: All Songs in Title Order"
-            new_playlist.description = "This paylist contains all songs in the database, ordered by Title"
-        else:
-            all_songs = Song.objects.all().order_by('artist')  
-            new_playlist.title = "Test: All Songs in Artist Order"
-            new_playlist.description = "This paylist contains all songs in the database, ordered by Artist"            
-        new_playlist.save()
         
-        # get all the songs and add them one at a time    
-        index = 0
-        for song in all_songs:
-            new_playlist_entry = SongInPlaylist(
-                song = song,
-                playlist = new_playlist,
-                order = index)
-            new_playlist_entry.save()
-            print(new_playlist.songs.all())
-            index += 1
+        # set playlist owner to current user
+        user = request.user
+        new_playlist.owner = user        
+    
+        if sort_type is None:
+
+            # use a default title based on number of playlists currently owned by this user
+            playlist_count = Playlist.objects.filter(owner=user).count()
+            new_playlist.title = user.username + '-' + str(playlist_count + 1)
+            print(new_playlist.title)
             
-        return redirect('App:all_playlists')
+            # empty description
+            new_playlist.description = ""
+
+            # save playlist and return to list of user's playlists
+            new_playlist.save()        
+            return redirect('App:all_playlists', user.id)
+        
+    if sort_type == 0:
+        # add all songs ordered by title
+        all_songs = Song.objects.all().order_by('title')
+        new_playlist.title = "Test: All Songs in Title Order"
+        new_playlist.description = "This paylist contains all songs in the database, ordered by Title"
+    else:
+        # add all songs orederd by artist
+        all_songs = Song.objects.all().order_by('artist')  
+        new_playlist.title = "Test: All Songs in Artist Order"
+        new_playlist.description = "This paylist contains all songs in the database, ordered by Artist"            
+    
+    new_playlist.save()
+        
+    # get all the songs and add them to the playlist one at a time    
+    for song in all_songs:
+        new_playlist.add_song(song)
+    
+    # return to list of user's playlists        
+    return redirect('App:all_playlists', user.id)
 
 
+def add_to_playlist(request, playlist_id, song_id):
+    ''' add a song to the end of a playlist '''
+    # get the specific playlist object from the database
+    playlist = get_object_or_404(Playlist, pk=playlist_id) 
+    
+    # get the specific song object from the database
+    song = get_object_or_404(Song, pk=song_id)    
+    
+    # add the song to the end of the playlist
+    playlist.add_song(song)
+    
+    # redirect to edit playlist page, showing new song at end of list
+    return redirect('App:edit_playlist', playlist.id)
+    
+    
 def edit_playlist(request, playlist_id):
     ''' allows the superuser to edit an existing playlist. 
        TODO: there should be a playlist owner, who can edit their own playlists.'''
     
-    if not request.user.is_superuser:
+    if not (request.user.is_superuser or request.user.is_teacher):
         return render(request, 'permission_denied.html')
     else:        
         # get the specific playlist object from the database
         playlist = get_object_or_404(Playlist, pk=playlist_id)
         
-        if playlist.owner != request.user:
+        if not (request.user.is_superuser or playlist.owner == request.user):
             return render(request, 'permission_denied.html')           
         
         # obtain list of songs in this playlist and its length
@@ -69,10 +101,14 @@ def edit_playlist(request, playlist_id):
         print(request.GET)
     
         # if there are URL parameters
-        if index_str is not None and command is not None:
-            print('index is: ' + index_str)
-            # get the index, convert to integer
-            index = int(index_str)
+        if command is not None:
+            if index_str is None:
+                index = 0
+            else:
+                # get the index, convert to integer
+                print('index is: ' + index_str)
+                index = int(index_str)
+                
             # get the song in the playlist and the requested info
             selected = SongInPlaylist.objects.get(playlist=playlist_id, order=index)
             print(selected.song)
