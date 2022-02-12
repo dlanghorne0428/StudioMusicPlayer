@@ -16,7 +16,7 @@ def all_playlists(request, user_id=None):
         
         if user_id is None:
             # get all the playlists, ordered by title
-            playlists = Playlist.objects.all().order_by('title')
+            playlists = Playlist.objects.all().order_by('owner', 'title')
         
         else:
             # find user based on id
