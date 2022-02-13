@@ -4,6 +4,7 @@ from django.forms import Form, ModelForm
 
 from .models.song import Song, SongFileInput
 from .models.user import User
+from .models.playlist import Playlist
 
 
 class SongFileInputForm(ModelForm):
@@ -16,6 +17,12 @@ class SongEditForm(ModelForm):
     class Meta:
         model = Song
         fields = ['title', 'artist', 'dance_type', 'special', 'holiday']
+        
+        
+class PlaylistEditForm(ModelForm):
+    class Meta:
+        model = Playlist
+        fields = ['title', 'auto_continue', 'max_song_duration']
         
         
 # based on example at: https://github.com/sibtc/django-multiple-user-types-example        

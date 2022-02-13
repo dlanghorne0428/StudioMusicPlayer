@@ -8,6 +8,7 @@ import os
 from App.models.song import Song
 from App.models.user import User
 from App.models.playlist import Playlist, SongInPlaylist
+from App.forms import PlaylistEditForm
 
 
 #########################################################
@@ -79,8 +80,7 @@ def add_to_playlist(request, playlist_id, song_id):
     
     
 def edit_playlist(request, playlist_id):
-    ''' allows the superuser to edit an existing playlist. 
-       TODO: there should be a playlist owner, who can edit their own playlists.'''
+    ''' allows the superuser to edit an existing playlist. '''
     
     if not (request.user.is_superuser or request.user.is_teacher):
         return render(request, 'permission_denied.html')
@@ -156,3 +156,33 @@ def edit_playlist(request, playlist_id):
             'songs': song_list
         })  
     
+    
+def edit_playlist_title (request, playlist_id):
+    ''' allows the superuser to edit an existing playlist title. '''
+    
+    if not (request.user.is_superuser or request.user.is_teacher):
+        return render(request, 'permission_denied.html')
+    else:        
+        # get the specific playlist object from the database
+        playlist = get_object_or_404(Playlist, pk=playlist_id)
+        
+        if not (request.user.is_superuser or playlist.owner == request.user):
+            return render(request, 'permission_denied.html')           
+                    
+        if request.method == "GET":
+            # display form with current data
+            form = PlaylistEditForm(instance=playlist)
+            return render(request, 'edit_playlist_title.html', {'form':form})
+        else:
+            # obtain information from the submitted form
+            form = PlaylistEditForm(request.POST, instance=playlist)
+            if form.is_valid():
+                # save the updated info and return to song list
+                form.save() 
+                return redirect('App:all_playlists')
+            else: 
+                # display error on form
+                return render(request, 'edit_playlist_title.html', {'form':PlaylistEditForm(), 'error': "Invalid data submitted."})            
+            
+            
+        
