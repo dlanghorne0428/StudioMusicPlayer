@@ -23,6 +23,8 @@
       <tr>
         <th class="text-center">Title</th>
         <th class="text-center">Owner</th>
+        <th class="text-center">Song </br> Time Limit</th>
+        <th class="text-center">Autoplay</br>Next Song</th>
         <th class="text-center">Description</th>
         <th class="text-center">Action</th>
       </tr>
@@ -35,6 +37,16 @@
           <!-- first columns are title and description -->
           <td class="text-center">{{ playlist.title }}</td>
           <td>{{ playlist.owner }}</td>
+          {% if playlist.max_song_duration %}
+            <td>{{ playlist.max_song_duration|time:"i:s" }}</td>
+          {% else %}
+            <td>None</td>
+          {% endif %}
+          {% if playlist.auto_continue %}
+            <td>&#10004;</td>
+          {% else %}
+            <td></td>
+          {% endif %}
           <td>{{ playlist.description }}</td>
           
           <!-- action buttons -->

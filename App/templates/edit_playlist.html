@@ -5,17 +5,33 @@
 
 {% block content %}
 
-  <!-- first row in bootstrap grid has the page title and the name of the playlist we are editing.
-       There is some padding on the bottom -->
+  <!-- first row in bootstrap grid has the page title and the name of the playlist we are editing.-->
   <div class="row">
     <div class="col-12">
       <h2 class="text-center">Edit Playlist</h2>
-      <h3 class="text-center pb-2">{{ playlist.title }}</h3>
+      <h3 class="text-center">{{ playlist.title }}</h3>
     </div>
   </div>
   
-   <!-- next row in bootstrap grid is a table, with dark borders --> 
-  <div class="col-12 border border-dark">
+  <div class="row">
+    <div class="col-6">
+      {% if playlist.max_song_duration %}
+        <h6 class="text-end text-secondary">Song Time Limit: {{ playlist.max_song_duration|time:"i:s" }}</h6>
+      {% else %}
+        <h6 class="text-end text-secondary">No Song Time Limit</h6>
+      {% endif %}
+    </div>
+    <div class="col-6">
+      {% if playlist.auto_continue %}
+        <h6 class="text-start text-secondary">Autoplay Next Song: On</h6>
+      {% else %}
+        <h6 class="text-start text-secondary">Autoplay Next Song: Off</h6>
+      {% endif %}
+    </div>
+  </div>
+  
+   <!-- next row in bootstrap grid is a table, with dark borders and margin above --> 
+  <div class="col-12 border border-dark mt-2">
   <table class="table table-bordered table-sm">
     <thead class="thead-dark">
       <!-- column headers have a dark background -->
