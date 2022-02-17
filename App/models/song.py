@@ -5,32 +5,32 @@ import os
 
 
 DANCE_TYPE_CHOICES = (
-    ("Wal", "Waltz"),
-    ("Tan", "Tango"),
-    ("Fox", "Foxtrot"),
-    ("VW",  "Viennese Waltz"),
-    ("Cha", "Cha-Cha"),
-    ("Rum", "Rumba"),
-    ("ECS", "East Coast Swing"),
-    ("Bol", "Bolero"),
-    ("Mam", "Mambo"),      # consider Mambo / Salsa
-    ("Q",   "Quickstep"),
-    ("Sam", "Samba"),
-    ("PD",  "Paso Doble"),
-    ("Jiv", "Jive"),
-    ("Pea", "Peabody"),
     ("Bac", "Bachata"),
-    ("Mer", "Merengue"),
-    ("Hus", "Hustle"), 
-    ("WCS", "West Coast Swing"),
-    ("NC2", "Nite Club 2-Step"),
+    ("Bol", "Bolero"),    
+    ("Cha", "Cha-Cha"), 
     ("C2S", "Country Two Step"), 
+    ("ECS", "East Coast Swing"),
+    ("Fox", "Foxtrot"),
+    ("Hus", "Hustle"),
+    ("Jiv", "Jive"),
+    ("Mam", "Mambo/Salsa"),
+    ("Mer", "Merengue"),
+    ("NC2", "Nite Club 2-Step"),
+    ("PD",  "Paso Doble"),
+    ("Pea", "Peabody"),
+    ("Q",   "Quickstep"),
+    ("Rum", "Rumba"),    
+    ("Sam", "Samba"),
+    ("Tan", "Tango"),  
+    ("VW",  "Viennese Waltz"),
+    ("Wal", "Waltz"),
+    ("WCS", "West Coast Swing"),
     )
 
 HOLIDAY_CHOICES = (
-    ("Xmas", "Christmas"),
-    ("Hall", "Halloween"),
     ("Jul4", "4th of July"),
+    ("Hall", "Halloween"),
+    ("Xmas", "Christmas"),
     ("NYE",  "New Year's Eve"),
     )
 

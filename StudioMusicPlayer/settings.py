@@ -109,6 +109,8 @@ AUTH_USER_MODEL = 'App.User'
 LOGIN_REDIRECT_URL = '/home'
 LOGOUT_REDIRECT_URL = '/home'
 
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
