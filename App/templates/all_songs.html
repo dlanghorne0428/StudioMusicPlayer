@@ -64,8 +64,9 @@
               </button>
               <ul class="dropdown-menu">
                 <li><a class="dropdown-item" href="{% url 'App:update_song' song.id %}">Edit</a></li>
+                <li><hr class="dropdown-divider"></li>
                 
-                <li><h6 class="dropdown-header">Add to Playlist</h6></li>
+                <li class="dropdown-header">Add to Playlist</li>
                 {% for p in playlists %}
                   <li><a class="dropdown-item" 
                          href="{% url 'App:add_to_playlist' p.id song.id %}">{{p.title}}</a>
