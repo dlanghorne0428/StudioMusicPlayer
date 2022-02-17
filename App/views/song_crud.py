@@ -26,6 +26,9 @@ def add_song(request):
     from get_cover_art import CoverFinder
     
     # must be an administrator or teacher to add songs
+    if not (request.user.is_authenticated):
+        return render(request, 'permission_denied.html')
+    
     if not (request.user.is_superuser or request.user.is_teacher):
         return render(request, 'permission_denied.html')
     
