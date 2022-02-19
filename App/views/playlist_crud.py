@@ -3,9 +3,11 @@ from django.conf import settings
 from django.core.paginator import Paginator
 
 import os
+import math
+import random
 
 # imported our models
-from App.models.song import Song
+from App.models.song import Song, DANCE_TYPE_DEFAULT_PERCENTAGES, DANCE_TYPE_TEMPOS
 from App.models.user import User
 from App.models.playlist import Playlist, SongInPlaylist
 from App.forms import PlaylistEditForm
@@ -15,7 +17,7 @@ from App.forms import PlaylistEditForm
 # Paylist CRUD, add, update, and delete Paylist objects #
 #########################################################
 
-def create_playlist(request, sort_type=None):
+def create_playlist(request):
     ''' allows the superuser or teacher to create a new playlist. '''
     
     if not (request.user.is_superuser or request.user.is_teacher):
@@ -29,36 +31,87 @@ def create_playlist(request, sort_type=None):
         user = request.user
         new_playlist.owner = user        
     
-        if sort_type is None:
 
-            # use a default title based on number of playlists currently owned by this user
-            playlist_count = Playlist.objects.filter(owner=user).count()
-            new_playlist.title = user.username + '-' + str(playlist_count + 1)
-            print(new_playlist.title)
+        # use a default title based on number of playlists currently owned by this user
+        playlist_count = Playlist.objects.filter(owner=user).count()
+        new_playlist.title = user.username + '-' + str(playlist_count + 1)
+        print(new_playlist.title)
             
-            # empty description
-            new_playlist.description = ""
+        # empty description
+        new_playlist.description = ""
 
-            # save playlist and return to list of user's playlists
-            new_playlist.save()        
-            return redirect('App:all_playlists', user.id)
-        
-    if sort_type == 0:
-        # add all songs ordered by title
-        all_songs = Song.objects.all().order_by('title')
-        new_playlist.title = "Test: All Songs in Title Order"
-        new_playlist.description = "This paylist contains all songs in the database, ordered by Title"
-    else:
-        # add all songs orederd by artist
-        all_songs = Song.objects.all().order_by('artist')  
-        new_playlist.title = "Test: All Songs in Artist Order"
-        new_playlist.description = "This paylist contains all songs in the database, ordered by Artist"            
+        # save playlist and return to list of user's playlists
+        new_playlist.save()        
+        return redirect('App:all_playlists', user.id)
+
+
+def create_random_playlist(request):
+    # user will able to enter their percentages and number of songs on a form
+    # for now, use defaults
+    starting_percentages = DANCE_TYPE_DEFAULT_PERCENTAGES
+    songs_remaining = dict()
+    playlist_length = 50
+    random.seed()
+    prevent_back_to_back_styles = True
+    prevent_back_to_back_tempos = True
     
+    # create new playlist
+    new_playlist = Playlist()
+    
+    # set playlist owner to current user
+    user = request.user
+    new_playlist.owner = user  
+    
+    new_playlist.title = "Test Random 2"
+    new_playlist.description = "first try of random list"
     new_playlist.save()
+    
+    for style in starting_percentages:
+        songs_remaining[style] = math.ceil(starting_percentages[style] * playlist_length / 100)
         
-    # get all the songs and add them to the playlist one at a time    
-    for song in all_songs:
-        new_playlist.add_song(song)
+    last_song_style = None
+    
+    for index in range(playlist_length):
+        population = list(songs_remaining)
+    
+        relative_weights = list()
+        for key in iter(songs_remaining):
+            if last_song_style is None:
+                # no restrictions on style
+                relative_weights.append(songs_remaining[key])
+            elif prevent_back_to_back_styles and key == last_song_style:
+                # don't allow same dance twice in a row
+                relative_weights.append(0)
+            elif prevent_back_to_back_tempos and DANCE_TYPE_TEMPOS[last_song_style] == "Fast" and DANCE_TYPE_TEMPOS[key] == "Fast" :
+                # don't allow two fast dances in a row
+                relative_weights.append(0)
+            elif prevent_back_to_back_tempos and DANCE_TYPE_TEMPOS[last_song_style] == "Slow" and DANCE_TYPE_TEMPOS[key] == "Slow" :
+                # don't allow two slow dances in a row
+                relative_weights.append(0)
+            else:
+                relative_weights.append(songs_remaining[key])
+    
+        print(relative_weights)
+        if relative_weights.count(0) == len(relative_weights):
+            print("All weights are zero")
+            random_choice = random.choices(population)
+        else:
+            random_choice = random.choices(population, relative_weights)
+        dance_style = random_choice[0]
+        
+        
+        available_songs = list()
+        for s in Song.objects.filter(dance_type=dance_style):
+            # prevent songs from taking two spots in the same playlist
+            if s.playlist_set.filter(id=new_playlist.id).count() == 0:
+                available_songs.append(s)
+        
+        random_song = available_songs[random.randrange(len(available_songs))]
+        
+        print(index, dance_style, random_song)
+        new_playlist.add_song(random_song)
+        songs_remaining[dance_style] -= 1
+        last_song_style = dance_style
     
     # return to list of user's playlists        
     return redirect('App:all_playlists', user.id)
