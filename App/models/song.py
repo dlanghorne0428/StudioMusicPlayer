@@ -15,7 +15,7 @@ DANCE_TYPE_CHOICES = (
     ("Jiv", "Jive"),
     ("Mam", "Mambo/Salsa"),
     ("Mer", "Merengue"),
-    ("NC2", "Nite Club 2-Step"),
+    ("NC2", "Night Club 2-Step"),
     ("PD",  "Paso Doble"),
     ("Pea", "Peabody"),
     ("Q",   "Quickstep"),
@@ -26,6 +26,52 @@ DANCE_TYPE_CHOICES = (
     ("Wal", "Waltz"),
     ("WCS", "West Coast Swing"),
     )
+
+DANCE_TYPE_DEFAULT_PERCENTAGES = {
+    "Bac":  0,      # i have no bachata songs yet             
+    "Bol":  3,        
+    "Cha": 15, 
+    "C2S":  2, 
+    "ECS": 15,
+    "Fox": 10,
+    "Hus":  5,
+    "Jiv":  2,
+    "Mam":  0,     # i have no mambo or salso songs yet 
+    "Mer":  0,     # i have no merengue songs yet 
+    "NC2":  3,
+    "PD":   0,     # i have no paso songs yet
+    "Pea":  0,     # i have no peabody songs yet
+    "Q":    2,
+    "Rum": 10,    
+    "Sam":  3,
+    "Tan":  0,  
+    "VW":   5,
+    "Wal": 10,
+    "WCS": 15,
+    }
+
+DANCE_TYPE_TEMPOS = {
+    "Bac": "Mid",                  
+    "Bol": "Slow",        
+    "Cha": "Mid", 
+    "C2S": "Mid",  
+    "ECS": "Fast",
+    "Fox": "Mid",
+    "Hus": "Fast",  
+    "Jiv": "Fast",
+    "Mam": "Fast",    
+    "Mer": "Mid",    
+    "NC2": "Slow",
+    "PD":  "Mid",   
+    "Pea": "Fast",    
+    "Q":   "Fast",
+    "Rum": "Slow",    
+    "Sam": "Mid",
+    "Tan": "Mid",  
+    "VW":  "Fast",
+    "Wal": "Slow",
+    "WCS": "Mid",
+    }
 
 HOLIDAY_CHOICES = (
     ("Jul4", "4th of July"),
@@ -121,6 +167,5 @@ class Song(models.Model):
         default = ""
         )
         
-
     def __str__(self):
         return self.title
