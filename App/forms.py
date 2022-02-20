@@ -14,15 +14,18 @@ from .models.playlist import Playlist
 
 
 class SongFileInputForm(ModelForm):
+    '''form for uploading new music from a file.'''
     class Meta:
         model = SongFileInput
+        # allow user to specify file, dance_type, and select special or holiday if any
         fields = ['audio_file', 'dance_type', 'special', 'holiday']
 
 
 class SongEditForm(ModelForm):
+    '''form to edit info for an existing song.'''
     title = forms.CharField(
         label = "Title",
-        max_length = 80,
+        max_length = 80,     # ensure the field is wide enough to show the title
         required = True,
     )
     
@@ -37,31 +40,35 @@ class SongEditForm(ModelForm):
         self.helper = FormHelper()
         self.helper.form_id = 'id-songEditForm'
         self.helper.form_method = 'post'
-        self.helper.label_class='mt-2'
+        self.helper.label_class='mt-2'      # allow some top margin for the form
         
         self.helper.layout = Layout(
+            # show the fields in this order
             'title', 
             'artist', 
             'dance_type', 
             'holiday',
             'special',
             FormActions(
+                # submit button and cancel link in the form of a button
                 Submit('save', 'Save changes'),
                 HTML("""<a href="{% url 'App:all_songs' %}" class="btn btn-secondary">Cancel</a>"""),
+                # add some y-margin around the buttons.
                 css_class="my-3"
             )
         )
         
-    
     class Meta:
         model = Song
         fields = ['title', 'artist', 'dance_type', 'special', 'holiday']
         
         
 class PlaylistInfoForm(ModelForm):
+    ''' form to enter information for a playlist '''
     max_song_duration = forms.ChoiceField(
         label = "Song Time Limit",
         required = False,
+        # use a dropdown field for the song time limit
         choices = (
             (time(minute=30), "------"),
             (time(minute=1, second=15), "1:15"),
@@ -77,11 +84,13 @@ class PlaylistInfoForm(ModelForm):
 
     class Meta:
         model = Playlist
+        # include these fields in the form
         fields = ['title', 'description', 'auto_continue', 'max_song_duration']
         
 
-# form to specify parameters when populating a random playlist
+
 class RandomPlaylistForm(Form):
+    '''form to specify parameters when populating a random playlist.'''
     number_of_songs = forms.IntegerField(
         label     = "Number of Songs",
         min_value = 1, 
@@ -101,11 +110,14 @@ class RandomPlaylistForm(Form):
         help_text = "Checking this box prevents the playlist from having two consecutive fast songs or two consecutive slow songs.",         
         required  = False)  
     
+    # these fields allow the user to enter percentages for each dance style
+    # TODO: is there a better way to do this?
+    # TODO: save user's default percentages for future use? 
     bachata_pct = forms.IntegerField(
-        label = DANCE_TYPE_CHOICES[0][-1],
+        label = DANCE_TYPE_CHOICES[0][-1],  # readable title comes from the last field of this tuple
         min_value = 0,
         max_value = 100,
-        initial = DANCE_TYPE_DEFAULT_PERCENTAGES[DANCE_TYPE_CHOICES[0][0]],
+        initial = DANCE_TYPE_DEFAULT_PERCENTAGES[DANCE_TYPE_CHOICES[0][0]], # use first field as key into default percentages dictionary
         required = True)
     
     bolero_pct = forms.IntegerField(
@@ -249,16 +261,19 @@ class RandomPlaylistForm(Form):
         self.helper.form_method = 'post'
         
         self.helper.layout = Layout(
+            # first row has two columns
             Row(
                 Column('number_of_songs', css_class="col-3 offset-3"),
                 Column('prevent_back_to_back_styles', 'prevent_back_to_back_tempos',css_class='text-start px-4 col-6'),
             ),
+            # second row has one column for informative text
             Row(
                 Column(
                     HTML("<h4 class='text-center'>Select Percentages for each dance style</h4>"),
                     HTML("<h6 class='text-center'>Values must add up to 100 percent</h6>"),
                     css_class='col-12 text-center')
             ),
+            # next row has four columns to set percentages
             Row(
                 Column('bachata_pct', 'bolero_pct', 'cha_cha_pct', 'country_2step_pct', 'east_coast_pct', css_class="col-3"),
                 Column('foxtrot_pct', 'hustle_pct', 'jive_pct', 'mambo_pct', 'merengue_pct', css_class="col-3"),
@@ -266,6 +281,7 @@ class RandomPlaylistForm(Form):
                 Column('samba_pct', 'tango_pct', 'v_waltz_pct', 'waltz_pct', 'west_coast_pct', css_class="col-3"),
                 css_class='pt-4 border border-dark'
             ),
+            # submit and cancel buttons
             FormActions(
                 Submit('continue', 'Continue'),
                 HTML("""<a href="{% url 'App:all_playlists' request.user.id %}" class="btn btn-secondary">Cancel</a>"""),

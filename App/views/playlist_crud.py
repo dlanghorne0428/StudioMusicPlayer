@@ -31,13 +31,14 @@ def create_playlist(request, random=None):
     new_playlist.owner = user 
     
     if request.method == "GET":
+        # set variables differently for random playlists
         if random is not None:
             separator = '-random-'
             page_title = 'Create Random Playlist'
             submit_title = 'Continue'
         else:
             separator = '-'
-            page_title = 'Create Random Playlist'
+            page_title = 'Create Empty Playlist'
             submit_title = 'Save'
             
         # use a default title based on number of playlists currently owned by this user
@@ -81,6 +82,7 @@ def create_playlist(request, random=None):
 
 
 def build_random_playlist(request, playlist_id):
+    ''' generates a random list of songs and adds them to the playlist '''
     if not (request.user.is_superuser or request.user.is_teacher):
         return render(request, 'permission_denied.html')
     
@@ -94,22 +96,25 @@ def build_random_playlist(request, playlist_id):
         return redirect('App:all_playlists', user.id)
     
     if request.method == "GET":
+        # build and render the random playlist form
         form = RandomPlaylistForm()
         return render(request, 'build_random_playlist.html', {'form': form, 'playlist': playlist})
     
     else:  # POST
-        
+        # obtain data from form and make sure it is valid.
         form = RandomPlaylistForm(request.POST)
-        if form.is_valid():
+        if form.is_valid():   # TODO: need to check that percentages add up to 100
             form_data = form.cleaned_data
         else:
             # TODO: handle this error 
             print('invalid');
-            
+        
+        # set variables based on form data    
         playlist_length = form_data['number_of_songs']
         prevent_back_to_back_styles = form_data['prevent_back_to_back_styles']
         prevent_back_to_back_tempos = form_data['prevent_back_to_back_tempos']
 
+        # get percentages from form data: TODO: is there a better way to do this? 
         starting_percentages = dict()
         starting_percentages['Bac'] = form_data['bachata_pct']
         starting_percentages['Bol'] = form_data['bolero_pct']
@@ -135,15 +140,20 @@ def build_random_playlist(request, playlist_id):
     
         random.seed()
 
+        # calculate number of songs remaining for each style based on percentages and playlist length -- round up!
         songs_remaining = dict()
         for style in starting_percentages:
             songs_remaining[style] = math.ceil(starting_percentages[style] * playlist_length / 100)
             
         last_song_style = None
         
+        # loop until the correct number of songs have been picked
         for index in range(playlist_length):
+            
+            # population is the list of dance styles, which are the keys of this songs_remaining dictionary 
             population = list(songs_remaining)
         
+            # build the weights for the random choice function that will pick the style of the next song
             relative_weights = list()
             for key in iter(songs_remaining):
                 if last_song_style is None:
@@ -161,32 +171,34 @@ def build_random_playlist(request, playlist_id):
                 else:
                     relative_weights.append(songs_remaining[key])
         
-            print(relative_weights)
             if relative_weights.count(0) == len(relative_weights):
+                # if all the weights are zero, random.choices will pick a style at equal probability
                 print("All weights are zero")
                 random_choice = random.choices(population)
             else:
+                # random choices will pick a style based on the weighted probability 
                 random_choice = random.choices(population, relative_weights)
+                
+            # save the dance style selected
             dance_style = random_choice[0]
             
-            
+            # now find the songs in the database of this dance style
             available_songs = list()
             for s in Song.objects.filter(dance_type=dance_style):
                 # prevent songs from taking two spots in the same playlist
                 if s.playlist_set.filter(id=playlist.id).count() == 0:
                     available_songs.append(s)
             
+            # pick a random song of this style - all equal probability and add it to the playlist
             random_song = available_songs[random.randrange(len(available_songs))]
-            
-            print(index, dance_style, random_song)
             playlist.add_song(random_song)
+            
+            # decrement the number of remaining songs for that style and remember which style was chosen for next iteration
             songs_remaining[dance_style] -= 1
             last_song_style = dance_style
         
         # return to list of user's playlists        
         return redirect('App:all_playlists', user.id)
-
-            
 
 
 def add_to_playlist(request, playlist_id, song_id):
