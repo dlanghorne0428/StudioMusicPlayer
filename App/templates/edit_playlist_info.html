@@ -5,7 +5,12 @@
 <div class="row">
   <div class="col-12">
     <!-- page title and placeholder for form errors -->
-    <h2 class='text-center my-2'>Edit Playlist Info</h2>
+    {% if page_title %}
+        <h2 class='text-center my-2'>{{ page_title }}</h2>
+    {% else %}
+        <h2 class='text-center my-2'>Edit Playlist Info</h2>
+    {% endif %}
+    
     <p>{{ error }}</p>
 
     <!-- display the form --> 
@@ -16,7 +21,11 @@
       <!-- top margin for buttons -->
       <div class="text-center mt-3">
         <!-- submit the form to the view -->
-        <button class="btn btn-primary" type="submit">Save</button>
+        {% if submit_title %}
+          <button class="btn btn-primary" type="submit">{{ submit_title }}</button>
+        {% else %}
+          <button class="btn btn-primary" type="submit">Save</button>
+        {% endif %}
         <!-- this button cancels the edit, and redirects back to list of songs -->
         <a class="btn btn-secondary" href="{% url 'App:all_playlists' %}">Cancel</a>
       </div>

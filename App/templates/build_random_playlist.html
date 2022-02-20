@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% load crispy_forms_tags %}
+
+{% block extra_css %}
+  <!-- special styling needed for this page -->
+  <link rel="stylesheet" href="{% static 'css/no_asterisk.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-12">
+    <!-- page title, playlist title, and placeholder for form errors -->
+    <h2 class='text-center my-2'>Build Random Playlist</h2>
+    <h3 class='text-center my-2'>{{ playlist.title }}</h3>
+    
+    <p>{{ error }}</p>
+
+    <!-- display the form in "crispy" format -->
+    {% crispy form %}
+      
+  </div>
+</div>
+
+<!-- TODO: add javascript to ensure the percentage inputs total to 100.
+
+{% endblock %}

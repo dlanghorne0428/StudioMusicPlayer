@@ -34,19 +34,24 @@
       <!-- each playlist is a row in the table -->
       {% for playlist in page_obj %}
         <tr>
-          <!-- first columns are title and description -->
+          <!-- first columns are title and owner -->
           <td class="text-center">{{ playlist.title }}</td>
           <td>{{ playlist.owner }}</td>
+          
+          <!-- if max song duration is set, display in minutes:seconds format -->
           {% if playlist.max_song_duration %}
             <td>{{ playlist.max_song_duration|time:"i:s" }}</td>
           {% else %}
             <td>None</td>
           {% endif %}
+          
+          <!-- display a checkmark if auto_continue field is true -->
           {% if playlist.auto_continue %}
             <td>&#10004;</td>
           {% else %}
             <td></td>
           {% endif %}
+          
           <td>{{ playlist.description }}</td>
           
           <!-- action buttons -->
@@ -57,7 +62,7 @@
               <a class="btn btn-primary btn-sm" href="{% url 'App:play_song_list' playlist.id %}">Play</a>
             {% endif %}
           
-            <!-- superusers and owners can edit or delete, but delete is not implemented yet -->
+            <!-- superusers and owners can edit or delete, but TODO: delete is not implemented yet -->
             {% if user.is_superuser or user == playlist.owner %}
               <a class="btn btn-info btn-sm" href="{% url 'App:edit_playlist' playlist.id %}">Edit</a>
               <a class="btn btn-danger btn-sm" 
@@ -73,9 +78,10 @@
   <!-- links to previous and next, first and last pages -->
   {% include "pagination.html" %}
   
-  <!-- link to create a playlist -->
+  <!-- link to create a playlist, including 1 as a parameter indicates random playlist -->
   <div class="text-center mt-2">
-     <a class="btn btn-primary" href="{% url 'App:create_playlist' %}">Create Playlist</a>
+    <a class="btn btn-primary" href="{% url 'App:create_playlist' %}">Create Empty Playlist</a>
+    <a class="btn btn-primary" href="{% url 'App:create_playlist' 1 %}">Create Random Playlist</a>
   </div>
 
 {% endblock %}

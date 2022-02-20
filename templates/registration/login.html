@@ -1,7 +1,5 @@
 {% extends 'base.html' %}
 
-{% load crispy_forms_tags %}
-
 <!-- based on example from https://github.com/sibtc/django-multiple-user-types-example -->
 
 {% block content %}
@@ -18,7 +16,7 @@
   {% endif %}
   
   <div class="row">
-    <div class="col-12 text-center">
+    <div class="col-6 offset-3 text-center">
       <!-- page title -->
       <h2>Login</h2>
       
@@ -31,8 +29,7 @@
         <input type="hidden" name="next" value="{{ next }}">
         
         <!-- username and password, use django-crispy-forms -->
-        {{ form.username|as_crispy_field }}
-        {{ form.password|as_crispy_field }}
+        {{ form.as_p }}
         
         <!-- submit button -->
         <button type="submit" class="btn btn-primary my-3">Log in</button>
