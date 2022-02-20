@@ -76,7 +76,7 @@
   <!-- link to create a playlist -->
   <div class="text-center mt-2">
     <a class="btn btn-primary" href="{% url 'App:create_playlist' %}">Create Empty Playlist</a>
-    <a class="btn btn-primary" href="{% url 'App:create_random_playlist' %}">Create Random Playlist</a>
+    <a class="btn btn-primary" href="{% url 'App:create_playlist' 1 %}">Create Random Playlist</a>
   </div>
 
 {% endblock %}
