@@ -5,7 +5,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.forms import Form, ModelForm
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Column, Fieldset, HTML, Layout, Row, Submit
+from crispy_forms.layout import Column, Field, HTML, Layout, Row, Submit
 from crispy_forms.bootstrap import FormActions
 
 from .models.song import Song, SongFileInput, DANCE_TYPE_CHOICES, DANCE_TYPE_DEFAULT_PERCENTAGES
@@ -247,7 +247,6 @@ class RandomPlaylistForm(Form):
         self.helper = FormHelper()
         self.helper.form_id = 'id-random-playlist-Form'
         self.helper.form_method = 'post'
-        self.helper.label_class='mt-2'
         
         self.helper.layout = Layout(
             Row(
@@ -265,6 +264,7 @@ class RandomPlaylistForm(Form):
                 Column('foxtrot_pct', 'hustle_pct', 'jive_pct', 'mambo_pct', 'merengue_pct', css_class="col-3"),
                 Column('nc2s_pct', 'paso_pct', 'peabody_pct', 'quickstep_pct', 'rumba_pct', css_class="col-3"),
                 Column('samba_pct', 'tango_pct', 'v_waltz_pct', 'waltz_pct', 'west_coast_pct', css_class="col-3"),
+                css_class='pt-4 border border-dark'
             ),
             FormActions(
                 Submit('continue', 'Continue'),
