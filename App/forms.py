@@ -101,7 +101,7 @@ class RandomPlaylistForm(Form):
     prevent_back_to_back_styles = forms.BooleanField(
         label     = "Prevent Same Dance Back-to-Back",
         initial   = True,
-        help_text = "Checking this box prevents the playlist from having two consecutive songs of the same dance style.",
+        help_text = "Checking this box prevents the playlist from having two consecutive songs of the same dance.",
         required  = False)
    
     prevent_back_to_back_tempos = forms.BooleanField(
@@ -110,152 +110,32 @@ class RandomPlaylistForm(Form):
         help_text = "Checking this box prevents the playlist from having two consecutive fast songs or two consecutive slow songs.",         
         required  = False)  
     
-    # these fields allow the user to enter percentages for each dance style
-    # TODO: is there a better way to do this?
-    # TODO: save user's default percentages for future use? 
-    bachata_pct = forms.IntegerField(
-        label = DANCE_TYPE_CHOICES[0][-1],  # readable title comes from the last field of this tuple
-        min_value = 0,
-        max_value = 100,
-        initial = DANCE_TYPE_DEFAULT_PERCENTAGES[DANCE_TYPE_CHOICES[0][0]], # use first field as key into default percentages dictionary
-        required = True)
-    
-    bolero_pct = forms.IntegerField(
-        label = DANCE_TYPE_CHOICES[1][-1],
-        min_value = 0,
-        max_value = 100,
-        initial = DANCE_TYPE_DEFAULT_PERCENTAGES[DANCE_TYPE_CHOICES[1][0]],
-        required = True)    
-    
-    cha_cha_pct = forms.IntegerField(
-        label = DANCE_TYPE_CHOICES[2][-1],
-        min_value = 0,
-        max_value = 100,
-        initial = DANCE_TYPE_DEFAULT_PERCENTAGES[DANCE_TYPE_CHOICES[2][0]],
-        required = True) 
-    
-    country_2step_pct = forms.IntegerField(
-        label = DANCE_TYPE_CHOICES[3][-1],
-        min_value = 0,
-        max_value = 100,
-        initial = DANCE_TYPE_DEFAULT_PERCENTAGES[DANCE_TYPE_CHOICES[3][0]],
-        required = True)    
-    
-    east_coast_pct = forms.IntegerField(
-        label = DANCE_TYPE_CHOICES[4][-1],
-        min_value = 0,
-        max_value = 100,
-        initial = DANCE_TYPE_DEFAULT_PERCENTAGES[DANCE_TYPE_CHOICES[4][0]],
-        required = True) 
-    
-    foxtrot_pct = forms.IntegerField(
-        label = DANCE_TYPE_CHOICES[5][-1],
-        min_value = 0,
-        max_value = 100,
-        initial = DANCE_TYPE_DEFAULT_PERCENTAGES[DANCE_TYPE_CHOICES[5][0]],
-        required = True)
-
-    hustle_pct = forms.IntegerField(
-        label = DANCE_TYPE_CHOICES[6][-1],
-        min_value = 0,
-        max_value = 100,
-        initial = DANCE_TYPE_DEFAULT_PERCENTAGES[DANCE_TYPE_CHOICES[6][0]],
-        required = True)   
-    
-    jive_pct = forms.IntegerField(
-        label = DANCE_TYPE_CHOICES[7][-1],
-        min_value = 0,
-        max_value = 100,
-        initial = DANCE_TYPE_DEFAULT_PERCENTAGES[DANCE_TYPE_CHOICES[7][0]],
-        required = True)    
-    
-    mambo_pct = forms.IntegerField(
-        label = DANCE_TYPE_CHOICES[8][-1],
-        min_value = 0,
-        max_value = 100,
-        initial = DANCE_TYPE_DEFAULT_PERCENTAGES[DANCE_TYPE_CHOICES[8][0]],
-        required = True)      
-    
-    merengue_pct = forms.IntegerField(
-        label = DANCE_TYPE_CHOICES[9][-1],
-        min_value = 0,
-        max_value = 100,
-        initial = DANCE_TYPE_DEFAULT_PERCENTAGES[DANCE_TYPE_CHOICES[9][0]],
-        required = True)  
-    
-    nc2s_pct = forms.IntegerField(
-        label = DANCE_TYPE_CHOICES[10][-1],
-        min_value = 0,
-        max_value = 100,
-        initial = DANCE_TYPE_DEFAULT_PERCENTAGES[DANCE_TYPE_CHOICES[10][0]],
-        required = True)    
-    
-    paso_pct = forms.IntegerField(
-        label = DANCE_TYPE_CHOICES[11][-1],
-        min_value = 0,
-        max_value = 100,
-        initial = DANCE_TYPE_DEFAULT_PERCENTAGES[DANCE_TYPE_CHOICES[11][0]],
-        required = True)    
-    
-    peabody_pct = forms.IntegerField(
-        label = DANCE_TYPE_CHOICES[12][-1],
-        min_value = 0,
-        max_value = 100,
-        initial = DANCE_TYPE_DEFAULT_PERCENTAGES[DANCE_TYPE_CHOICES[12][0]],
-        required = True)  
-    
-    quickstep_pct = forms.IntegerField(
-        label = DANCE_TYPE_CHOICES[13][-1],
-        min_value = 0,
-        max_value = 100,
-        initial = DANCE_TYPE_DEFAULT_PERCENTAGES[DANCE_TYPE_CHOICES[13][0]],
-        required = True)  
-    
-    rumba_pct = forms.IntegerField(
-        label = DANCE_TYPE_CHOICES[14][-1],
-        min_value = 0,
-        max_value = 100,
-        initial = DANCE_TYPE_DEFAULT_PERCENTAGES[DANCE_TYPE_CHOICES[14][0]],
-        required = True)
-    
-    samba_pct = forms.IntegerField(
-        label = DANCE_TYPE_CHOICES[15][-1],
-        min_value = 0,
-        max_value = 100,
-        initial = DANCE_TYPE_DEFAULT_PERCENTAGES[DANCE_TYPE_CHOICES[15][0]],
-        required = True) 
-    
-    tango_pct = forms.IntegerField(
-        label = DANCE_TYPE_CHOICES[16][-1],
-        min_value = 0,
-        max_value = 100,
-        initial = DANCE_TYPE_DEFAULT_PERCENTAGES[DANCE_TYPE_CHOICES[16][0]],
-        required = True) 
-    
-    v_waltz_pct = forms.IntegerField(
-        label = DANCE_TYPE_CHOICES[17][-1],
-        min_value = 0,
-        max_value = 100,
-        initial = DANCE_TYPE_DEFAULT_PERCENTAGES[DANCE_TYPE_CHOICES[17][0]],
-        required = True)   
-    
-    waltz_pct = forms.IntegerField(
-        label = DANCE_TYPE_CHOICES[18][-1],
-        min_value = 0,
-        max_value = 100,
-        initial = DANCE_TYPE_DEFAULT_PERCENTAGES[DANCE_TYPE_CHOICES[18][0]],
-        required = True)  
-    
-    west_coast_pct = forms.IntegerField(
-        label = DANCE_TYPE_CHOICES[19][-1],
-        min_value = 0,
-        max_value = 100,
-        initial = DANCE_TYPE_DEFAULT_PERCENTAGES[DANCE_TYPE_CHOICES[19][0]],
-        required = True)     
-    
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        
+        field_names = list()
+        
+        # these fields allow the user to enter percentages for each dance style
+        # add them to the form using a loop
+        for dance_type_tuple in DANCE_TYPE_CHOICES: 
+            
+            # constuct field name based on dance type abbreviation (e.g. 'Cha')
+            field_name = '%s_pct' % (dance_type_tuple[0], )
+            
+            self.fields[field_name] = forms.IntegerField(
+                # field label is the readable name for this dance type
+                label = dance_type_tuple[1],
+                min_value = 0,
+                max_value = 100,
+                # TODO: get user's previous percentages as their defaults?  
+                initial = DANCE_TYPE_DEFAULT_PERCENTAGES[dance_type_tuple[0]],
+                required = True)  
+            
+            # build a list of field names for use in column layout
+            field_names.append(field_name)
+        
+        # see django-crispy-forms example
         self.helper = FormHelper()
         self.helper.form_id = 'id-random-playlist-Form'
         self.helper.form_method = 'post'
@@ -273,12 +153,12 @@ class RandomPlaylistForm(Form):
                     HTML("<h6 class='text-center'>Values must add up to 100 percent</h6>"),
                     css_class='col-12 text-center')
             ),
-            # next row has four columns to set percentages
+            # next row has four columns to set percentages for each dance type
             Row(
-                Column('bachata_pct', 'bolero_pct', 'cha_cha_pct', 'country_2step_pct', 'east_coast_pct', css_class="col-3"),
-                Column('foxtrot_pct', 'hustle_pct', 'jive_pct', 'mambo_pct', 'merengue_pct', css_class="col-3"),
-                Column('nc2s_pct', 'paso_pct', 'peabody_pct', 'quickstep_pct', 'rumba_pct', css_class="col-3"),
-                Column('samba_pct', 'tango_pct', 'v_waltz_pct', 'waltz_pct', 'west_coast_pct', css_class="col-3"),
+                Column(field_names[0], field_names[1], field_names[2], field_names[3], field_names[4], css_class="col-3"),
+                Column(field_names[5], field_names[6], field_names[7], field_names[8], field_names[9], css_class="col-3"),
+                Column(field_names[10], field_names[11], field_names[12], field_names[13], field_names[14], css_class="col-3"),
+                Column(field_names[15], field_names[16], field_names[17], field_names[18], field_names[19], css_class="col-3"),
                 css_class='pt-4 border border-dark'
             ),
             # submit and cancel buttons
