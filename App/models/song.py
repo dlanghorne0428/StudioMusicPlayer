@@ -4,7 +4,7 @@ from django.utils.text import get_valid_filename, slugify
 import os
 
 
-DANCE_TYPE_CHOICES = (
+DANCE_TYPE_CHOICES = [
     ("Bac", "Bachata"),
     ("Bol", "Bolero"),    
     ("Cha", "Cha-Cha"), 
@@ -25,7 +25,7 @@ DANCE_TYPE_CHOICES = (
     ("VW",  "Viennese Waltz"),
     ("Wal", "Waltz"),
     ("WCS", "West Coast Swing"),
-    )
+    ]
 
 DANCE_TYPE_DEFAULT_PERCENTAGES = {
     "Bac":  0,      # i have no bachata songs yet             
