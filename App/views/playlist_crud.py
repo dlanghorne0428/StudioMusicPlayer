@@ -114,30 +114,13 @@ def build_random_playlist(request, playlist_id):
         prevent_back_to_back_styles = form_data['prevent_back_to_back_styles']
         prevent_back_to_back_tempos = form_data['prevent_back_to_back_tempos']
 
-        # get percentages from form data: TODO: is there a better way to do this? 
+        # get percentages entered by the user from the form
         starting_percentages = dict()
-        starting_percentages['Bac'] = form_data['bachata_pct']
-        starting_percentages['Bol'] = form_data['bolero_pct']
-        starting_percentages['Cha'] = form_data['cha_cha_pct']
-        starting_percentages['C2S'] = form_data['country_2step_pct']
-        starting_percentages['ECS'] = form_data['east_coast_pct']
-        starting_percentages['Fox'] = form_data['foxtrot_pct']
-        starting_percentages['Hus'] = form_data['hustle_pct']
-        starting_percentages['Jiv'] = form_data['jive_pct']
-        starting_percentages['Mam'] = form_data['mambo_pct']       
-        starting_percentages['Mer'] = form_data['merengue_pct'] 
-        starting_percentages['NC2'] = form_data['nc2s_pct'] 
-        starting_percentages['PD']  = form_data['paso_pct']   
-        starting_percentages['Pea'] = form_data['peabody_pct']
-        starting_percentages['Q']   = form_data['quickstep_pct']
-        starting_percentages['Rum'] = form_data['rumba_pct']
-        starting_percentages['Sam'] = form_data['samba_pct'] 
-        starting_percentages['Tan'] = form_data['tango_pct']    
-        starting_percentages['VW']  = form_data['v_waltz_pct']   
-        starting_percentages['Wal'] = form_data['waltz_pct'] 
-        starting_percentages['WCS'] = form_data['west_coast_pct'] 
-        
+        for key in DANCE_TYPE_DEFAULT_PERCENTAGES:
+            form_field = '%s_pct' % (key, )
+            starting_percentages[key] = form_data[form_field]
     
+        # initialize the random number generator
         random.seed()
 
         # calculate number of songs remaining for each style based on percentages and playlist length -- round up!
