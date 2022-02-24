@@ -16,15 +16,18 @@
     <!-- page title, playlist title, and placeholder for form errors -->
     <h2 class='text-center my-2'>Build Random Playlist</h2>
     <h3 class='text-center my-2'>{{ playlist.title }}</h3>
-    
-    <p>{{ error }}</p>
 
     <!-- display the form in "crispy" format -->
     {% crispy form %}
-      
+    
+    <!-- display error when necessary -->
+    <p hidden id='percentage-error'>Current total is <span id='percentage-total'></span> percent</p> 
+
   </div>
 </div>
 
-<!-- TODO: add javascript to ensure the percentage inputs total to 100.
+{% endblock %}
 
+{% block extra_js %}
+    <script src={% static 'js/build_random_playlist.js' %}></script>
 {% endblock %}
