@@ -159,7 +159,8 @@ class RandomPlaylistForm(Form):
                 Column(field_names[5], field_names[6], field_names[7], field_names[8], field_names[9], css_class="col-3"),
                 Column(field_names[10], field_names[11], field_names[12], field_names[13], field_names[14], css_class="col-3"),
                 Column(field_names[15], field_names[16], field_names[17], field_names[18], field_names[19], css_class="col-3"),
-                css_class='pt-4 border border-dark'
+                css_class='pt-4 border border-dark',
+                css_id='enter-percentages'
             ),
             # submit and cancel buttons
             FormActions(
