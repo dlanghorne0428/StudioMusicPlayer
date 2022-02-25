@@ -8,6 +8,13 @@ from App.forms import TeacherSignUpForm
 from App.models import User
 
 
+def user_profile(request):
+    '''This view redirects to the list of playlists for the current user.'''
+    user = request.user
+    return redirect('App:all_playlists', user.id)
+    
+
+
 # based on example from https://github.com/sibtc/django-multiple-user-types-example
 class SignUpView(TemplateView):
     template_name = 'registration/signup.html'
@@ -36,5 +43,5 @@ class TeacherSignUpView(CreateView):
         # login the user that just signed up
         login(self.request, user)
         
-        # redirect based on settings - currently home page. TO_DO: show playlists owned by this user? 
-        return redirect(settings.LOGIN_REDIRECT_URL)
+        # new users have no playlists, so redirect to show all the p;aylists in the database
+        return redirect("App:all_playlists")
