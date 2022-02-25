@@ -197,8 +197,26 @@ def add_to_playlist(request, playlist_id, song_id):
     
     # redirect to edit playlist page, showing new song at end of list
     return redirect('App:edit_playlist', playlist.id)
+   
+   
+def delete_playlist(request, playlist_id):
+    ''' allows the superuser to edit an existing playlist. '''
     
-    
+    if not (request.user.is_superuser or request.user.is_teacher):
+        return render(request, 'permission_denied.html')
+    else:        
+        # get the specific playlist object from the database
+        playlist = get_object_or_404(Playlist, pk=playlist_id)
+        
+        if not (request.user.is_superuser or playlist.owner == request.user):
+            return render(request, 'permission_denied.html')           
+        
+        playlist.delete()
+                    
+        # return to list of user's playlists        
+        return redirect('App:all_playlists')          
+
+ 
 def edit_playlist(request, playlist_id):
     ''' allows the superuser to edit an existing playlist. '''
     

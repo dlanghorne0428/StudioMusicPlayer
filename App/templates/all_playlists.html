@@ -62,12 +62,12 @@
               <a class="btn btn-primary btn-sm" href="{% url 'App:play_song_list' playlist.id %}">Play</a>
             {% endif %}
           
-            <!-- superusers and owners can edit or delete, but TODO: delete is not implemented yet -->
+            <!-- superusers and owners can edit or delete -->
             {% if user.is_superuser or user == playlist.owner %}
               <a class="btn btn-info btn-sm" href="{% url 'App:edit_playlist' playlist.id %}">Edit</a>
               <a class="btn btn-danger btn-sm" 
                   onclick="return confirm('Deleting: {{playlist.title}}\n Are you sure?')" 
-                  href="#">Delete</a>
+                  href="{% url 'App:delete_playlist' playlist.id %}">Delete</a>
             {% endif %}
           </td>
         </tr>
