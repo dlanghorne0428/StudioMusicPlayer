@@ -11,6 +11,7 @@ def all_playlists(request, user_id=None):
     
     # assume there are no playlists
     page_obj = None
+    page_title = "All Playlists"
     
     # if there are any playlists
     if Playlist.objects.count() > 0:
@@ -23,8 +24,9 @@ def all_playlists(request, user_id=None):
             # find user based on id
             user = get_object_or_404(User, pk=user_id)
         
-            # get the playlists owned by that user
+            # get the playlists owned by that user and change the page title 
             playlists = Playlist.objects.filter(owner=user).order_by(Lower('title'))
+            page_title = "My Playlists"
         
         if len(playlists) > 0:
             # split the playlists into pages and get the requested page
@@ -34,5 +36,6 @@ def all_playlists(request, user_id=None):
     
     # render the template
     return render(request, 'all_playlists.html', 
-                  {'page_obj': page_obj})
+                  {'page_obj': page_obj,
+                   'page_title': page_title})
 
