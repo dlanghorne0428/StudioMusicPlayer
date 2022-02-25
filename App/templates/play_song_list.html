@@ -62,14 +62,20 @@
           <progress class="amplitude-song-played-progress" amplitude-main-song-played-progress="true" id="song-played-progress"></progress>
         </div>
   
-        <!-- Time information, current and duration -->
+        <!-- Time information, current, fadeout-time, and duration -->
         <div class="time-container">
           <span class="current-time">
             <span class="amplitude-current-minutes" amplitude-main-current-minutes="true"></span>:<span class="amplitude-current-seconds" amplitude-main-current-seconds="true"></span>
           </span>
-          <span class="duration">
+          <!-- Display time when song will start to fade out. Initially this is hidden until it is calculated -->
+          {% if playlist_info.max_song_duration %}
+            <span class="fadeout-time" id='id-fadeout-time' hidden>
+              <span>{{ playlist_info.max_song_duration|time:"i:s"}}</span>
+            </span>
+          {% endif %}
+          <span class="duration" id='id-duration'>
             <span class="amplitude-duration-minutes" amplitude-main-duration-minutes="true"></span>:<span class="amplitude-duration-seconds" amplitude-main-duration-seconds="true"></span>
-          </span>
+          </span>     
         </div>
   
         <!-- Previous, Play/Pause, Next, Volume/Mute, Volume Slider -->
@@ -165,26 +171,47 @@
             
           /* check how long this song has been playing */
           played = Amplitude.getSongPlayedSeconds();
+          
+          /* if song has been playing for two seconds, calculate the position of the fadeout time */
+          if (Math.round(played) == 2) {
+          
+            new_song_duration = Amplitude.getSongDuration();
+            limit = {{ max_song_duration_in_sec }}
+          
+            /* if song is longer than the time limit, don't display the fadeout time */
+            if (limit < new_song_duration) {
+              /* 856 is width of container, 30 is half of the fadeout time text */
+              left_margin = Math.round(limit / new_song_duration * 856.0) - 30;
+              console.log('Left Margin', left_margin);
+              left_margin_str = String(left_margin).concat('px');
+              
+              /* get the element for fadeout time, set the left margin, and un-hide it */
+              fadeout_time = document.getElementById('id-fadeout-time');
+              fadeout_time.style.left = left_margin_str;
+              fadeout_time.removeAttribute('hidden');
+              
+              /* get the element for the song duration and hide it */
+              duration_label = document.getElementById('id-duration');
+              duration_label.setAttribute('hidden','');
+             }; 
+          };
           if (played > {{ max_song_duration_in_sec }}) {
             /* highlight the time limit text when time has expired */
             time_limit_para.style.backgroundColor = 'red';
                 
             curr_volume = Amplitude.getVolume();
-            if (curr_volume > 70) {
-                /* drop to 40% volume when time limit hit */
-                console.log(curr_volume);
-                Amplitude.setVolume(40);
+            if (curr_volume > 40) {
+                /* drop volume by 10% after time limit hit */
+                Amplitude.setVolume(curr_volume - 10);
             } else if (curr_volume > 10) {
-                /* continue fading 1% each time, until volume gets below 10% */
-                console.log(curr_volume);
-                Amplitude.setVolume(curr_volume - 1); 
+                /* continue fading 2% each time, until volume gets below 10% */
+                Amplitude.setVolume(curr_volume - 2); 
             } else {
                 /* at lower than 10%, set volume to 0 */
-                console.log(curr_volume);
                 Amplitude.setVolume(0);
                 {% if playlist_info.auto_continue %}
-                  /* fade takes about 8 sec, delay until 11 sec after limit then play next */
-                  if (played - 11 > {{ max_song_duration_in_sec }}) {
+                  /* fade takes about 5 sec, delay until 8 sec after limit then play next */
+                  if (played - 8 > {{ max_song_duration_in_sec }}) {
                     Amplitude.next();
                   }
                 {% else %}
@@ -221,7 +248,15 @@
           /* reset volume level and clear any highlighing */
           Amplitude.setVolume(startVolume);
           {% if playlist_info.max_song_duration %}
-            time_limit_para.style.backgroundColor = 'transparent'; 
+            time_limit_para.style.backgroundColor = 'transparent';    
+            
+            /* hide the fadeout time until we can calculate it for the new song */
+            fadeout_time = document.getElementById('id-fadeout-time');
+            fadeout_time.setAttribute('hidden','');
+            
+            /* un-hide the duration label, until we compare to time limit */
+            duration_label = document.getElementById('id-duration');
+            duration_label.removeAttribute('hidden');
           {% endif %}
 
           /* don't show current song in 'up next' list */

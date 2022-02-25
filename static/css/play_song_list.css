@@ -80,6 +80,8 @@ progress[value]::-webkit-progress-value {
 
 /****** Time Container  *****/
 .time-container {
+    /* set position relative, so fadeout-time position can be calculated */
+    position: relative;
     opacity: 0.75;
     font-family: "Open Sans", sans-serif;
     font-weight: 100;
@@ -91,6 +93,15 @@ progress[value]::-webkit-progress-value {
 .time-container span.current-time {
     float: left;
     margin-left: 5px; 
+}
+
+.time-container span.fadeout-time{
+    /* use absolute positioning, the left margin will be calculated by Javascript */
+    position: absolute;
+    left: 282px;
+    text-align: left;
+    color: red;
+    font-weight: bold; 
 }
 
 .time-container span.duration {
