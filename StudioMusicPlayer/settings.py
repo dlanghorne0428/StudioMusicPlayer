@@ -107,7 +107,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # custom user model
 AUTH_USER_MODEL = 'App.User'
-LOGIN_REDIRECT_URL = '/home'
 LOGOUT_REDIRECT_URL = '/home'
 
 # django-crispy-forms settings
