@@ -213,7 +213,7 @@ def delete_playlist(request, playlist_id):
         
         playlist.delete()
                     
-        # return to list of user's playlists        
+        # return to list of all playlists        
         return redirect('App:all_playlists')          
 
  
