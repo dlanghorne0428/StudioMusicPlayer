@@ -101,17 +101,20 @@ progress[value]::-webkit-progress-value {
 
 /****** Control Container  *****/
 div.control-container {
-    margin-top: 10px;
-    padding-bottom: 10px; 
+    /* set position relative, so other controls can use absolute positioning */
+    position: relative;
+    /* force height to be tall enough for absolute-positioned controls */
+    height: 90px;
 }
 
 /****** Play/Pause  *****/
 div.control-container div.amplitude-play-pause {
+    /* put play/pause button in center of container */
+    position: absolute;
+    left: 391px;  /* (856 - 74) / 2 */
     width: 74px;
     height: 74px;
     cursor: pointer;
-    float: left;
-    margin-left: 10px; 
 }
   
 div.control-container div.amplitude-play-pause.amplitude-paused {
@@ -132,11 +135,12 @@ div.control-container:after {
 
 /****** Mute Button *****/
 div.control-container div.amplitude-mute {
+    /* use absolute positioning to put mute/volume button on right side of play/pause */
+    position: absolute;
+    left: 481px; 
     width: 74px;
     height: 74px;
     cursor: pointer;
-    float: left;
-    margin-left: 10px; 
 }
 
 div.control-container div.amplitude-mute.amplitude-not-muted {
@@ -151,11 +155,12 @@ div.control-container div.amplitude-mute.amplitude-muted  {
 
 /****** Volume Slider *****/
 div.control-container .amplitude-volume-slider {
+    /* use absolute positioning to put volume slider on right side of mute/volume button */
+    position: absolute;
+    left: 560px;
+    top: 35px;
     width: 148px;  /* calc(100% - 30px);*/
     -webkit-appearance: none;
-    margin-left: 5px;
-    margin-top: 35px;
-    float: left; 
 }
 
 div.control-container .amplitude-volume-slider:focus {
