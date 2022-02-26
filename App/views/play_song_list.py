@@ -3,7 +3,7 @@ from django.conf import settings
 
 # imported our models
 from App.models.song import Song
-from App.models.playlist import Playlist
+from App.models.playlist import Playlist, SongInPlaylist
 
 # Create your views here
 
@@ -25,6 +25,16 @@ def play_song_list(request, playlist_id):
     for i in range(len(song_list)):
         playlist_indices.append(i)
     
+    # build a list that indicates if a song is featured in this playlist    
+    is_feature_list = list()
+    index = 0
+    for song in song_list:
+        song_in_playlist = SongInPlaylist.objects.get(song=song, playlist=playlist)
+        if song_in_playlist.feature:
+            is_feature_list.append(True)
+        else:
+            is_feature_list.append(False)
+    
     # convert max_duration to seconds for javascript player
     if playlist.max_song_duration is not None:
         max_song_duration_in_sec = playlist.max_song_duration.minute * 60 + \
@@ -41,4 +51,6 @@ def play_song_list(request, playlist_id):
         'song_list':song_list, 
         'max_song_duration_in_sec': max_song_duration_in_sec,
         'default_url': default_url,
-        "playlist_indices": playlist_indices})   
+        "playlist_indices": playlist_indices,
+        'is_feature_list': is_feature_list
+    })   
