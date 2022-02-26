@@ -33,7 +33,8 @@ class Playlist(models.Model):
         new_playlist_entry = SongInPlaylist(
             song = song,
             playlist = self,
-            order = playlist_length
+            order = playlist_length,
+            feature = False
         )
         new_playlist_entry.save()           
 
@@ -47,7 +48,11 @@ class SongInPlaylist(models.Model):
     
     song = models.ForeignKey(Song, on_delete=models.CASCADE)
     playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE)
+    # this is the position in the playlist
     order = models.IntegerField()
+    # use this for solos, showcases, or special events - 
+    # play the entire song even if there's a time limit for the playlist 
+    feature = models.BooleanField(default=False)
     
     class Meta:
         unique_together = ['song', 'playlist', 'order']  
