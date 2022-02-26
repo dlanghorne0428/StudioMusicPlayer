@@ -12,7 +12,7 @@
   </div>
   
    <!-- next row in bootstrap grid is a table, with dark borders --> 
-  <div class="col-12 border border-dark">
+  <div class="col-10 offset-1 border border-dark">
   <table class="table table-bordered table-sm">
     <thead class="thead-dark">
       <!-- column headers have a dark background -->
@@ -20,7 +20,6 @@
         <th class="text-center">Artist</th>
         <th class="text-center">Title</th>
         <th class="text-center">Dance</th>
-        <th class="text-center">Special</th>
         <th class="text-center">Holiday</th>
         <th class="text-center">Action</th>
       </tr>
@@ -34,7 +33,6 @@
           <td class="text-center">{{ filter.form.artist }}</td>
           <td class="text-center">{{ filter.form.title }}</td>
           <td class="text-center">{{ filter.form.dance_type }}</td>
-          <td class="text-center">{{ filter.form.special }}</td>
           <td class="text-center">{{ filter.form.holiday }}</td>
           <!-- the last button is used to submit filter data -->
           <td class="text-center">
@@ -48,9 +46,8 @@
       <tr>
         <td class="text-center">{{ song.artist }}</td>
         <td class="text-center">{{ song.title }}</td>
-        <!-- display the "readable" string for the dance type, special tag, and holiday -->
+        <!-- display the "readable" string for the dance type and holiday -->
         <td class="text-center">{{ song.get_dance_type_display }}</td>
-        <td class="text-center">{{ song.get_special_display }}</td>
         <td class="text-center">{{ song.get_holiday_display }}</td>
         
         <!-- final column has the action buttons -->

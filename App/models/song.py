@@ -80,12 +80,6 @@ HOLIDAY_CHOICES = (
     ("NYE",  "New Year's Eve"),
     )
 
-
-SPECIAL_CHOICES = (
-    ("Featr", "Feature"),          # is this for solos, play entire song?
-    ("Req.O", "Request Only"),
-    ("Teach", "Teaching"),
-    )
     
 
 def create_valid_filename(instance, filename):
@@ -108,7 +102,7 @@ def create_valid_filename(instance, filename):
 
 class SongFileInput(models.Model):
     '''This model is for uploading audio files. It consists of the filename,
-      dance type, holiday (if any) and special (if any) '''
+      dance type, and holiday (if any) '''
     audio_file = models.FileField(upload_to=create_valid_filename)
     dance_type = models.CharField(
         max_length = 10,
@@ -118,12 +112,6 @@ class SongFileInput(models.Model):
     holiday = models.CharField(
         max_length = 5,
         choices = HOLIDAY_CHOICES,
-        blank = True,
-        default = ""
-        )
-    special = models.CharField(
-        max_length = 10,
-        choices = SPECIAL_CHOICES,
         blank = True,
         default = ""
         )
@@ -159,13 +147,6 @@ class Song(models.Model):
         blank = True,
         default = ""
         )  
-    
-    special = models.CharField(
-        max_length = 10,
-        choices = SPECIAL_CHOICES,
-        blank = True,
-        default = ""
-        )
         
     def __str__(self):
         return self.title

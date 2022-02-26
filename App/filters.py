@@ -9,4 +9,4 @@ class SongFilter(django_filters.FilterSet):
     
     class Meta:
         model = Song
-        fields = ['dance_type', 'holiday', 'special']
+        fields = ['dance_type', 'holiday']

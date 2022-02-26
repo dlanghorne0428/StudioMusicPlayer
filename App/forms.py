@@ -17,8 +17,8 @@ class SongFileInputForm(ModelForm):
     '''form for uploading new music from a file.'''
     class Meta:
         model = SongFileInput
-        # allow user to specify file, dance_type, and select special or holiday if any
-        fields = ['audio_file', 'dance_type', 'special', 'holiday']
+        # allow user to specify file, dance_type, and select holiday if any
+        fields = ['audio_file', 'dance_type', 'holiday']
 
 
 class SongEditForm(ModelForm):
@@ -48,7 +48,6 @@ class SongEditForm(ModelForm):
             'artist', 
             'dance_type', 
             'holiday',
-            'special',
             FormActions(
                 # submit button and cancel link in the form of a button
                 Submit('save', 'Save changes'),
@@ -60,7 +59,7 @@ class SongEditForm(ModelForm):
         
     class Meta:
         model = Song
-        fields = ['title', 'artist', 'dance_type', 'special', 'holiday']
+        fields = ['title', 'artist', 'dance_type', 'holiday']
         
         
 class PlaylistInfoForm(ModelForm):

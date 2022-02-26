@@ -84,12 +84,11 @@ def add_song(request):
         # create a new Song object
         new_song = Song()
         
-        # save the audio file, metadata, dance_type, special tag, and holiday/theme
+        # save the audio file, metadata, dance_type, and holiday/theme
         new_song.audio_file = song_instance.audio_file
         new_song.title = title
         new_song.artist = artist
         new_song.dance_type = song_instance.dance_type
-        new_song.special = song_instance.special
         new_song.holiday = song_instance.holiday
         
         # determine name for the image file based on the name of the audio file
