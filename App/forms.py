@@ -8,7 +8,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Field, HTML, Layout, Row, Submit
 from crispy_forms.bootstrap import FormActions
 
-from .models.song import Song, SongFileInput, DANCE_TYPE_CHOICES, DANCE_TYPE_DEFAULT_PERCENTAGES
+from .models.song import Song, SongFileInput, DANCE_TYPE_CHOICES
 from .models.user import User
 from .models.playlist import Playlist
 
@@ -109,9 +109,15 @@ class RandomPlaylistForm(Form):
         help_text = "Checking this box prevents the playlist from having two consecutive fast songs or two consecutive slow songs.",         
         required  = False)  
     
+    save_preferences = forms.BooleanField(
+        label     = "Save these percentages as the default for your future playlists?",
+        initial   = False,
+        required  = False)
+    
     
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        self.percentage_preferences = kwargs.pop('prefs')
+        super(RandomPlaylistForm, self).__init__(*args, **kwargs)
         
         field_names = list()
         
@@ -126,9 +132,8 @@ class RandomPlaylistForm(Form):
                 # field label is the readable name for this dance type
                 label = dance_type_tuple[1],
                 min_value = 0,
-                max_value = 100,
-                # TODO: get user's previous percentages as their defaults?  
-                initial = DANCE_TYPE_DEFAULT_PERCENTAGES[dance_type_tuple[0]],
+                max_value = 100, 
+                initial = self.percentage_preferences[dance_type_tuple[0]],
                 required = True)  
             
             # build a list of field names for use in column layout
@@ -161,11 +166,15 @@ class RandomPlaylistForm(Form):
                 css_class='pt-4 border border-dark',
                 css_id='enter-percentages'
             ),
+            Row(
+                Column('save_preferences'),
+                css_class = 'col-12 text-center my-2'
+            ),
             # submit and cancel buttons
             FormActions(
                 Submit('continue', 'Continue'),
                 HTML("""<a href="{% url 'App:all_playlists' request.user.id %}" class="btn btn-secondary">Cancel</a>"""),
-                css_class="my-3"
+                css_class="my-2"
             )
         )    
     

@@ -95,15 +95,24 @@ def build_random_playlist(request, playlist_id):
         print("Playlist Not Empty")
         return redirect('App:all_playlists', user.id)
     
+    # if user has percentage preferences, use those, otherwise use defaults
+    if user.percentage_preferences is None:
+        percentage_preferences = DANCE_TYPE_DEFAULT_PERCENTAGES
+    else:
+        percentage_preferences = user.percentage_preferences
+    
     if request.method == "GET":
         # build and render the random playlist form
-        form = RandomPlaylistForm()
-        return render(request, 'build_random_playlist.html', {'form': form, 'playlist': playlist})
+        form = RandomPlaylistForm(prefs= percentage_preferences)
+        return render(request, 'build_random_playlist.html', {
+            'form': form, 
+            'playlist': playlist,
+        })
     
     else:  # POST
         # obtain data from form and make sure it is valid.
-        form = RandomPlaylistForm(request.POST)
-        if form.is_valid():   # TODO: need to check that percentages add up to 100
+        form = RandomPlaylistForm(request.POST,prefs=percentage_preferences)
+        if form.is_valid():
             form_data = form.cleaned_data
         else:
             # TODO: handle this error 
@@ -119,6 +128,11 @@ def build_random_playlist(request, playlist_id):
         for key in DANCE_TYPE_DEFAULT_PERCENTAGES:
             form_field = '%s_pct' % (key, )
             starting_percentages[key] = form_data[form_field]
+            
+        # determine if the inputs should be saved as user's new default percentages
+        if form_data['save_preferences']:
+            user.percentage_preferences = starting_percentages
+            user.save()
     
         # initialize the random number generator
         random.seed()
