@@ -28,26 +28,26 @@ DANCE_TYPE_CHOICES = [
     ]
 
 DANCE_TYPE_DEFAULT_PERCENTAGES = {
-    "Bac":  0,      # i have no bachata songs yet             
-    "Bol":  3,        
-    "Cha": 15, 
+    "Bac":  3,                  
+    "Bol":  5,        
+    "Cha": 10, 
     "C2S":  2, 
-    "ECS": 15,
+    "ECS": 10,
     "Fox": 10,
-    "Hus":  5,
+    "Hus":  3,
     "Jiv":  2,
-    "Mam":  0,     # i have no mambo or salso songs yet 
-    "Mer":  0,     # i have no merengue songs yet 
+    "Mam":  5,     
+    "Mer":  2,     
     "NC2":  3,
     "PD":   0,     # i have no paso songs yet
     "Pea":  0,     # i have no peabody songs yet
     "Q":    2,
     "Rum": 10,    
     "Sam":  3,
-    "Tan":  0,  
+    "Tan": 10,  
     "VW":   5,
     "Wal": 10,
-    "WCS": 15,
+    "WCS":  5,
     }
 
 DANCE_TYPE_TEMPOS = {
