@@ -110,6 +110,12 @@ def build_random_playlist(request, playlist_id):
         })
     
     else:  # POST
+        submit = request.POST.get("submit")
+        # if user hit cancel button during build random, delete playlist that was in process of being created. 
+        if submit == "Cancel": 
+            playlist.delete()
+            return redirect('App:all_playlists', user.id) 
+        
         # obtain data from form and make sure it is valid.
         form = RandomPlaylistForm(request.POST,prefs=percentage_preferences)
         if form.is_valid():

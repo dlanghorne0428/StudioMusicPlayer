@@ -172,8 +172,8 @@ class RandomPlaylistForm(Form):
             ),
             # submit and cancel buttons
             FormActions(
-                Submit('continue', 'Continue'),
-                HTML("""<a href="{% url 'App:all_playlists' request.user.id %}" class="btn btn-secondary">Cancel</a>"""),
+                Submit('submit', 'Continue'),
+                Submit('submit', 'Cancel'),
                 css_class="my-2"
             )
         )    
