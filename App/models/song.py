@@ -82,7 +82,7 @@ HOLIDAY_CHOICES = [
 
 HOLIDAY_USE_OPTIONS = [
     ("Ex", "Exclude"),
-    ("In", "Include"), 
+    ("In", "Include At Random"), 
     ("Ev2", "Every Other Song"),
     ("Ev3", "Every Third Song"),
     ("Ev4", "Every Fourth Song"),
