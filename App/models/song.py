@@ -73,15 +73,29 @@ DANCE_TYPE_TEMPOS = {
     "WCS": "Mid",
     }
 
-HOLIDAY_CHOICES = (
+HOLIDAY_CHOICES = [
     ("Jul4", "4th of July"),
-    ("Hall", "Halloween"),
+    ("Hween", "Halloween"),
     ("Xmas", "Christmas"),
     ("NYE",  "New Year's Eve"),
-    )
+    ]
+
+HOLIDAY_USE_OPTIONS = [
+    ("Ex", "Exclude"),
+    ("In", "Include At Random"), 
+    ("Ev2", "Every Other Song"),
+    ("Ev3", "Every Third Song"),
+    ("Ev4", "Every Fourth Song"),
+    ]
+
+HOLIDAY_DEFAULT_USAGE = {
+    "Jul4" : "In",
+    "Hween": "In",
+    "Xmas" : "Ex",  # exclude Christmas songs by default
+    "NYE"  : "In"
+    }
 
     
-
 def create_valid_filename(instance, filename):
     ''' When uploading audio files, find a valid name that django can use.
        slugify replaces whitespace with a dash and removes everything but alphanumerics,

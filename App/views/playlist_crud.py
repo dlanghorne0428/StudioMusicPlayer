@@ -8,7 +8,7 @@ import random
 from datetime import time
 
 # imported our models
-from App.models.song import Song, DANCE_TYPE_DEFAULT_PERCENTAGES, DANCE_TYPE_TEMPOS
+from App.models.song import Song, DANCE_TYPE_DEFAULT_PERCENTAGES, DANCE_TYPE_TEMPOS, HOLIDAY_DEFAULT_USAGE
 from App.models.user import User
 from App.models.playlist import Playlist, SongInPlaylist
 from App.forms import PlaylistInfoForm, RandomPlaylistForm
@@ -95,29 +95,35 @@ def build_random_playlist(request, playlist_id):
         print("Playlist Not Empty")
         return redirect('App:all_playlists', user.id)
     
-    # if user has percentage preferences, use those, otherwise use defaults
-    if user.percentage_preferences is None:
-        percentage_preferences = DANCE_TYPE_DEFAULT_PERCENTAGES
+    # if user has preferences, use those, otherwise use defaults
+    if user.preferences is None:
+        preferences = {
+            'playlist_length'            : 10,
+            'prevent_back_to_back_styles': True,
+            'prevent_back_to_back_tempos': True,
+            'percentages'                : DANCE_TYPE_DEFAULT_PERCENTAGES,
+            'holiday_usage'              : HOLIDAY_DEFAULT_USAGE,
+        }
     else:
-        percentage_preferences = user.percentage_preferences
+        preferences = user.preferences
     
     if request.method == "GET":
         # build and render the random playlist form
-        form = RandomPlaylistForm(prefs= percentage_preferences)
+        form = RandomPlaylistForm(prefs=preferences)
         return render(request, 'build_random_playlist.html', {
             'form': form, 
             'playlist': playlist,
         })
     
     else:  # POST
-        submit = request.POST.get("submit")
+        cancel = request.POST.get("cancel")
         # if user hit cancel button during build random, delete playlist that was in process of being created. 
-        if submit == "Cancel": 
+        if cancel == "Cancel": 
             playlist.delete()
             return redirect('App:all_playlists', user.id) 
         
         # obtain data from form and make sure it is valid.
-        form = RandomPlaylistForm(request.POST,prefs=percentage_preferences)
+        form = RandomPlaylistForm(request.POST,prefs=preferences)
         if form.is_valid():
             form_data = form.cleaned_data
         else:
@@ -135,9 +141,26 @@ def build_random_playlist(request, playlist_id):
             form_field = '%s_pct' % (key, )
             starting_percentages[key] = form_data[form_field]
             
-        # determine if the inputs should be saved as user's new default percentages
+        # get holiday usage data from the form and check if this is a holiday-focused playlist 
+        focus_holiday = None
+        focus_ratio = None
+        holiday_usage = dict()
+        for key in HOLIDAY_DEFAULT_USAGE:
+            form_field = "%s_use" % (key, )
+            holiday_usage[key] = form_data[form_field]  
+            if holiday_usage[key].startswith("Ev"):
+                focus_holiday = key
+                focus_ratio = int(holiday_usage[key][-1])
+            
+        # determine if the inputs should be saved as user's new default preferences
         if form_data['save_preferences']:
-            user.percentage_preferences = starting_percentages
+            # update the preferences dictionary
+            preferences['playlist_length'] = playlist_length
+            preferences['prevent_back_to_back_styles'] = prevent_back_to_back_styles
+            preferences['prevent_back_to_back_tempos'] = prevent_back_to_back_tempos
+            preferences['percentages'] = starting_percentages
+            preferences['holiday_usage'] = holiday_usage
+            user.preferences = preferences
             user.save()
     
         # initialize the random number generator
@@ -147,8 +170,10 @@ def build_random_playlist(request, playlist_id):
         songs_remaining = dict()
         for style in starting_percentages:
             songs_remaining[style] = math.ceil(starting_percentages[style] * playlist_length / 100)
-            
+        
+        # initialize control variables    
         last_song_style = None
+        missed_a_holiday_song = False
         
         # loop until the correct number of songs have been picked
         for index in range(playlist_length):
@@ -186,13 +211,40 @@ def build_random_playlist(request, playlist_id):
             dance_style = random_choice[0]
             
             # now find the songs in the database of this dance style
+            candidate_songs = Song.objects.filter(dance_type=dance_style)
             available_songs = list()
-            for s in Song.objects.filter(dance_type=dance_style):
-                # prevent songs from taking two spots in the same playlist
-                if s.playlist_set.filter(id=playlist.id).count() == 0:
-                    available_songs.append(s)
+            # if there is a focus holiday
+            if focus_holiday:
+                # and it is time for a holiday song or previous holiday song was missed
+                if index % focus_ratio == 0 or missed_a_holiday_song:
+                    # apply another filter for only holiday songs
+                    holiday_candidates = candidate_songs.filter(holiday=focus_holiday)
+                    # add the holiday songs to the available songs list
+                    for s in holiday_candidates:
+                        # prevent songs that are already in this playlist
+                        if s.playlist_set.filter(id=playlist.id).count() == 0:
+                            available_songs.append(s)
+                    # if no holiday songs of this style, set missed flag for next time thru loop
+                    if len(available_songs) == 0: 
+                        warn_msg = "No %s songs for %s" % (dance_style, focus_holiday)
+                        print(warn_msg)                            
+                        missed_a_holiday_song = True
+                    else:
+                        missed_a_holiday_song = False
+             
+            # if we didn't add holiday songs, consider all songs of this dance style                
+            if len(available_songs) == 0:
+                for s in candidate_songs:
+                    # don't allow songs from holidays that are excluded
+                    if s.holiday: 
+                        if holiday_usage[s.holiday] == "Ex":
+                            print("Excluding song: " + s.get_holiday_display())
+                            continue
+                    # prevent songs from taking two spots in the same playlist
+                    if s.playlist_set.filter(id=playlist.id).count() == 0:
+                        available_songs.append(s)
             
-            # pick a random song of this style - all equal probability and add it to the playlist
+            # pick a random song from the available list - all equal probability and add it to the playlist
             random_song = available_songs[random.randrange(len(available_songs))]
             playlist.add_song(random_song)
             
@@ -256,7 +308,6 @@ def edit_playlist(request, playlist_id):
         # get the URL parameters for command and index in string format
         command = request.GET.get('cmd')
         index_str = request.GET.get('index')
-        print(request.GET)
     
         # if there are URL parameters
         if command is not None:

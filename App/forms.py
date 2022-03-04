@@ -8,7 +8,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Field, HTML, Layout, Row, Submit
 from crispy_forms.bootstrap import FormActions
 
-from .models.song import Song, SongFileInput, DANCE_TYPE_CHOICES
+from .models.song import Song, SongFileInput, DANCE_TYPE_CHOICES, HOLIDAY_CHOICES, HOLIDAY_USE_OPTIONS, HOLIDAY_DEFAULT_USAGE
 from .models.user import User
 from .models.playlist import Playlist
 
@@ -90,34 +90,34 @@ class PlaylistInfoForm(ModelForm):
 
 class RandomPlaylistForm(Form):
     '''form to specify parameters when populating a random playlist.'''
-    number_of_songs = forms.IntegerField(
-        label     = "Number of Songs",
-        min_value = 1, 
-        max_value = 100,
-        initial   = 10,
-        required  = True)
-    
-    prevent_back_to_back_styles = forms.BooleanField(
-        label     = "Prevent Same Dance Back-to-Back",
-        initial   = True,
-        help_text = "Checking this box prevents the playlist from having two consecutive songs of the same dance.",
-        required  = False)
-   
-    prevent_back_to_back_tempos = forms.BooleanField(
-        label     = "Prevent Same Tempo Back-to-Back",
-        initial   = True,
-        help_text = "Checking this box prevents the playlist from having two consecutive fast songs or two consecutive slow songs.",         
-        required  = False)  
     
     save_preferences = forms.BooleanField(
-        label     = "Save these percentages as the default for your future playlists?",
+        label     = "Save these settings as the default for your future playlists?",
         initial   = False,
         required  = False)
     
-    
     def __init__(self, *args, **kwargs):
-        self.percentage_preferences = kwargs.pop('prefs')
+        self.prefs = kwargs.pop('prefs')
         super(RandomPlaylistForm, self).__init__(*args, **kwargs)
+        
+        self.fields['number_of_songs'] = forms.IntegerField(
+            label     = "Number of Songs",
+            min_value = 1, 
+            max_value = 100,
+            initial   = self.prefs['playlist_length'],
+            required  = True)
+        
+        self.fields['prevent_back_to_back_styles'] = forms.BooleanField(
+            label     = "Prevent Same Dance Back-to-Back",
+            initial   = self.prefs['prevent_back_to_back_styles'],
+            help_text = "Checking this box prevents the playlist from having two consecutive songs of the same dance.",
+            required  = False)
+        
+        self.fields['prevent_back_to_back_tempos'] = forms.BooleanField(
+            label     = "Prevent Same Tempo Back-to-Back",
+            initial   = self.prefs['prevent_back_to_back_tempos'],
+            help_text = "Checking this box prevents the playlist from having two consecutive fast songs or two consecutive slow songs.",         
+            required  = False)        
         
         field_names = list()
         
@@ -133,12 +133,27 @@ class RandomPlaylistForm(Form):
                 label = dance_type_tuple[1],
                 min_value = 0,
                 max_value = 100, 
-                initial = self.percentage_preferences[dance_type_tuple[0]],
+                initial = self.prefs['percentages'][dance_type_tuple[0]],
                 required = True)  
             
             # build a list of field names for use in column layout
             field_names.append(field_name)
         
+        # these fields allow the user to enter preferences for each holiday
+        # add them to the form using a loop            
+        for holiday_tuple in HOLIDAY_CHOICES:
+            
+            field_name = "%s_use" % (holiday_tuple[0], )
+            
+            self.fields[field_name] = forms.ChoiceField(
+                label = holiday_tuple[1],
+                choices = HOLIDAY_USE_OPTIONS,
+                initial = self.prefs['holiday_usage'][holiday_tuple[0]],
+                required = True
+                )      
+            
+            field_names.append(field_name)
+    
         # see django-crispy-forms example
         self.helper = FormHelper()
         self.helper.form_id = 'id-random-playlist-Form'
@@ -163,17 +178,33 @@ class RandomPlaylistForm(Form):
                 Column(field_names[5], field_names[6], field_names[7], field_names[8], field_names[9], css_class="col-3"),
                 Column(field_names[10], field_names[11], field_names[12], field_names[13], field_names[14], css_class="col-3"),
                 Column(field_names[15], field_names[16], field_names[17], field_names[18], field_names[19], css_class="col-3"),
-                css_class='pt-4 border border-dark',
+                css_class='pt-2 border border-dark',
                 css_id='enter-percentages'
             ),
+            # next row has one column for more informative text
+            Row(
+                Column(
+                    HTML("<h4 class='text-center'>Include Holiday-Themed Songs?</h4>"),
+                    css_class='col-12 text-center mt-4')
+            ),
+            # next row has four columns, one for each holiday
+            Row(
+                Column(field_names[20], css_class="col-3"),
+                Column(field_names[21], css_class="col-3"),
+                Column(field_names[22], css_class="col-3"),
+                Column(field_names[23], css_class="col-3"),
+                css_class='pt-2 border border-danger',
+                css_id='enter-holidays'
+                ),
+            # this row has a save checkbox
             Row(
                 Column('save_preferences'),
-                css_class = 'col-12 text-center my-2'
+                css_class = 'col-12 text-center mt-2'
             ),
             # submit and cancel buttons
             FormActions(
-                Submit('submit', 'Continue'),
-                Submit('submit', 'Cancel'),
+                Submit('continue', 'Continue'),
+                Submit('cancel', 'Cancel'),
                 css_class="my-2"
             )
         )    

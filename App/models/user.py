@@ -12,5 +12,5 @@ class User(AbstractUser):
     # Teachers will be able to add and play songs, create and edit playlists, etc. 
     is_teacher = models.BooleanField(default=False)
     
-    # this field stores the dance percentage preferences when generating random playlists
-    percentage_preferences = models.JSONField(null=True)
+    # this field stores the user's preferences when generating random playlists
+    preferences = models.JSONField(null=True)
