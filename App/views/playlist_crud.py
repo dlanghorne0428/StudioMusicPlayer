@@ -303,8 +303,12 @@ def edit_playlist(request, playlist_id):
         
         # obtain list of songs in this playlist and its length
         song_list = playlist.songs.all().order_by('songinplaylist__order')
+        print(song_list)
+        songs_in_playlist = SongInPlaylist.objects.filter(playlist=playlist).order_by('order')
+        for s in songs_in_playlist:
+            print(s.song)
         playlist_length = len(song_list)
-        
+ 
         # get the URL parameters for command and index in string format
         command = request.GET.get('cmd')
         index_str = request.GET.get('index')
@@ -356,13 +360,18 @@ def edit_playlist(request, playlist_id):
                     print(next.song, next.order)
                     next.save()
                     
+            elif command == 'feature':
+                # toggle the feature field
+                selected.feature = not(selected.feature)
+                selected.save()
+                
             # redirect to this same view in order to remove the URL parameters 
             return redirect('App:edit_playlist', playlist_id)             
         
         # no URL parameters, render the template as is
         return render(request, 'edit_playlist.html', {
             'playlist': playlist,
-            'songs': song_list
+            'songs': songs_in_playlist,
         })  
     
     
