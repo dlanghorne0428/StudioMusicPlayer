@@ -45,23 +45,34 @@
         <th class="text-center">Artist</th>
         <th class="text-center">Title</th>
         <th class="text-center">Dance</th>
+        <th class="text-center">Feature?</th>
         <th colspan='3' class="text-center">Action</th>
       </tr>
     </thead>
     <tbody>
       
       <!-- the rest of the table has one song per row -->
-      {% for song in songs %}
+      {% for s in songs %}
       <tr>
         <!-- show a one-based index as the first column. -->
         <td class="text-center">{{ forloop.counter }}</td>
         
-        <td class="text-center">{{ song.artist }}</td>
-        <td class="text-center">{{ song.title }}</td>
+        <td class="text-center">{{ s.song.artist }}</td>
+        <td class="text-center">{{ s.song.title }}</td>
         
         <!-- display the "readable" string for the dance type -->
-        <td class="text-center">{{ song.get_dance_type_display }}</td>
+        <td class="text-center">{{ s.song.get_dance_type_display }}</td>
         
+        <!-- display a checkmark is song is featured, red x if not -->
+        <td class="text-center">  
+          {% if s.feature %}
+            <a class="fs-5" style="text-decoration: none"
+               href="?{% param_replace cmd="feature" index=forloop.counter0 %}">&#9989;</a>
+          {% else %}
+            <a class="fs-5 link-danger" style="text-decoration: none"
+               href="?{% param_replace cmd="feature" index=forloop.counter0 %}">&cross;</a>
+          {% endif %}
+        </td>
         <!-- final columns are the action buttons -->
         
         <td class="text-center">  
