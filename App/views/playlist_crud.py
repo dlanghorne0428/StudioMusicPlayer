@@ -367,6 +367,26 @@ def edit_playlist(request, playlist_id):
                     print(next.song, next.order)
                     next.save()
                     
+            elif command == "replace-song":
+                # find the dance style of the selected song
+                dance_style = selected.song.dance_type
+                
+                # now find the songs in the database of this dance style
+                candidate_songs = Song.objects.filter(dance_type=dance_style)
+                available_songs = list()    
+                
+                for s in candidate_songs:
+                    # TODO: consider holiday usage, when replacing a song
+                    # prevent songs from taking two spots in the same playlist
+                    if s.playlist_set.filter(id=playlist.id).count() == 0:
+                        available_songs.append(s)  
+
+                # pick a random song from the available list - all equal probability
+                random_song = available_songs[random.randrange(len(available_songs))]
+                # delete the original song, add the new one
+                selected.delete()
+                playlist.add_song(random_song, index)                
+                
             elif command == 'feature':
                 # toggle the feature field
                 selected.feature = not(selected.feature)
