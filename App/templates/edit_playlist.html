@@ -25,6 +25,10 @@
       {% else %}
         <h6 class="text-end text-secondary">No Song Time Limit</h6>
       {% endif %}
+      <!-- link to play this current playlist-->
+      <div class="text-end mt-2">
+        <a class="btn btn-primary btn-sm" href="{% url 'App:play_song_list' playlist.id %}">Play from start</a>
+      </div>
     </div>
     <div class="col-6">
       {% if playlist.auto_continue %}
@@ -32,6 +36,10 @@
       {% else %}
         <h6 class="text-start text-secondary">Autoplay Next Song: Off</h6>
       {% endif %}
+      <!-- link to play this current playlist-->
+      <div class="text-start mt-2">
+        <a class="btn btn-warning btn-sm" href="{% url 'App:build_random_playlist' playlist.id %}">Clear and Regenerate</a>
+      </div>
     </div>
   </div>
   
@@ -109,10 +117,5 @@
       {% endfor %}
     </tbody>
   </table>
-  
-  <!-- link to play this current playlist-->
-  <div class="text-center mt-2">
-     <a class="btn btn-primary" href="{% url 'App:play_song_list' playlist.id %}">Play</a>
-  </div>
 
 {% endblock %}
