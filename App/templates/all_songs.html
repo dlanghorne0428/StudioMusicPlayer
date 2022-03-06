@@ -56,8 +56,8 @@
             <!-- only admin users or teachers can play or edit songs -->
             <a class="btn btn-primary btn-sm" href="{% url 'App:play_song' song.id %}">Play</a>
             <span class="dropdown">
-              <button class="btn btn-sm btn-info dropdown-toggle" type="button" 
-                      data-bs-toggle="dropdown">...
+              <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button" 
+                      data-bs-toggle="dropdown">&hellip;       
               </button>
               <ul class="dropdown-menu">
                 <li><a class="dropdown-item" href="{% url 'App:update_song' song.id %}">Edit</a></li>
