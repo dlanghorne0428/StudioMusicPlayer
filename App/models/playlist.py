@@ -40,7 +40,26 @@ class Playlist(models.Model):
             order = index,
             feature = False
         )
-        new_playlist_entry.save()           
+        new_playlist_entry.save()     
+        
+        
+    def delete_song(self, song):
+        ''' delete the specified song from the playlist'''
+        
+        # obtain the number of songs in this playlist
+        playlist_length = SongInPlaylist.objects.filter(playlist=self).count()
+
+        # get the selected song from the playlist, find its index and delete it
+        selected = SongInPlaylist.objects.get(playlist=self, song=song)  
+        index = selected.order
+        selected.delete()
+                
+        # move all songs after the selected index up one slot
+        for higher_index in range(index+1, playlist_length):
+            next = SongInPlaylist.objects.get(playlist=self, order=higher_index)
+            next.order = higher_index - 1
+            print(next.song, next.order)
+            next.save()          
 
     def __str__(self):
         return self.title
@@ -52,11 +71,13 @@ class SongInPlaylist(models.Model):
     
     song = models.ForeignKey(Song, on_delete=models.CASCADE)
     playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE)
+    
     # this is the position in the playlist
     order = models.IntegerField()
+    
     # use this for solos, showcases, or special events - 
     # play the entire song even if there's a time limit for the playlist 
-    feature = models.BooleanField(default=False)
+    feature = models.BooleanField(default=False)      
     
     class Meta:
         unique_together = ['song', 'playlist', 'order']  
