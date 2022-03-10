@@ -30,6 +30,9 @@ def create_playlist(request, random=None):
     user = request.user
     new_playlist.owner = user 
     
+    # initialize submit_title
+    submit_title = None
+    
     if request.method == "GET":
         # set variables differently for random playlists
         if random is not None:
@@ -48,16 +51,16 @@ def create_playlist(request, random=None):
         # empty description
         new_playlist.description = ""
         
-        # display form with current data
-        form = PlaylistInfoForm(instance=new_playlist)
-        return render(request, 'edit_playlist_info.html', {
+        # display form with current data, passing in submit_title
+        form = PlaylistInfoForm(instance=new_playlist, submit_title=submit_title)
+        return render(request, 'create_playlist.html', {
                                 'page_title': page_title, 
                                 'submit_title': submit_title,
                                 'form':form})        
 
     else:  # POST
         # obtain information from the submitted form
-        form = PlaylistInfoForm(request.POST, instance=new_playlist) 
+        form = PlaylistInfoForm(request.POST, instance=new_playlist, submit_title=submit_title) 
         if form.is_valid():                
             form.save() 
             
@@ -74,7 +77,7 @@ def create_playlist(request, random=None):
                 return redirect('App:all_playlists', user.id)
         else: 
             # display error on form
-            return render(request, 'edit_playlist_info.html', {
+            return render(request, 'create_playlist.html', {
                                     'page_title': page_title, 
                                     'form':PlaylistInfoForm(), 
                                     'error': "Invalid data submitted."})            
@@ -90,13 +93,13 @@ def build_random_playlist(request, playlist_id):
     playlist = get_object_or_404(Playlist, pk=playlist_id)
     user = request.user
     
-    # redirect if playlist is not empty
-    if playlist.songs.all().count() > 0:
-        print("Playlist Not Empty")
-        return redirect('App:all_playlists', user.id)
-    
-    # if user has preferences, use those, otherwise use defaults
-    if user.preferences is None:
+    # if playlist has preferences, use those
+    if playlist.preferences is not None:
+        preferences = playlist.preferences
+    # if not, see if user has preferences
+    elif user.preferences is not None:
+        preferences = user.preferences
+    else: # use system defaults as fallback
         preferences = {
             'playlist_length'            : 10,
             'prevent_back_to_back_styles': True,
@@ -104,8 +107,6 @@ def build_random_playlist(request, playlist_id):
             'percentages'                : DANCE_TYPE_DEFAULT_PERCENTAGES,
             'holiday_usage'              : HOLIDAY_DEFAULT_USAGE,
         }
-    else:
-        preferences = user.preferences
     
     if request.method == "GET":
         # build and render the random playlist form
@@ -118,9 +119,13 @@ def build_random_playlist(request, playlist_id):
     else:  # POST
         cancel = request.POST.get("cancel")
         # if user hit cancel button during build random, delete playlist that was in process of being created. 
-        if cancel == "Cancel": 
-            playlist.delete()
-            return redirect('App:all_playlists', user.id) 
+        if cancel == "Cancel":
+            # if playlist is empty, delete it and redirect to user's playslist
+            if playlist.songs.all().count() == 0:
+                playlist.delete()
+                return redirect('App:all_playlists', user.id)            
+            else: # redirect to existing playlist
+                return redirect('App:edit_playlist', playlist.id) 
         
         # obtain data from form and make sure it is valid.
         form = RandomPlaylistForm(request.POST,prefs=preferences)
@@ -130,6 +135,12 @@ def build_random_playlist(request, playlist_id):
             # TODO: handle this error 
             print('invalid');
         
+        # if playlist is not empty, clear existing songs before re-generating
+        if playlist.songs.all().count() > 0:
+            songs_in_playlist = SongInPlaylist.objects.filter(playlist=playlist).order_by('order')
+            for s in songs_in_playlist:
+                s.delete()
+            
         # set variables based on form data    
         playlist_length = form_data['number_of_songs']
         prevent_back_to_back_styles = form_data['prevent_back_to_back_styles']
@@ -152,14 +163,17 @@ def build_random_playlist(request, playlist_id):
                 focus_holiday = key
                 focus_ratio = int(holiday_usage[key][-1])
             
+        # save the form inputs into the playlist            
+        preferences['playlist_length'] = playlist_length
+        preferences['prevent_back_to_back_styles'] = prevent_back_to_back_styles
+        preferences['prevent_back_to_back_tempos'] = prevent_back_to_back_tempos
+        preferences['percentages'] = starting_percentages
+        preferences['holiday_usage'] = holiday_usage
+        playlist.preferences = preferences
+        playlist.save()
+        
         # determine if the inputs should be saved as user's new default preferences
         if form_data['save_preferences']:
-            # update the preferences dictionary
-            preferences['playlist_length'] = playlist_length
-            preferences['prevent_back_to_back_styles'] = prevent_back_to_back_styles
-            preferences['prevent_back_to_back_tempos'] = prevent_back_to_back_tempos
-            preferences['percentages'] = starting_percentages
-            preferences['holiday_usage'] = holiday_usage
             user.preferences = preferences
             user.save()
     
@@ -294,17 +308,18 @@ def edit_playlist(request, playlist_id):
     
     if not (request.user.is_superuser or request.user.is_teacher):
         return render(request, 'permission_denied.html')
-    else:        
-        # get the specific playlist object from the database
-        playlist = get_object_or_404(Playlist, pk=playlist_id)
+          
+    # get the specific playlist object from the database
+    playlist = get_object_or_404(Playlist, pk=playlist_id)
+    
+    if not (request.user.is_superuser or playlist.owner == request.user):
+        return render(request, 'permission_denied.html')           
         
-        if not (request.user.is_superuser or playlist.owner == request.user):
-            return render(request, 'permission_denied.html')           
-        
+    if request.method == "GET":
         # obtain list of songs in this playlist and its length
-        song_list = playlist.songs.all().order_by('songinplaylist__order')
-        playlist_length = len(song_list)
-        
+        songs_in_playlist = SongInPlaylist.objects.filter(playlist=playlist).order_by('order')
+        playlist_length = len(songs_in_playlist)
+ 
         # get the URL parameters for command and index in string format
         command = request.GET.get('cmd')
         index_str = request.GET.get('index')
@@ -356,45 +371,60 @@ def edit_playlist(request, playlist_id):
                     print(next.song, next.order)
                     next.save()
                     
+            elif command == "replace-song":
+                # find the dance style of the selected song
+                dance_style = selected.song.dance_type
+                
+                # now find the songs in the database of this dance style
+                candidate_songs = Song.objects.filter(dance_type=dance_style)
+                available_songs = list()    
+                
+                for s in candidate_songs:
+                    # TODO: consider holiday usage, when replacing a song
+                    # prevent songs from taking two spots in the same playlist
+                    if s.playlist_set.filter(id=playlist.id).count() == 0:
+                        available_songs.append(s)  
+
+                # pick a random song from the available list - all equal probability
+                random_song = available_songs[random.randrange(len(available_songs))]
+                # delete the original song, add the new one
+                selected.delete()
+                playlist.add_song(random_song, index)                
+                
+            elif command == 'feature':
+                # toggle the feature field
+                selected.feature = not(selected.feature)
+                selected.save()
+                
             # redirect to this same view in order to remove the URL parameters 
             return redirect('App:edit_playlist', playlist_id)             
         
         # no URL parameters, render the template as is
+        form = PlaylistInfoForm(instance=playlist, submit_title=None)
         return render(request, 'edit_playlist.html', {
             'playlist': playlist,
-            'songs': song_list
-        })  
-    
-    
-def edit_playlist_info (request, playlist_id):
-    ''' allows the superuser to edit an existing playlist title. '''
-    
-    if not (request.user.is_superuser or request.user.is_teacher):
-        return render(request, 'permission_denied.html')
-    else:        
-        # get the specific playlist object from the database
-        playlist = get_object_or_404(Playlist, pk=playlist_id)
-        
-        if not (request.user.is_superuser or playlist.owner == request.user):
-            return render(request, 'permission_denied.html')           
-                    
-        if request.method == "GET":
-            # display form with current data
-            form = PlaylistInfoForm(instance=playlist)
-            return render(request, 'edit_playlist_info.html', {'form':form})
-        else:
-            # obtain information from the submitted form
-            form = PlaylistInfoForm(request.POST, instance=playlist)
-            if form.is_valid():
-                # save the updated info and return to song list
-                form.save() 
-                if playlist.max_song_duration == time(minute=30):
-                    playlist.max_song_duration = None
-                form.save()
-                return redirect('App:all_playlists')
-            else: 
-                # display error on form
-                return render(request, 'edit_playlist_info.html', {'form':PlaylistInfoForm(), 'error': "Invalid data submitted."})            
-            
+            'songs': songs_in_playlist,
+            'form': form,
+        })
+
+    else: # POST
+        # obtain information from the submitted form
+        form = PlaylistInfoForm(request.POST, instance=playlist, submit_title=None)
+        if form.is_valid():
+            # save the updated info and return to song list
+            form.save() 
+            if playlist.max_song_duration == time(minute=30):
+                playlist.max_song_duration = None
+            form.save()
+            return redirect('App:all_playlists', request.user.id)
+        else: 
+            # display error on form
+            return render(request, 'edit_playlist.html', {
+            'playlist': playlist,
+            'songs': songs_in_playlist,
+            'form': form,
+            'error': "Invalid data submitted."
+        })
+               
             
         

@@ -72,7 +72,7 @@
             {% if user.is_authenticated %}
               <!-- user logged in, show options in a dropdown menu -->
               <li class="nav-item mx-2 dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">{{ user.username }} ... </a>
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">{{ user.username }}</a>
                 <div class="dropdown-menu">
                     <a class="dropdown-item" href="{% url 'App:all_playlists' user.id %}">My Playlists</a>
                     <a class="dropdown-item" href="{% url 'App:user_preferences' %}">My Preferences</a>

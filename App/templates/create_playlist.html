@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-12">
+    <!-- page title and placeholder for form errors -->
+    {% if page_title %}
+        <h2 class='text-center my-2'>{{ page_title }}</h2>
+    {% else %}
+        <h2 class='text-center my-2'>Edit Playlist Info</h2>
+    {% endif %}
+    
+    <p>{{ error }}</p>
+
+    <!-- display the form --> 
+    {% crispy form %}
+    
+  </div>
+</div>
+
+{% endblock %}
