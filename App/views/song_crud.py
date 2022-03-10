@@ -6,6 +6,7 @@ import os
 
 # imported our models
 from App.models.song import Song
+from App.models.playlist import SongInPlaylist
 from App.forms import SongFileInputForm, SongEditForm
 
 # Create your views here.
@@ -174,6 +175,13 @@ def delete_song(request, song_id):
     
     # find the specific song object
     song = get_object_or_404(Song, pk=song_id) 
+    
+    # find the playlists that use this song
+    playlists = SongInPlaylist.objects.filter(song=song)
+    
+    # delete that song from the playlist
+    for p in playlists:
+        p.playlist.delete_song(song)
         
     # delete the audio and image files related to this Song
     if song.image is not None:
