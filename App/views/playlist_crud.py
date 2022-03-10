@@ -30,6 +30,9 @@ def create_playlist(request, random=None):
     user = request.user
     new_playlist.owner = user 
     
+    # initialize submit_title
+    submit_title = None
+    
     if request.method == "GET":
         # set variables differently for random playlists
         if random is not None:
@@ -49,15 +52,15 @@ def create_playlist(request, random=None):
         new_playlist.description = ""
         
         # display form with current data
-        form = PlaylistInfoForm(instance=new_playlist)
-        return render(request, 'edit_playlist_info.html', {
+        form = PlaylistInfoForm(instance=new_playlist, submit_title=submit_title)
+        return render(request, 'create_playlist.html', {
                                 'page_title': page_title, 
                                 'submit_title': submit_title,
                                 'form':form})        
 
     else:  # POST
         # obtain information from the submitted form
-        form = PlaylistInfoForm(request.POST, instance=new_playlist) 
+        form = PlaylistInfoForm(request.POST, instance=new_playlist, submit_title=submit_title) 
         if form.is_valid():                
             form.save() 
             
@@ -74,7 +77,7 @@ def create_playlist(request, random=None):
                 return redirect('App:all_playlists', user.id)
         else: 
             # display error on form
-            return render(request, 'edit_playlist_info.html', {
+            return render(request, 'create_playlist.html', {
                                     'page_title': page_title, 
                                     'form':PlaylistInfoForm(), 
                                     'error': "Invalid data submitted."})            
@@ -305,13 +308,14 @@ def edit_playlist(request, playlist_id):
     
     if not (request.user.is_superuser or request.user.is_teacher):
         return render(request, 'permission_denied.html')
-    else:        
-        # get the specific playlist object from the database
-        playlist = get_object_or_404(Playlist, pk=playlist_id)
+          
+    # get the specific playlist object from the database
+    playlist = get_object_or_404(Playlist, pk=playlist_id)
+    
+    if not (request.user.is_superuser or playlist.owner == request.user):
+        return render(request, 'permission_denied.html')           
         
-        if not (request.user.is_superuser or playlist.owner == request.user):
-            return render(request, 'permission_denied.html')           
-        
+    if request.method == "GET":
         # obtain list of songs in this playlist and its length
         songs_in_playlist = SongInPlaylist.objects.filter(playlist=playlist).order_by('order')
         playlist_length = len(songs_in_playlist)
@@ -396,41 +400,31 @@ def edit_playlist(request, playlist_id):
             return redirect('App:edit_playlist', playlist_id)             
         
         # no URL parameters, render the template as is
+        form = PlaylistInfoForm(instance=playlist, submit_title=None)
         return render(request, 'edit_playlist.html', {
             'playlist': playlist,
             'songs': songs_in_playlist,
-        })  
-    
-    
-def edit_playlist_info (request, playlist_id):
-    ''' allows the superuser to edit an existing playlist title. '''
-    
-    if not (request.user.is_superuser or request.user.is_teacher):
-        return render(request, 'permission_denied.html')
-    else:        
-        # get the specific playlist object from the database
-        playlist = get_object_or_404(Playlist, pk=playlist_id)
-        
-        if not (request.user.is_superuser or playlist.owner == request.user):
-            return render(request, 'permission_denied.html')           
-                    
-        if request.method == "GET":
-            # display form with current data
-            form = PlaylistInfoForm(instance=playlist)
-            return render(request, 'edit_playlist_info.html', {'form':form})
-        else:
-            # obtain information from the submitted form
-            form = PlaylistInfoForm(request.POST, instance=playlist)
-            if form.is_valid():
-                # save the updated info and return to song list
-                form.save() 
-                if playlist.max_song_duration == time(minute=30):
-                    playlist.max_song_duration = None
-                form.save()
-                return redirect('App:all_playlists')
-            else: 
-                # display error on form
-                return render(request, 'edit_playlist_info.html', {'form':PlaylistInfoForm(), 'error': "Invalid data submitted."})            
-            
+            'form': form,
+        })
+
+    else: # POST
+        # obtain information from the submitted form
+        form = PlaylistInfoForm(request.POST, instance=playlist, submit_title=None)
+        if form.is_valid():
+            # save the updated info and return to song list
+            form.save() 
+            if playlist.max_song_duration == time(minute=30):
+                playlist.max_song_duration = None
+            form.save()
+            return redirect('App:all_playlists', request.user.id)
+        else: 
+            # display error on form
+            return render(request, 'edit_playlist.html', {
+            'playlist': playlist,
+            'songs': songs_in_playlist,
+            'form': form,
+            'error': "Invalid data submitted."
+        })
+               
             
         
