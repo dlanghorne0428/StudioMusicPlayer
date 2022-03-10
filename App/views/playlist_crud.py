@@ -51,7 +51,7 @@ def create_playlist(request, random=None):
         # empty description
         new_playlist.description = ""
         
-        # display form with current data
+        # display form with current data, passing in submit_title
         form = PlaylistInfoForm(instance=new_playlist, submit_title=submit_title)
         return render(request, 'create_playlist.html', {
                                 'page_title': page_title, 
