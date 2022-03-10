@@ -2,7 +2,7 @@ from datetime import time
 
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from django.forms import Form, ModelForm
+from django.forms import Form, ModelForm, Textarea
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Field, HTML, Layout, Row, Submit
@@ -31,7 +31,7 @@ class SongEditForm(ModelForm):
     
     artist = forms.CharField(
         label = "Artist",
-        max_length = 80,
+        max_length = 80,    # ensure the field is wide enough to show the artist
         required = True,
     )
     
@@ -58,12 +58,28 @@ class SongEditForm(ModelForm):
         )
         
     class Meta:
+        # obtain data from these fields of the song model
         model = Song
         fields = ['title', 'artist', 'dance_type', 'holiday']
         
         
 class PlaylistInfoForm(ModelForm):
     ''' form to enter information for a playlist '''
+    title = forms.CharField(
+        label = "",
+        max_length = 50,     # ensure the field is wide enough to show the title
+        required = True)
+    
+    description = forms.CharField(
+        label  = "Description",
+        required = False,
+        # limit height of this field to 3 rows
+        widget = Textarea(attrs={'rows': 3}))
+    
+    auto_continue = forms.BooleanField(
+        label = "Autoplay Next Song",
+        required = False)   # this field must not be required in order to set it to false
+    
     max_song_duration = forms.ChoiceField(
         label = "Song Time Limit",
         required = False,
@@ -80,6 +96,50 @@ class PlaylistInfoForm(ModelForm):
             (time(minute=3, second= 0), "3:00")
         )
     )
+    
+    def __init__(self, *args, **kwargs):
+        # this form is used for playlist creation and editing. 
+        # submit_title argument tells us which it is. 
+        self.submit_title = kwargs.pop('submit_title')
+        super(PlaylistInfoForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_id = 'id-PlaylistEditForm'
+        self.helper.form_method = 'post'
+        # Form labels will be bold text
+        self.helper.label_class = 'fw-bold'
+        
+        if self.submit_title is not None:
+            self.helper.layout = Layout(
+                # first row has one column for the title
+                Row(
+                    Column(
+                        Field('title', css_class='fs-3 px-0 text-center'),
+                        css_class="col-8 offset-2"),
+                ),
+                # next row has two columns: description field in the right column is 3 rows tall
+                Row(
+                    Column('max_song_duration', 'auto_continue', css_class="col-2 offset-2"),
+                    Column('description',css_class='text-start col-8 lh-sm'),
+                ),
+                # submit and cancel buttons are included, button text comes from submit_title
+                FormActions(
+                    Submit('submit', self.submit_title),
+                    HTML("""<a href="{% url 'App:all_playlists' %}" class="btn btn-secondary">Cancel</a>"""),
+                    css_class="my-2"
+                )                
+            )   
+        else: # same layout as above without submit/cancel buttons as javascript is used to submit the form
+            self.helper.layout = Layout(
+                Row(
+                    Column(
+                        Field('title', css_class='fs-3 px-0 text-center'),
+                        css_class="col-8 offset-2"),
+                ),
+                Row(
+                    Column('max_song_duration', 'auto_continue', css_class="col-2 offset-2"),
+                    Column('description',css_class='text-start col-8 lh-sm'),
+                ),
+            )                
 
     class Meta:
         model = Playlist
@@ -97,6 +157,7 @@ class RandomPlaylistForm(Form):
         required  = False)
     
     def __init__(self, *args, **kwargs):
+        # get the preferences in this dictionary argument
         self.prefs = kwargs.pop('prefs')
         super(RandomPlaylistForm, self).__init__(*args, **kwargs)
         
