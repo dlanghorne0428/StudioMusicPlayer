@@ -1,42 +1,33 @@
 {% extends "base.html" %}
 
 {% load static %}
+{% load crispy_forms_tags %}
 {% load my_tags %}  
 
 {% block content %}
 
-  <!-- first row in bootstrap grid has the page title and the name of the playlist we are editing.-->
+  <!-- first row in bootstrap grid has the page title and the form to edit playlist info.-->
   <div class="row">
     <div class="col-12">
       <h2 class="text-center">Edit Playlist</h2>
-      <h3 class="text-center">{{ playlist.title }}
-        <a class="btn btn-white btn-sm" 
-              href="{% url 'App:edit_playlist_info' playlist.id %}">
-              <img src={% static 'img/pencil-square.svg' %}>
-        </a>
-      </h3>
+      <p>{{ error }}</p>
+
+      <!-- display the form --> 
+      {% crispy form %}
+    
     </div>
   </div>
   
+  <!-- next row has buttons -->
   <div class="row">
     <div class="col-6">
-      {% if playlist.max_song_duration %}
-        <h6 class="text-end text-secondary">Song Time Limit: {{ playlist.max_song_duration|time:"i:s" }}</h6>
-      {% else %}
-        <h6 class="text-end text-secondary">No Song Time Limit</h6>
-      {% endif %}
       <!-- link to play this current playlist-->
       <div class="text-end mt-2">
         <a class="btn btn-primary btn-sm" href="{% url 'App:play_song_list' playlist.id %}">Play from start</a>
       </div>
     </div>
     <div class="col-6">
-      {% if playlist.auto_continue %}
-        <h6 class="text-start text-secondary">Autoplay Next Song: On</h6>
-      {% else %}
-        <h6 class="text-start text-secondary">Autoplay Next Song: Off</h6>
-      {% endif %}
-      <!-- link to play this current playlist-->
+      <!-- link to regenerate this current playlist-->
       <div class="text-start mt-2">
         <a class="btn btn-warning btn-sm" href="{% url 'App:build_random_playlist' playlist.id %}">Clear and Regenerate</a>
       </div>
@@ -81,8 +72,8 @@
                href="?{% param_replace cmd="feature" index=forloop.counter0 %}">&cross;</a>
           {% endif %}
         </td>
-        <!-- final columns are the action buttons -->
         
+        <!-- final columns are the action buttons -->
         <td class="text-center">  
           <!-- show the up arrow to move a song up one slot unless it's the first song -->
           {% if forloop.counter > 1 %}
@@ -123,4 +114,9 @@
     </tbody>
   </table>
 
+{% endblock %}
+
+<!-- need javascript to submit the form when any info items have changed -->
+{% block extra_js %}
+    <script src={% static 'js/edit_playlist.js' %}></script>
 {% endblock %}
