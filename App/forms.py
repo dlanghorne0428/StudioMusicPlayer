@@ -40,12 +40,14 @@ class SongEditForm(ModelForm):
         self.helper = FormHelper()
         self.helper.form_id = 'id-songEditForm'
         self.helper.form_method = 'post'
+        self.helper.attrs = {'enctype': 'multipart/form-data'}
         self.helper.label_class='mt-2'      # allow some top margin for the form
         
         self.helper.layout = Layout(
             # show the fields in this order
             'title', 
             'artist', 
+            'image',
             'dance_type', 
             'holiday',
             FormActions(
@@ -60,7 +62,7 @@ class SongEditForm(ModelForm):
     class Meta:
         # obtain data from these fields of the song model
         model = Song
-        fields = ['title', 'artist', 'dance_type', 'holiday']
+        fields = ['title', 'artist', 'image', 'dance_type', 'holiday']
         
         
 class PlaylistInfoForm(ModelForm):
