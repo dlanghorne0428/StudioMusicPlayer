@@ -95,22 +95,35 @@ HOLIDAY_DEFAULT_USAGE = {
     "NYE"  : "In"
     }
 
-    
-def create_valid_filename(instance, filename):
-    ''' When uploading audio files, find a valid name that django can use.
-       slugify replaces whitespace with a dash and removes everything but alphanumerics,
+def good_filename(filename):
+    '''slugify replaces whitespace with a dash and removes everything but alphanumerics,
        underscores and dashes.
        get_valid_filename finds an available filename to avoid duplicates.'''
+    print(filename)
     temp_filename = get_valid_filename(filename)
+    print(temp_filename)
     filename, ext = os.path.splitext(temp_filename)
     filename = slugify(filename)
     if ext:
-        valid_filename = "%s.%s" % (filename, slugify(ext))
+        return "%s.%s" % (filename, slugify(ext))
     else:
-        valid_filename = filename
-        
+        return filename
+
+    
+def create_valid_filename(instance, filename):
+    ''' When uploading audio files, find a valid name that django can use.'''
+
     # save music files in a "music" subfolder under MEDIA_ROOT
-    path = 'music/' + valid_filename
+    path = 'music/' + good_filename(filename)
+    return path
+
+
+def create_valid_image_filename(instance, filename):
+    ''' When uploading audio files, find a valid name that django can use.'''
+
+    # save image files in a "img" subfolder under MEDIA_ROOT
+    path = 'img/' + good_filename(filename)
+    print(path)
     return path
 
 
@@ -147,7 +160,7 @@ class Song(models.Model):
     # these will be created from the audio_file
     title = models.CharField(max_length=200,default="Unknown")
     artist = models.CharField(max_length=200,default="Unknown")
-    image = models.ImageField(null=True)
+    image = models.ImageField(upload_to=create_valid_image_filename, null=True)
 
     dance_type = models.CharField(
         max_length = 10,

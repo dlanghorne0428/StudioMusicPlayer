@@ -362,15 +362,6 @@ def edit_playlist(request, playlist_id):
                 
             elif command == 'delsong':
                 playlist.delete_song(selected.song)
-                ## remove the selected song from the list
-                #selected.delete()
-                
-                ## move all songs after the selected index up one slot
-                #for higher_index in range(index+1, playlist_length):
-                    #next = SongInPlaylist.objects.get(playlist=playlist_id, order=higher_index)
-                    #next.order = higher_index - 1
-                    #print(next.song, next.order)
-                    #next.save()
                     
             elif command == "replace-song":
                 # find the dance style of the selected song

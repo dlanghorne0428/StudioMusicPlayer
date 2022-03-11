@@ -74,10 +74,11 @@ def add_song(request):
             info = metadata.info
             duration =  info.length #seconds
             tags = ID3(audio_file_path)
-            if tags.get("APIC:") is None:
+            apic_list = tags.getall("APIC")
+            if len(apic_list) == 0:
                 pict = None
             else:
-                pict = tags.get("APIC:").data 
+                pict = apic_list[0].data 
                 
         else:  # if some other file type, return an error. 
             return render(request, 'add_song.html', {'form':SongInputForm(), 'error': "Invalid data submitted."})
@@ -155,12 +156,12 @@ def update_song(request, song_id):
         return render(request, 'update_song.html', {'form':form})
     else:
         # obtain information from the submitted form
-        form = SongEditForm(request.POST, instance=song)
+        form = SongEditForm(request.POST, request.FILES, instance=song)
         if form.is_valid():
             # save the updated info and return to song list
             form.save() 
             return redirect('App:all_songs')
-        else: 
+        else:
             # display error on form
             return render(request, 'update_song.html', {'form':SongEditForm(), 'error': "Invalid data submitted."})
     
