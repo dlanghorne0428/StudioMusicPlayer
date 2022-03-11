@@ -40,6 +40,7 @@ class SongEditForm(ModelForm):
         self.helper = FormHelper()
         self.helper.form_id = 'id-songEditForm'
         self.helper.form_method = 'post'
+        # this is needed to return files from the form
         self.helper.attrs = {'enctype': 'multipart/form-data'}
         self.helper.label_class='mt-2'      # allow some top margin for the form
         
