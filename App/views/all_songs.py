@@ -18,14 +18,9 @@ def all_songs(request):
             # get all playlists owned by the current user
             playlists = Playlist.objects.filter(owner=request.user).order_by('title')  
     
-    # split the songs into pages and get the requested page
-    paginator = Paginator(songs.qs, 16)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
     # render the template
     return render(request, 'all_songs.html', 
-                  {'page_obj': page_obj, 
-                   'filter': songs,
+                  {'filter': songs,
+                   'songs': songs.qs,
                    'playlists': playlists
                   })

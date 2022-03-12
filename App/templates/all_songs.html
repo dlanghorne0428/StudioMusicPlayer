@@ -2,6 +2,11 @@
 
 {% load static %}
 
+{% block extra_css %}
+  <!-- special styling needed for this page -->
+  <link rel="stylesheet" href="{% static 'css/all_songs.css' %}">
+{% endblock %}
+
 {% block content %}
 
   <!-- first row in bootstrap grid is the page title, with some padding on the bottom -->
@@ -14,9 +19,10 @@
    <!-- next row in bootstrap grid is a table, with dark borders --> 
   <div class="col-10 offset-1 border border-dark">
   <table class="table table-bordered table-sm">
-    <thead class="thead-dark">
-      <!-- column headers have a dark background -->
-      <tr>
+    <!-- column headers have a dark background -->
+    <thead class='table-dark'>
+      <!-- use sticky to keep header row from scrolling off the page -->
+      <tr id='table-header-sticky' >
         <th class="text-center">Artist</th>
         <th class="text-center">Title</th>
         <th class="text-center">Dance</th>
@@ -25,24 +31,27 @@
       </tr>
     </thead>
     <tbody>
-      <!-- the first row of the table is a filter -->
-      <form class="mx-auto" method="get">
-        {% csrf_token %}
-        <tr class="table-primary">
-          <!-- user can filter on any of these columns --> 
-          <td class="text-center">{{ filter.form.artist }}</td>
-          <td class="text-center">{{ filter.form.title }}</td>
-          <td class="text-center">{{ filter.form.dance_type }}</td>
-          <td class="text-center">{{ filter.form.holiday }}</td>
-          <!-- the last button is used to submit filter data -->
-          <td class="text-center">
-            <input class="btn btn-dark btn-sm" type="submit" name="submit" value="Filter"/>
-          </td>
-        </tr>
-      </form>
-      
-      <!-- the rest of the table has one page of songs, one song per row -->
-      {% for song in page_obj %}
+      <!-- div tag used to enable sticky positioning -->
+      <div>   
+        <!-- the first row of the table is a filter -->
+        <form class="mx-auto" method="get">
+          {% csrf_token %}
+          <!-- use sticky to keep this row from scrolling off the page -->
+          <tr id='song-filter-sticky' class="table-secondary">
+            <!-- user can filter on any of these columns --> 
+            <td class="text-center">{{ filter.form.artist }}</td>
+            <td class="text-center">{{ filter.form.title }}</td>
+            <td class="text-center">{{ filter.form.dance_type }}</td>
+            <td class="text-center">{{ filter.form.holiday }}</td>
+            <!-- the last button is used to submit filter data -->
+            <td class="text-center">
+              <input class="btn btn-dark btn-sm" type="submit" name="submit" value="Filter"/>
+            </td>
+          </tr>
+        </form>
+      </div>
+      <!-- the rest of the table has the list of songs, one song per row -->
+      {% for song in songs %}
       <tr>
         <td class="text-center">{{ song.artist }}</td>
         <td class="text-center">{{ song.title }}</td>
@@ -86,9 +95,6 @@
       {% endfor %}
     </tbody>
   </table>
-  
-  <!-- links to previous and next, first and last pages -->
-  {% include "pagination.html" %}
   
   <!-- link to create a song from an audio file, may add other ways like Soundcloud -->
   <div class="text-center mt-2">

@@ -4,12 +4,23 @@
 {% load crispy_forms_tags %}
 {% load my_tags %}  
 
+{% block extra_css %}
+  <!-- special styling needed for this page -->
+  <link rel="stylesheet" href="{% static 'css/edit_playlist.css' %}">
+{% endblock %}
+
 {% block content %}
 
   <!-- first row in bootstrap grid has the page title and the form to edit playlist info.-->
   <div class="row">
     <div class="col-12">
       <h2 class="text-center">Edit Playlist</h2>
+    </div>
+  </div>
+  
+  <!-- use sticky to keep header from scrolling off the page -->
+  <div id="header-form-sticky" class="row">
+    <div class="col-12">
       <p>{{ error }}</p>
 
       <!-- display the form --> 
@@ -18,8 +29,8 @@
     </div>
   </div>
   
-  <!-- next row has buttons -->
-  <div class="row">
+  <!-- next row has buttons, use sticky to keep this from scrolling off the page -->
+  <div id='play-and-clear-sticky' class="row">
     <div class="col-6">
       <!-- link to play this current playlist-->
       <div class="text-end mt-2">
@@ -37,14 +48,15 @@
    <!-- next row in bootstrap grid is a table, with dark borders and margin above --> 
   <div class="col-12 border border-dark mt-2">
   <table class="table table-bordered table-sm">
-    <thead class="thead-dark">
-      <!-- column headers have a dark background -->
-      <tr>
+    <!-- column headers have a dark background -->
+    <thead class="table-dark">
+      <!-- use sticky to keep table header from scrolling off the page -->
+      <tr id='table-header-sticky' >
         <th class="text-center">Index</th>
         <th class="text-center">Artist</th>
         <th class="text-center">Title</th>
         <th class="text-center">Dance</th>
-        <th class="text-center">Feature?</th>
+        <th class="text-center">Play <br>Whole Song?</th>
         <th colspan='4' class="text-center">Action</th>
       </tr>
     </thead>

@@ -1,0 +1,7 @@
+/* establish sticky fields to limit scrolling */
+
+#table-header-sticky {
+  position: -webkit-sticky; /* Safari */
+  position: sticky;
+  top: 0px;  /* don't scroll off top of page */
+}

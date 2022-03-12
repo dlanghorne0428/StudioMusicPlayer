@@ -1,0 +1,20 @@
+/* establish sticky fields to limit scrolling */
+#header-form-sticky {
+  position: -webkit-sticky; /* Safari */
+  position: sticky;
+  top: 0;                   /* don't scroll off top of page */
+  background-color: white;  /* prevent items scrolling behind it from being seen */
+}
+
+#play-and-clear-sticky {
+  position: -webkit-sticky; /* Safari */
+  position: sticky;
+  top: 216px;               /* value based on height of header form */
+  background-color: white;
+}
+
+#table-header-sticky {
+  position: -webkit-sticky; /* Safari */
+  position: sticky;
+  top: 256px;           /* value based on heights of header form and row with play/clear buttons */
+}
