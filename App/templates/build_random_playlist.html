@@ -23,9 +23,6 @@
 
     <!-- display the form in "crispy" format -->
     {% crispy form %}
-    
-    <!-- display error when necessary -->
-    <p hidden id='percentage-error'>Current total is <span id='percentage-total'></span> percent</p> 
 
   </div>
 </div>
@@ -35,3 +32,4 @@
 {% block extra_js %}
     <script src={% static 'js/build_random_playlist.js' %}></script>
 {% endblock %}
+
