@@ -2,11 +2,11 @@ from datetime import time
 
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from django.forms import Form, ModelForm, Textarea
+from django.forms import Form, ModelForm, CheckboxInput, NumberInput, Textarea
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Column, Field, HTML, Layout, Row, Submit
-from crispy_forms.bootstrap import FormActions
+from crispy_forms.layout import Column, Div, Field, HTML, Layout, Row, Submit
+from crispy_forms.bootstrap import AppendedText, FormActions
 
 from .models.song import Song, SongFileInput, DANCE_TYPE_CHOICES, HOLIDAY_CHOICES, HOLIDAY_USE_OPTIONS, HOLIDAY_DEFAULT_USAGE
 from .models.user import User
@@ -169,18 +169,20 @@ class RandomPlaylistForm(Form):
             min_value = 1, 
             max_value = 100,
             initial   = self.prefs['playlist_length'],
+            # center the text in this input box
+            widget = NumberInput(attrs={'class': 'text-center'}),
             required  = True)
         
         self.fields['prevent_back_to_back_styles'] = forms.BooleanField(
-            label     = "Prevent Same Dance Back-to-Back",
+            # add information icon to the end of the label
+            label     = "Prevent Same Style Back-to-Back \u24d8"  ,
             initial   = self.prefs['prevent_back_to_back_styles'],
-            help_text = "Checking this box prevents the playlist from having two consecutive songs of the same dance.",
             required  = False)
         
         self.fields['prevent_back_to_back_tempos'] = forms.BooleanField(
-            label     = "Prevent Same Tempo Back-to-Back",
+            # add information icon to the end of the label
+            label     = "Prevent Same Tempo Back-to-Back  \u24d8"  ,
             initial   = self.prefs['prevent_back_to_back_tempos'],
-            help_text = "Checking this box prevents the playlist from having two consecutive fast songs or two consecutive slow songs.",         
             required  = False)        
         
         field_names = list()
@@ -198,6 +200,8 @@ class RandomPlaylistForm(Form):
                 min_value = 0,
                 max_value = 100, 
                 initial = self.prefs['percentages'][dance_type_tuple[0]],
+                # right-justify the text in these input boxes
+                widget = NumberInput(attrs={'class': 'text-end'}),
                 required = True)  
             
             # build a list of field names for use in column layout
@@ -214,7 +218,7 @@ class RandomPlaylistForm(Form):
                 choices = HOLIDAY_USE_OPTIONS,
                 initial = self.prefs['holiday_usage'][holiday_tuple[0]],
                 required = True
-                )      
+                )  
             
             field_names.append(field_name)
     
@@ -226,50 +230,105 @@ class RandomPlaylistForm(Form):
         self.helper.layout = Layout(
             # first row has two columns
             Row(
-                Column('number_of_songs', css_class="col-3 offset-3"),
-                Column('prevent_back_to_back_styles', 'prevent_back_to_back_tempos',css_class='text-start px-4 col-6'),
+                # style the label with font weight bold and font size 5 
+                Column('number_of_songs', css_class="fw-bold fs-5 col-2 offset-4"),
+                Column(
+                    # add tooltips to these fields. Using Div applies tooltip to combination of label and checkbox 
+                    Div('prevent_back_to_back_styles', 
+                        data_bs_toggle="tooltip", 
+                        data_bs_placement="right",
+                        title="Checking this box prevents the playlist from having two consecutive songs of the same dance style.",
+                    ), 
+                    Div('prevent_back_to_back_tempos',
+                        data_bs_toggle="tooltip", 
+                        data_bs_placement="right",
+                        title="Checking this box prevents the playlist from having two consecutive fast songs or two consecutive slow songs.",                        
+                    ), 
+                    # left-justify the second column, keep it toward the middle of the form
+                    css_class='text-start px-4 col-6'),
+                # align the bottom of the two columns in this row
+                css_class='align-items-end' 
             ),
-            # second row has one column for informative text
+            # second row has two column titles, one for percentages, the other for holidays
             Row(
                 Column(
                     HTML("<h4 class='text-center'>Select Percentages for each dance style</h4>"),
                     HTML("<h6 class='text-center'>Values must add up to 100 percent</h6>"),
-                    css_class='col-12 text-center')
+                    # percentage data should take 9/12 of the window
+                    css_class='col-9 text-center',
+                ),
+                Column(
+                    HTML("<h5 class='text-center'>Include Holiday-Themed Songs?</h5>"),
+                    # holidays only need 3/12 of the windoe
+                    css_class='col-3 text-center',
+               ),
+               # align the bottom of the two columns in this row
+               css_class='align-items-end' 
             ),
-            # next row has four columns to set percentages for each dance type
-            Row(
-                Column(field_names[0], field_names[1], field_names[2], field_names[3], field_names[4], css_class="col-3"),
-                Column(field_names[5], field_names[6], field_names[7], field_names[8], field_names[9], css_class="col-3"),
-                Column(field_names[10], field_names[11], field_names[12], field_names[13], field_names[14], css_class="col-3"),
-                Column(field_names[15], field_names[16], field_names[17], field_names[18], field_names[19], css_class="col-3"),
-                css_class='pt-2 border border-dark',
-                css_id='enter-percentages'
-            ),
-            # next row has one column for more informative text
+            # next row has two columns, one for percentage data, the other for holiday selections
             Row(
                 Column(
-                    HTML("<h4 class='text-center'>Include Holiday-Themed Songs?</h4>"),
-                    css_class='col-12 text-center mt-4')
-            ),
-            # next row has four columns, one for each holiday
-            Row(
-                Column(field_names[20], css_class="col-3"),
-                Column(field_names[21], css_class="col-3"),
-                Column(field_names[22], css_class="col-3"),
-                Column(field_names[23], css_class="col-3"),
-                css_class='pt-2 border border-danger',
-                css_id='enter-holidays'
+                    # first column is split into five sub-columns to set percentages for each dance type
+                    Row(
+                        Column(AppendedText(field_names[0], '%', active=True),
+                               AppendedText(field_names[1], '%', active=True),
+                               AppendedText(field_names[2], '%', active=True),
+                               AppendedText(field_names[3], '%', active=True), 
+                               # each sub-column takes 2/12 of the enclosing column, first sub-column is offset 1/12
+                               css_class="col-2 offset-1"),
+                        Column(AppendedText(field_names[4], '%', active=True),
+                               AppendedText(field_names[5], '%', active=True),
+                               AppendedText(field_names[6], '%', active=True),
+                               AppendedText(field_names[7], '%', active=True), css_class="col-2"),     
+                        Column(AppendedText(field_names[8], '%', active=True),
+                               AppendedText(field_names[9], '%', active=True),
+                               AppendedText(field_names[10], '%', active=True),
+                               AppendedText(field_names[11], '%', active=True), css_class="col-2"), 
+                        Column(AppendedText(field_names[12], '%', active=True),
+                               AppendedText(field_names[13], '%', active=True),
+                               AppendedText(field_names[14], '%', active=True),
+                               AppendedText(field_names[15], '%', active=True), css_class="col-2"),    
+                        Column(AppendedText(field_names[16], '%', active=True),
+                               AppendedText(field_names[17], '%', active=True),
+                               AppendedText(field_names[18], '%', active=True),
+                               AppendedText(field_names[19], '%', active=True), css_class="col-2"), 
+                        # put a dark border around the five subcolumns
+                        css_class='pt-2 border border-dark',
+                        # establish an ID for javascript to use
+                        css_id='enter-percentages'
+                    ),
+                    # this row for an error message is centered under the five subcolumns
+                    Row(
+                        # establish an ID so Javascript can modify this error text
+                        HTML("<p hidden id='percentage-error'>Current total is <span id='percentage-total'></span> percent</p>"),
+                    ),
+                    css_class='text-center'
                 ),
-            # this row has a save checkbox
+                Column(   
+                    # second column determines if holiday songs will be used
+                    Row(
+                        field_names[20], field_names[21], field_names[22], field_names[23],
+                        # put a border around these elements
+                        css_class='pt-2 border border-danger',
+                        # establish an ID for javascript to use
+                        css_id='enter-holidays'
+                        ),
+                    # this column takes 3/12 of the window and data is centered within that allocaation
+                    css_class='col-3 text-center'
+                ),
+            ),
+            # this row has a save checkbox, it is centered in the entire window and has a top margin
             Row(
                 Column('save_preferences'),
-                css_class = 'col-12 text-center mt-2'
+                css_class = 'col-12 text-center mt-3'
             ),
+            
             # submit and cancel buttons
             FormActions(
                 Submit('continue', 'Continue'),
                 Submit('cancel', 'Cancel'),
-                css_class="my-2"
+                # provide a small margin in the y-direction, top and bottom
+                css_class="my-1"
             )
         )    
     
