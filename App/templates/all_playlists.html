@@ -2,6 +2,11 @@
 
 {% load static %}
 
+{% block extra_css %}
+  <!-- special styling needed for this page -->
+  <link rel="stylesheet" href="{% static 'css/all_playlists.css' %}">
+{% endblock %}
+
 {% block content %}
 
   <div class="row">
@@ -14,9 +19,10 @@
   <!--- next row is the table -->
   <div class="col-12 border border-dark px-0">
   <table class="table table-bordered table-sm">
-    <thead class="thead-dark">
-      <!-- define the column headers -->
-      <tr>
+    <thead class="table-dark">
+    <!-- use sticky to keep header row from scrolling off the page -->
+      <tr id='table-header-sticky'>
+        <!-- define the column headers -->
         <th class="text-center">Title</th>
         <th class="text-center">Owner</th>
         <th class="text-center">Song </br> Time Limit</th>
@@ -28,7 +34,7 @@
     <tbody>
       
       <!-- each playlist is a row in the table -->
-      {% for playlist in page_obj %}
+      {% for playlist in playlists %}
         <tr>
           <!-- first columns are title and owner -->
           <td class="text-center">{{ playlist.title }}</td>
@@ -70,9 +76,6 @@
       {% endfor %}
     </tbody>
   </table>
-  
-  <!-- links to previous and next, first and last pages -->
-  {% include "pagination.html" %}
   
   <!-- link to create a playlist, including 1 as a parameter indicates random playlist -->
   <div class="text-center mt-2">
