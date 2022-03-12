@@ -10,7 +10,7 @@ def all_playlists(request, user_id=None):
     ''' shows all the Playlists in the database. '''
     
     # assume there are no playlists
-    page_obj = None
+    playlists = None
     page_title = "All Playlists"
     
     # if there are any playlists
@@ -27,15 +27,9 @@ def all_playlists(request, user_id=None):
             # get the playlists owned by that user and change the page title 
             playlists = Playlist.objects.filter(owner=user).order_by(Lower('title'))
             page_title = "My Playlists"
-        
-        if len(playlists) > 0:
-            # split the playlists into pages and get the requested page
-            paginator = Paginator(playlists, 16)
-            page_number = request.GET.get('page')
-            page_obj = paginator.get_page(page_number)
     
     # render the template
     return render(request, 'all_playlists.html', 
-                  {'page_obj': page_obj,
+                  {'playlists': playlists,
                    'page_title': page_title})
 
