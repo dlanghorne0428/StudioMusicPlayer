@@ -8,7 +8,7 @@ import random
 from datetime import time
 
 # imported our models
-from App.models.song import Song, DANCE_TYPE_DEFAULT_PERCENTAGES, DANCE_TYPE_TEMPOS, HOLIDAY_DEFAULT_USAGE
+from App.models.song import Song, DANCE_TYPE_CHOICES, DANCE_TYPE_DEFAULT_PERCENTAGES, DANCE_TYPE_TEMPOS, HOLIDAY_DEFAULT_USAGE
 from App.models.user import User
 from App.models.playlist import Playlist, SongInPlaylist
 from App.forms import PlaylistInfoForm, RandomPlaylistForm
@@ -82,6 +82,64 @@ def create_playlist(request, random=None):
                                     'form':PlaylistInfoForm(), 
                                     'error': "Invalid data submitted."})            
     
+
+def pick_random_song(playlist, dance_type, focus_holiday=None):
+    '''pick a random song of this dance type and add it to the playlist.
+      if focus_holiday is set, limit the choices to holiday songs of that type, if any.'''
+    # initialize return variable
+    missed_a_holiday_song = None
+    
+    # first find the songs in the database of this dance type, or all songs if no type specified
+    if dance_type is None:
+        candidate_songs = Song.objects.all()
+    else:
+        candidate_songs = Song.objects.filter(dance_type=dance_type)
+    
+    # create a list for songs that match     
+    available_songs = list()
+    
+    # if there is a focus holiday
+    if focus_holiday:
+        # apply another filter for only holiday songs
+        holiday_candidates = candidate_songs.filter(holiday=focus_holiday)
+        # add the holiday songs to the available songs list
+        for s in holiday_candidates:
+            # prevent songs that are already in this playlist
+            if s.playlist_set.filter(id=playlist.id).count() == 0:
+                available_songs.append(s)
+        # if no holiday songs of this type, set missed flag to inform calling routine
+        if len(available_songs) == 0:
+            if dance_type is None:
+                warn_msg = "No %s songs" % (focus_holiday, )
+            else:
+                warn_msg = "No %s songs for %s" % (dance_type, focus_holiday)
+                print(warn_msg)                            
+            missed_a_holiday_song = True
+        else:
+            missed_a_holiday_song = False
+     
+    # if we didn't add any holiday songs, consider all candidate songs            
+    if len(available_songs) == 0:
+        for s in candidate_songs:
+            # don't allow songs from holidays that are excluded
+            if s.holiday: 
+                if playlist.preferences is None:
+                    if HOLIDAY_DEFAULT_USAGE[s.holiday] == "Ex":
+                        print("Excluding song: " + s.get_holiday_display())
+                        continue
+                elif playlist.preferences['holiday_usage'][s.holiday] == "Ex":
+                    print("Excluding song: " + s.get_holiday_display())
+                    continue
+            # prevent songs from taking two spots in the same playlist
+            if s.playlist_set.filter(id=playlist.id).count() == 0:
+                available_songs.append(s)
+    
+    # pick a random song from the available list - all equal probability and add it to the playlist
+    random_song = available_songs[random.randrange(len(available_songs))]
+    playlist.add_song(random_song)
+    
+    # return indication that a requested holiday song was not selected
+    return missed_a_holiday_song
 
 
 def build_random_playlist(request, playlist_id):
@@ -224,50 +282,20 @@ def build_random_playlist(request, playlist_id):
             # save the dance style selected
             dance_style = random_choice[0]
             
-            # now find the songs in the database of this dance style
-            candidate_songs = Song.objects.filter(dance_type=dance_style)
-            available_songs = list()
-            # if there is a focus holiday
-            if focus_holiday:
-                # and it is time for a holiday song or previous holiday song was missed
-                if index % focus_ratio == 0 or missed_a_holiday_song:
-                    # apply another filter for only holiday songs
-                    holiday_candidates = candidate_songs.filter(holiday=focus_holiday)
-                    # add the holiday songs to the available songs list
-                    for s in holiday_candidates:
-                        # prevent songs that are already in this playlist
-                        if s.playlist_set.filter(id=playlist.id).count() == 0:
-                            available_songs.append(s)
-                    # if no holiday songs of this style, set missed flag for next time thru loop
-                    if len(available_songs) == 0: 
-                        warn_msg = "No %s songs for %s" % (dance_style, focus_holiday)
-                        print(warn_msg)                            
-                        missed_a_holiday_song = True
-                    else:
-                        missed_a_holiday_song = False
-             
-            # if we didn't add holiday songs, consider all songs of this dance style                
-            if len(available_songs) == 0:
-                for s in candidate_songs:
-                    # don't allow songs from holidays that are excluded
-                    if s.holiday: 
-                        if holiday_usage[s.holiday] == "Ex":
-                            print("Excluding song: " + s.get_holiday_display())
-                            continue
-                    # prevent songs from taking two spots in the same playlist
-                    if s.playlist_set.filter(id=playlist.id).count() == 0:
-                        available_songs.append(s)
-            
-            # pick a random song from the available list - all equal probability and add it to the playlist
-            random_song = available_songs[random.randrange(len(available_songs))]
-            playlist.add_song(random_song)
+            # if it is time for a holiday song, pass the holiday into the random song picker
+            if focus_holiday and (index % focus_ratio == 0 or missed_a_holiday_song):
+                missed_a_holiday_song = pick_random_song(playlist, dance_style, focus_holiday)
+            else:  
+                # pick any song of the required dance style
+                missed_a_holiday_song == False
+                pick_random_song(playlist, dance_style)
             
             # decrement the number of remaining songs for that style and remember which style was chosen for next iteration
             songs_remaining[dance_style] -= 1
             last_song_style = dance_style
         
-        # return to list of user's playlists        
-        return redirect('App:all_playlists', user.id)
+        # redirect to show the playlist      
+        return redirect('App:edit_playlist', playlist.id)
 
 
 def add_to_playlist(request, playlist_id, song_id):
@@ -283,7 +311,22 @@ def add_to_playlist(request, playlist_id, song_id):
     
     # redirect to edit playlist page, showing new song at end of list
     return redirect('App:edit_playlist', playlist.id)
-   
+
+
+def add_random_song_to_playlist(request, playlist_id, dance_type):
+    ''' add a song to the end of a playlist '''
+    # get the specific playlist object from the database
+    playlist = get_object_or_404(Playlist, pk=playlist_id) 
+    
+    if dance_type == "Any":
+        dance_type = None
+        
+    # pick a random song of the requested type and add it to playlist
+    pick_random_song(playlist, dance_type)
+    
+    # redirect to edit playlist page, showing new song at end of list
+    return redirect('App:edit_playlist', playlist.id)
+
    
 def delete_playlist(request, playlist_id):
     ''' allows the superuser to edit an existing playlist. '''
@@ -396,6 +439,7 @@ def edit_playlist(request, playlist_id):
         return render(request, 'edit_playlist.html', {
             'playlist': playlist,
             'songs': songs_in_playlist,
+            'dance_types': DANCE_TYPE_CHOICES,
             'form': form,
         })
 
@@ -414,6 +458,7 @@ def edit_playlist(request, playlist_id):
             return render(request, 'edit_playlist.html', {
             'playlist': playlist,
             'songs': songs_in_playlist,
+            'dance_types': DANCE_TYPE_CHOICES,
             'form': form,
             'error': "Invalid data submitted."
         })
