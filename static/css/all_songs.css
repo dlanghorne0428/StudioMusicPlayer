@@ -11,3 +11,8 @@
   position: sticky;
   top: 32px;  /* value based on height of table header */
 }
+
+/* this hides the dropdown menu button when scrolling behind other elements */
+.dropdown {
+  position: inherit;  
+}
