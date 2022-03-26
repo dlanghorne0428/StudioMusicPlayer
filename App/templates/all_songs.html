@@ -34,18 +34,18 @@
       <!-- div tag used to enable sticky positioning -->
       <div>   
         <!-- the first row of the table is a filter -->
-        <form class="mx-auto" method="get">
+        <form class="mx-auto" id='song-filter-form' method="get">
           {% csrf_token %}
           <!-- use sticky to keep this row from scrolling off the page -->
           <tr id='song-filter-sticky' class="table-secondary">
             <!-- user can filter on any of these columns --> 
-            <td class="text-center">{{ filter.form.artist }}</td>
-            <td class="text-center">{{ filter.form.title }}</td>
-            <td class="text-center">{{ filter.form.dance_type }}</td>
-            <td class="text-center">{{ filter.form.holiday }}</td>
+            <td id='artist-filter' class="text-center">{{ filter.form.artist }}</td>
+            <td id='title-filter' class="text-center">{{ filter.form.title }}</td>
+            <td id='dance-type-filter' class="text-center">{{ filter.form.dance_type }}</td>
+            <td id='holiday-filter' class="text-center">{{ filter.form.holiday }}</td>
             <!-- the last button is used to submit filter data -->
             <td class="text-center">
-              <input class="btn btn-dark btn-sm" type="submit" name="submit" value="Filter"/>
+              <input class="btn btn-dark btn-sm" type="submit" name="btn_submit" value="Filter"/>
             </td>
           </tr>
         </form>
@@ -101,4 +101,9 @@
      <a class="btn btn-primary" href="{% url 'App:add_song' %}">Add Song From File</a>
   </div>
 
+{% endblock %}
+
+<!-- need javascript to submit the form when any info items have changed -->
+{% block extra_js %}
+    <script src={% static 'js/all_songs.js' %}></script>
 {% endblock %}
