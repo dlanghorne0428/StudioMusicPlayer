@@ -58,7 +58,7 @@ class Playlist(models.Model):
         for higher_index in range(index+1, playlist_length):
             next_index = SongInPlaylist.objects.get(playlist=self, order=higher_index)
             next_index.order = higher_index - 1
-            print(next_index.song, next_index.order)
+            #print(next_index.song, next_index.order)
             next_index.save()          
 
     def move_song(self, song, old_index, new_index):
@@ -72,7 +72,7 @@ class Playlist(models.Model):
             for temp_index in range(old_index, new_index-1):
                 next_index = SongInPlaylist.objects.get(playlist=self, order=temp_index+1)
                 next_index.order = temp_index
-                print(next_index.song, next_index.order)
+                #print(next_index.song, next_index.order)
                 next_index.save()
             selected.order = new_index - 1
             selected.save()
@@ -82,7 +82,7 @@ class Playlist(models.Model):
             for temp_index in range(old_index, new_index, -1):
                 prev_index = SongInPlaylist.objects.get(playlist=self, order=temp_index-1)
                 prev_index.order = temp_index
-                print(prev_index.song, prev_index.order)
+                #print(prev_index.song, prev_index.order)
                 prev_index.save()
             selected.order = new_index
             selected.save()    

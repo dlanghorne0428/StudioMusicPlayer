@@ -24,6 +24,7 @@
   position: inherit;  
 }
 
+/* this allows an icon to be used when editing a playlist with drag-and-drop */
 #song-note-icon {
     position: absolute;
     zIndex: 1000;

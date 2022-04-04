@@ -57,10 +57,10 @@
         <th class="text-center">Title</th>
         <th class="text-center">Dance</th>
         <th class="text-center">Play <br>Whole Song?</th>
-        <th colspan='3' class="text-center">Action</th>
+        <th class="text-center">Action</th>
       </tr>
     </thead>
-    <tbody id="playlist-songs">
+    <tbody id="playlist-song-table-body">
       
       <!-- the rest of the table has one song per row -->
       {% for s in songs %}
@@ -85,28 +85,7 @@
           {% endif %}
         </td>
         
-        <!-- final columns are the action buttons -->
-        <td class="text-center">  
-          <!-- show the up arrow to move a song up one slot unless it's the first song -->
-          {% if forloop.counter > 1 %}
-            <!-- add command and a zero-based index as URL parameters so the view can process -->
-            <a class="btn btn-white btn-sm" 
-              href="?{% param_replace cmd="up" index=forloop.counter0 %}">
-              <img src={% static 'img/arrow-up.svg' %}>
-            </a>
-          {% endif %}
-        </td>
-        
-        <td class="text-center">  
-          <!-- show the down arrow to move a song down one slot unless it's the last song -->
-          {% if forloop.counter < songs|length %}
-            <a class="btn btn-white btn-sm" 
-              href="?{% param_replace cmd="down" index=forloop.counter0 %}">
-              <img src={% static 'img/arrow-down.svg' %}>
-            </a>
-         {% endif %}
-        </td>
-        
+        <!-- final columns are the action buttons -->       
         <td><span class="dropdown">
           <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button" 
                   data-bs-toggle="dropdown">&hellip;       
@@ -142,6 +121,8 @@
       {% endfor %}
     </ul>
   </div>
+  
+  <!-- these elements support drag-and-drop, they are hidden on page load -->
   <div>
     <img id='song-note-icon' hidden src="{% static 'img/default.png' %}">
     <a id="submit-drag-drop-song" hidden href="#"></a>
