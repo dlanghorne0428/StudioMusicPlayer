@@ -60,7 +60,7 @@
         <th colspan='3' class="text-center">Action</th>
       </tr>
     </thead>
-    <tbody>
+    <tbody id="playlist-songs">
       
       <!-- the rest of the table has one song per row -->
       {% for s in songs %}
@@ -104,7 +104,7 @@
               href="?{% param_replace cmd="down" index=forloop.counter0 %}">
               <img src={% static 'img/arrow-down.svg' %}>
             </a>
-          {% endif %}
+         {% endif %}
         </td>
         
         <td><span class="dropdown">
@@ -141,6 +141,10 @@
         <li><a class="dropdown-item" href="{% url 'App:add_random_song_to_playlist' playlist.id dt.0 %}">{{dt.1}}</a></li>
       {% endfor %}
     </ul>
+  </div>
+  <div>
+    <img id='song-note-icon' hidden src="{% static 'img/default.png' %}">
+    <a id="submit-drag-drop-song" hidden href="#"></a>
   </div>
 
 {% endblock %}

@@ -431,6 +431,12 @@ def edit_playlist(request, playlist_id):
                 selected.feature = not(selected.feature)
                 selected.save()
                 
+            elif command == 'dragsong': 
+                new_index_str = request.GET.get('newIndex')
+                print('new index is: ' + new_index_str)
+                new_index = int(new_index_str)                
+                playlist.move_song(selected.song, index, new_index)  
+                
             # redirect to this same view in order to remove the URL parameters 
             return redirect('App:edit_playlist', playlist_id)             
         
