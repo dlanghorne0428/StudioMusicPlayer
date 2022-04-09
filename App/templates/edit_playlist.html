@@ -60,7 +60,8 @@
         <th class="text-center">Action</th>
       </tr>
     </thead>
-    <tbody id="playlist-song-table-body">
+    <!-- prevent text in table body from being selected. -->
+    <tbody class="unselectable" id="playlist-song-table-body">
       
       <!-- the rest of the table has one song per row -->
       {% for s in songs %}
