@@ -56,11 +56,26 @@ function table_index(table_row_element) {
 // change the borders of table elements
 function adjustBorder(elemBelow) {
     // top border of the selected element is highlighted to indicate the drop target
-    elemBelow.style.borderTop = "3px solid red";
+    elemBelow.style.borderTop = "3px solid DodgerBlue";
     //reset the top border of the previously selected element to normal style
     currentElement.style.borderTop = "1px solid";
     // remember the currently selected element as the drop target
     currentElement = elemBelow;
+};
+
+
+// quit the dragging and restore default styling
+function quitDrag() {
+    console.log("quit drag called");
+    // clear highlighting of original selection and hide the note icon
+    selectedElement.style.backgroundColor = 'white';
+    songNoteIcon.setAttribute('hidden', '');
+    
+    // quit listening for mouse moves
+    document.removeEventListener('mousemove', onMouseMove);
+    
+    //reset the top border of the previously selected element to normal style
+    currentElement.style.borderTop = "1px solid";
 };
 
 
@@ -74,22 +89,30 @@ function moveAt(event) {
     // find the HTML element below the icon, hide the icon temporarily to access it
     songNoteIcon.hidden = true;
     var elemBelow = document.elementFromPoint(event.clientX, event.clientY);
-    //console.log(elemBelow.innerHTML);
-    // TODO: check for null, also need to handle the bottom of the table.
-    // traverse the parent element until you get to the table row and find the song index
-    do {
-        elemBelow = elemBelow.parentElement;
-    } while (elemBelow.tagName != "TR");
-    latestIndex = table_index(elemBelow);
     
-    // if the index has changed, update the newSongIndex and update the border
-    if (latestIndex != newSongIndex) {   
-        newSongIndex = latestIndex;
-        adjustBorder(elemBelow);
-        console.log("Moving:", songNoteIcon.style.left, songNoteIcon.style.top,  "Index: ", newSongIndex);
-    }
+    // if the element is not table data, quit dragging and prevent any changes
+    if (elemBelow.tagName != "TD") {
+        console.log(elemBelow.tagName);
+        // TODO: also need to handle the bottom of the table.
+        newSongIndex = songIndex;   // reset so no changes happen
+        quitDrag();
+    } else {
+        // traverse the parent element until you get to the table row and find the song index
+        do {
+            elemBelow = elemBelow.parentElement;
+        } while (elemBelow.tagName != "TR");
+        latestIndex = table_index(elemBelow);
+    
+        // if the index has changed, update the newSongIndex and update the border
+        if (latestIndex != newSongIndex) {   
+            newSongIndex = latestIndex;
+            adjustBorder(elemBelow);
+            console.log("Moving:", songNoteIcon.style.left, songNoteIcon.style.top,  "Index: ", newSongIndex);
+        }
+
     // unhide the icon to keep dragging
     songNoteIcon.hidden = false;
+    }
 };
 
 
@@ -141,12 +164,8 @@ function onMouseMove(event) {
 // Handle mouse up for drop
 function myReleaseFunction(event) {
     console.log('Up coordinates: ', event.pageX, event.pageY);
-    // clear highlighting of original selection and hide the note icon
-    selectedElement.style.backgroundColor = 'white';
-    songNoteIcon.setAttribute('hidden', '');
-    
-    // quit listening for mouse moves
-    document.removeEventListener('mousemove', onMouseMove);
+    // end the dragging functions and restore styling
+    quitDrag();
     
     // if new index is different from the original selection
     if (newSongIndex != songIndex) { 
@@ -163,5 +182,5 @@ function myReleaseFunction(event) {
         theLink = document.getElementById('submit-drag-drop-song');
         theLink.setAttribute('href', myUrl);
         theLink.click();
-    };
+    }
 };
