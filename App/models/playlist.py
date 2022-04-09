@@ -56,10 +56,37 @@ class Playlist(models.Model):
                 
         # move all songs after the selected index up one slot
         for higher_index in range(index+1, playlist_length):
-            next = SongInPlaylist.objects.get(playlist=self, order=higher_index)
-            next.order = higher_index - 1
-            print(next.song, next.order)
-            next.save()          
+            next_index = SongInPlaylist.objects.get(playlist=self, order=higher_index)
+            next_index.order = higher_index - 1
+            #print(next_index.song, next_index.order)
+            next_index.save()          
+
+    def move_song(self, song, old_index, new_index):
+        ''' move the specified song to the new index in the playlist'''
+        
+        # get the selected song from the playlist
+        selected = SongInPlaylist.objects.get(playlist=self, song=song)  
+        
+        if old_index < new_index:
+            # move all songs after the old index up one slot
+            for temp_index in range(old_index, new_index-1):
+                next_index = SongInPlaylist.objects.get(playlist=self, order=temp_index+1)
+                next_index.order = temp_index
+                #print(next_index.song, next_index.order)
+                next_index.save()
+            selected.order = new_index - 1
+            selected.save()
+            
+        elif old_index > new_index:
+            # move all songs above the old index down one slot            
+            for temp_index in range(old_index, new_index, -1):
+                prev_index = SongInPlaylist.objects.get(playlist=self, order=temp_index-1)
+                prev_index.order = temp_index
+                #print(prev_index.song, prev_index.order)
+                prev_index.save()
+            selected.order = new_index
+            selected.save()    
+        
 
     def __str__(self):
         return self.title

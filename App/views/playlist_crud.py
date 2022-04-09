@@ -381,29 +381,8 @@ def edit_playlist(request, playlist_id):
             print(selected.song)
             
             print('command is: ' + command)       
-            if command == 'up':
-                # moving the selected song up one slot, so get song currently in that slot
-                previous = SongInPlaylist.objects.get(playlist=playlist_id, order=index - 1)
-                print(previous.song)
                 
-                # swap slots for selected and previous songs.
-                selected.order = index - 1
-                selected.save()    
-                previous.order = index
-                previous.save() 
-                
-            elif command == 'down':
-                # moving the selected song down one slot, so get song currently in that slot
-                next = SongInPlaylist.objects.get(playlist=playlist_id, order=index + 1)
-                print(next.song)
-                
-                # swap slots for selected and next songs.
-                selected.order = index + 1
-                selected.save()    
-                next.order = index
-                next.save()    
-                
-            elif command == 'delsong':
+            if command == 'delsong':
                 playlist.delete_song(selected.song)
                     
             elif command == "replace-song":
@@ -430,6 +409,14 @@ def edit_playlist(request, playlist_id):
                 # toggle the feature field
                 selected.feature = not(selected.feature)
                 selected.save()
+                
+            elif command == 'dragsong': 
+                # get the new index (dragged position) and convert to integer
+                new_index_str = request.GET.get('newIndex')
+                print('new index is: ' + new_index_str)
+                new_index = int(new_index_str)     
+                # call method in playlist model to rearrange song order
+                playlist.move_song(selected.song, index, new_index)  
                 
             # redirect to this same view in order to remove the URL parameters 
             return redirect('App:edit_playlist', playlist_id)             
