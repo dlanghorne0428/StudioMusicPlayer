@@ -7,7 +7,7 @@ from App.models.playlist import Playlist, SongInPlaylist
 
 # Create your views here
 
-def play_song_list(request, playlist_id):
+def play_song_list(request, playlist_id, start_index=0):
     ''' Play the selected playlist.'''
     
     # only admin users or teachers can play songs
@@ -27,7 +27,6 @@ def play_song_list(request, playlist_id):
     
     # build a list that indicates if a song is featured in this playlist    
     is_feature_list = list()
-    index = 0
     for song in song_list:
         song_in_playlist = SongInPlaylist.objects.get(song=song, playlist=playlist)
         if song_in_playlist.feature:
@@ -49,6 +48,7 @@ def play_song_list(request, playlist_id):
     return render(request, "play_song_list.html", {
         'playlist_info': playlist, 
         'song_list':song_list, 
+        'start_index': start_index,
         'max_song_duration_in_sec': max_song_duration_in_sec,
         'default_url': default_url,
         "playlist_indices": playlist_indices,

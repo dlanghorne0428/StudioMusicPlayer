@@ -92,6 +92,10 @@
                   data-bs-toggle="dropdown">&hellip;       
           </button>
           <ul class="dropdown-menu">
+            <!-- allow the user to resume the playlist from this index --> 
+            <li><a class="dropdown-item" 
+                   href="{% url 'App:play_song_list' playlist.id forloop.counter0 %}">Play from here</a>
+            </li>
             <!-- allow the user to replace a song with another of the same dance style --> 
             <li><a class="dropdown-item" 
                    href="?{% param_replace cmd="replace-song" index=forloop.counter0 %}">Replace</a>
