@@ -119,6 +119,24 @@
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/amplitudejs@latest/dist/amplitude.js"></script>
   <script>
   
+    /* common function to hide a song at the given index from the "up next" list */
+    function hideSongInUpNext(index_to_hide) {
+      /* ensure index is valid */
+      if (index_to_hide < {{ playlist_indices|length }}) {
+        var hide_index_name = "index-" + index_to_hide;
+        document.getElementById(hide_index_name).style.display = "none";
+      };
+    };
+    
+    /* common function to show a song at the given index from the "up next" list */
+    function showSongInUpNext(index_to_show) {
+      /* ensure index is valid */
+      if (index_to_show < {{ playlist_indices|length }}) {
+        var show_index_name = "index-" + index_to_show;
+        document.getElementById(show_index_name).style.display = "inline-block";
+      };
+    };
+  
     const startVolume = 80 /* percent */
     /* get access to time limit paragraph element and is_feature_list */
     const time_limit_para = document.getElementById("timelimit");
@@ -160,15 +178,16 @@
         }
       },
       
+      "start_song": {{start_index}},   /* start playlist from this index */
+      
       /* special code for various events */
       "callbacks": {
         'initialized': function(){
           /* when playlist starts, show the next four songs in 'up next' list */
           console.log("Player has been initialized.")
-          document.getElementById("index-1").style.display = "inline-block";
-          document.getElementById("index-2").style.display = "inline-block";
-          document.getElementById("index-3").style.display = "inline-block";
-          document.getElementById("index-4").style.display = "inline-block";
+          for (let i = {{ start_index }} + 1; i <= {{ start_index }} + 4; i++ ) {
+            showSongInUpNext(i);
+          };
         },
         
         {% if playlist_info.max_song_duration %}
@@ -241,22 +260,12 @@
         },
         {% endif %}
           
-        'prev': function() {
-          /* backing up one song in list */
-          console.log("Previous Track selected.");
-          
+        'prev': function() {          
           /* show the song that was playing in the 'up next' list */
-          new_next_index = Amplitude.getActiveIndex() + 1;
-          new_next_name = "index-" + new_next_index;
-          console.log(new_next_name);
-          document.getElementById(new_next_name).style.display = "inline-block";
+          showSongInUpNext(Amplitude.getActiveIndex() + 1);
           
           /* only show 4 songs in up next, so hide the one after that */
-          index_to_hide = new_next_index + 4;
-          if (index_to_hide < {{ playlist_indices|length }}) {
-            hide_index_name = "index-" + index_to_hide;
-            document.getElementById(hide_index_name).style.display = "none";
-          }
+          hideSongInUpNext(Amplitude.getActiveIndex() + 5);
         },
           
         'song_change': function(){   
@@ -278,17 +287,10 @@
           {% endif %}
 
           /* don't show current song in 'up next' list */
-          curr_index = Amplitude.getActiveIndex();
-          curr_id_name = "index-" + curr_index;
-          console.log(curr_id_name);
-          document.getElementById(curr_id_name).style.display = "none";
+          hideSongInUpNext(Amplitude.getActiveIndex());
             
           /* show the 4th future song in the list, if there is one */
-          future_index = curr_index + 4;
-          if (future_index < {{ playlist_indices|length }}) {
-            future_id_name = "index-" + future_index;
-            document.getElementById(future_id_name).style.display = "inline-block";
-          }
+          showSongInUpNext(Amplitude.getActiveIndex() + 4);
         }
       },
       

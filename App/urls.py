@@ -24,5 +24,6 @@ urlpatterns = [
     path("playlists/edit/<int:playlist_id>/addrandomsong/<str:dance_type>", views.add_random_song_to_playlist, name="add_random_song_to_playlist"),
     path("playlists/edit/<int:playlist_id>/addsong/<int:song_id>", views.add_to_playlist, name="add_to_playlist"),
     path('playSongList/<int:playlist_id>', views.play_song_list, name="play_song_list"),
+    path('playSongList/<int:playlist_id>/<int:start_index>', views.play_song_list, name="play_song_list"),    
     path("preferences/", views.user_preferences, name="user_preferences"),    
 ]
