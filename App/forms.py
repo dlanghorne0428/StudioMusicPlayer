@@ -79,6 +79,10 @@ class PlaylistInfoForm(ModelForm):
         # limit height of this field to 3 rows
         widget = Textarea(attrs={'rows': 3}))
     
+    is_showcase_or_comp = forms.BooleanField(
+        label = "Competition/Showcase",
+        required = False)   # this field must not be required in order to set it to false
+
     auto_continue = forms.BooleanField(
         label = "Autoplay Next Song",
         required = False)   # this field must not be required in order to set it to false
@@ -113,15 +117,17 @@ class PlaylistInfoForm(ModelForm):
         
         if self.submit_title is not None:
             self.helper.layout = Layout(
-                # first row has one column for the title
+                # first row has two columns: title and checkboxes
                 Row(
                     Column(
                         Field('title', css_class='fs-3 px-0 text-center'),
                         css_class="col-8 offset-2"),
+                    Column('is_showcase_or_comp', 'auto_continue', 
+                           css_class="col-2 text-start"),
                 ),
                 # next row has two columns: description field in the right column is 3 rows tall
                 Row(
-                    Column('max_song_duration', 'auto_continue', css_class="col-2 offset-2"),
+                    Column('max_song_duration', css_class="col-2 offset-2"),
                     Column('description',css_class='text-start col-8 lh-sm'),
                 ),
                 # submit and cancel buttons are included, button text comes from submit_title
@@ -137,9 +143,11 @@ class PlaylistInfoForm(ModelForm):
                     Column(
                         Field('title', css_class='fs-3 px-0 text-center'),
                         css_class="col-8 offset-2"),
+                    Column('is_showcase_or_comp', 'auto_continue', 
+                           css_class="col-2 text-start"),
                 ),
                 Row(
-                    Column('max_song_duration', 'auto_continue', css_class="col-2 offset-2"),
+                    Column('max_song_duration', css_class="col-2 offset-2"),
                     Column('description',css_class='text-start col-8 lh-sm'),
                 ),
             )                
@@ -147,7 +155,7 @@ class PlaylistInfoForm(ModelForm):
     class Meta:
         model = Playlist
         # include these fields in the form
-        fields = ['title', 'description', 'auto_continue', 'max_song_duration']
+        fields = ['title', 'description', 'is_showcase_or_comp', 'auto_continue', 'max_song_duration']
         
 
 

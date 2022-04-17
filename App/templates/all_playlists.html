@@ -25,6 +25,7 @@
         <!-- define the column headers -->
         <th class="text-center">Title</th>
         <th class="text-center">Owner</th>
+        <th class="text-center">Comp Or </br>Showcase?</th>        
         <th class="text-center">Song </br> Time Limit</th>
         <th class="text-center">Autoplay</br>Next Song</th>
         <th class="text-center">Description</th>
@@ -39,6 +40,13 @@
           <!-- first columns are title and owner -->
           <td class="text-center">{{ playlist.title }}</td>
           <td>{{ playlist.owner }}</td>
+          
+          <!-- display a checkmark if showcase field is true, red x otherwise -->
+          {% if playlist.is_showcase_or_comp %}
+            <td>&#9989;</td>
+          {% else %}
+            <td>&#10060;</td>
+          {% endif %}
           
           <!-- if max song duration is set, display in minutes:seconds format -->
           {% if playlist.max_song_duration %}
