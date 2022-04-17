@@ -19,7 +19,10 @@ class Playlist(models.Model):
 
     # a playlist has many songs, a song can be in multiple playlists
     songs = models.ManyToManyField(Song, through='SongInPlaylist')
-    
+
+    # is this playlist for a showcase or competition?
+    is_showcase_or_comp = models.BooleanField(default=False)    
+
     # should the playlist automatically play the next track?
     auto_continue = models.BooleanField(default=True)
 
