@@ -13,15 +13,20 @@
     <!-- Top Level Headers -->
     <div class = "col-8">
       <!-- dance type on left side, 8 out of 12 columns -->
-      <h1 class="dance-type text-center"><span data-amplitude-song-info="dance_type"></span></h1>
+      {% if playlist_info.is_showcase_or_comp %}
+        <h1 class="dance-type text-center">
+          <span>Heat </span>
+          <span id="id-heat-number">?</span>
+          <span>: </span>
+          <span data-amplitude-song-info="dance_type"></span>
+        </h1>
+      {% else %}
+        <h1 class="dance-type text-center"><span data-amplitude-song-info="dance_type"></span></h1>
+      {% endif %}
     </div>
     <div class="col-4">
-      <!-- playlist title on right side, 4 out of 12 columns -->
-      <h2 class="playlist-title text-warning text-decoration-underline">
-         <span>Playlist: </span>
-         <span data-amplitude-playlist-info="title" data-amplitude-playlist="the_list"></span>
-      </h2>
-      <h3 class="text-white">Up Next</h3>
+      <!-- up next on right side, 4 out of 12 columns -->
+      <h2 class="text-warning">Up Next</h2>
     </div>
   </div>
   
@@ -44,8 +49,13 @@
       <!-- upcoming songs in right section, show dance_type and title only -->
       {% for i in playlist_indices %}
         <div class="song-meta-container" id="index-{{i}}">
-          <span class="song-dance-type" data-amplitude-song-info="dance_type" data-amplitude-song-index="{{ i }}"></span>
-          <span class="song-name" data-amplitude-song-info="name" data-amplitude-song-index="{{ i }}"></span>
+          {% if playlist_info.is_showcase_or_comp %}
+            <span class="song-dance-type">Heat {{forloop.counter}}</span>
+            <span class="song-name" data-amplitude-song-info="dance_type" data-amplitude-song-index="{{ i }}"></span>
+          {% else %}
+            <span class="song-dance-type" data-amplitude-song-info="dance_type" data-amplitude-song-index="{{ i }}"></span>
+            <span class="song-name" data-amplitude-song-info="name" data-amplitude-song-index="{{ i }}"></span>
+          {% endif %}
         </div>
       {% endfor %}
     </div>
@@ -96,6 +106,10 @@
   
     <div class="col-4">
       <!-- right section has info about the current playlist and link back to all playlists page -->
+      <p class="text-info my-1"><span>Playlist: </span>
+         <span data-amplitude-playlist-info="title" data-amplitude-playlist="the_list"></span>
+         <span><a href="{% url 'App:edit_playlist' playlist_info.id %}">Edit</a></span>
+      </p>
       {% if playlist_info.max_song_duration %}
         <p class="text-info my-2" id="timelimit">Song time limit: {{ playlist_info.max_song_duration|time:"i:s" }}</p>
       {% endif %}
@@ -104,7 +118,6 @@
       {% else %}
         <p class="text-info my-1">Pause before playing next track</p>
       {% endif %}
-      <p class="text-info my-2">Playlist owner: {{ playlist_info.owner }} <a href="{% url 'App:edit_playlist' playlist_info.id %}">Edit Playlist</a></p></p>
       <p class="text-center my-2"><a href="{% url 'App:all_playlists' %}">Back to All Playlists</a></p>
     </div>
   </div>
@@ -136,10 +149,16 @@
         document.getElementById(show_index_name).style.display = "inline-block";
       };
     };
+    
+    function updateHeatNumber(index) {
+        var current_heat_readable = String(index + 1);
+        heat_number_elem.innerHTML = current_heat_readable;
+    };
   
     const startVolume = 80 /* percent */
     /* get access to time limit paragraph element and is_feature_list */
     const time_limit_para = document.getElementById("timelimit");
+    const heat_number_elem = document.getElementById("id-heat-number");
     const is_feature_list = JSON.parse(document.getElementById('is-feature-list-data').textContent);
 
     
@@ -184,10 +203,11 @@
       "callbacks": {
         'initialized': function(){
           /* when playlist starts, show the next four songs in 'up next' list */
-          console.log("Player has been initialized.")
+          console.log("Player has been initialized.");
           for (let i = {{ start_index }} + 1; i <= {{ start_index }} + 4; i++ ) {
             showSongInUpNext(i);
           };
+          updateHeatNumber({{ start_index }});
         },
         
         {% if playlist_info.max_song_duration %}
@@ -261,11 +281,16 @@
         {% endif %}
           
         'prev': function() {          
+          var current_index = Amplitude.getActiveIndex();
+          
           /* show the song that was playing in the 'up next' list */
-          showSongInUpNext(Amplitude.getActiveIndex() + 1);
+          showSongInUpNext(current_index + 1);
           
           /* only show 4 songs in up next, so hide the one after that */
-          hideSongInUpNext(Amplitude.getActiveIndex() + 5);
+          hideSongInUpNext(current_index + 5);
+          
+          /* update the current heat number */
+          updateHeatNumber(current_index);
         },
           
         'song_change': function(){   
@@ -286,11 +311,16 @@
             duration_label.removeAttribute('hidden');
           {% endif %}
 
+          var current_index = Amplitude.getActiveIndex();
+
           /* don't show current song in 'up next' list */
-          hideSongInUpNext(Amplitude.getActiveIndex());
+          hideSongInUpNext(current_index);
             
           /* show the 4th future song in the list, if there is one */
-          showSongInUpNext(Amplitude.getActiveIndex() + 4);
+          showSongInUpNext(current_index+ 4);
+          
+          /* update the current heat number */
+          updateHeatNumber(current_index);
         }
       },
       
