@@ -19,8 +19,14 @@ def play_song(request, song_id):
     # pass the path to the default cover art
     default_url = settings.STATIC_URL + "img/default.png"
     
-    # render the template
-    return render(request, "play_song.html", 
+    if song.spotify_track_id is not None:
+        return render(request, "play_spotify_song.html", 
                   {'song':song, 
                    'default_url': default_url}
-                  )   
+                  )    
+    else:
+        # render the template
+        return render(request, "play_song.html", 
+                      {'song':song, 
+                       'default_url': default_url}
+                      )   

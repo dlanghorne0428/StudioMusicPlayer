@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block extra_css %}
+  <!-- special styling needed for this page -->
+  <link rel="stylesheet" href="{% static 'css/play_song.css' %}">
+{% endblock %}
+
+{% block content %}
+
+  <div class="row player-page">
+    <!-- bootstrap grid, left side is 8 out of 12 columns -->
+    <div class = "col-8">
+      <!-- Dance Type and metadata of current song -->
+      <h1 class="dance-type text-center">{{song.get_dance_type_display}}</h1>
+      <h2 class="song-title text-center">{{song.title}}</h2>
+      <h3 class="song-artist text-center">{{song.artist}}</span></h3>
+      <br />
+      <iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/{{ song.spotify_track_id }}?utm_source=generator" 
+        width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+      
+    </div>
+    
+    <div class="col-4">
+      <!-- the right side is 4 of 12 columns and has the cover art -->
+      <div class="cover text-center">
+        <img src="{{song.image_link}}"/>
+      </div>
+    </div>
+  </div>
+  
+  <!-- this row covers all 12 columns and links back to the list of all songs -->
+  <div class="row">
+    <div class="col-12">
+      <p class="text-center mt-4"><a href="{% url 'App:all_songs' %}">Back to Song List</a></p>
+    </div>
+  </div>
+
+
+{% endblock %}
+
+
+{% block extra_js %}
+  <!-- Javascript for the Spotify Embed player -->
+  <!--<script src="https://open.spotify.com/embed-podcast/iframe-api/v1" async></script>  -->
+  <!--<script>-->
+    <!--window.onSpotifyIframeApiReady = (IFrameAPI) => {-->
+      <!--let element = document.getElementById('embed-iframe');-->
+      <!--let options = {-->
+          <!--uri: 'spotify:track:1mWdTewIgB3gtBM3TOSFhB'-->
+        <!--};-->
+      <!--let callback = (EmbedController) => {};-->
+      <!--IFrameAPI.createController(element, options, callback);-->
+    <!--};-->
+  <!--</script>-->
+
+{% endblock %}
