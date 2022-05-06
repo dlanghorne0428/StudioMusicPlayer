@@ -8,7 +8,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Div, Field, HTML, Layout, Row, Submit
 from crispy_forms.bootstrap import AppendedText, FormActions
 
-from .models.song import Song, SongFileInput, DANCE_TYPE_CHOICES, HOLIDAY_CHOICES, HOLIDAY_USE_OPTIONS, HOLIDAY_DEFAULT_USAGE
+from .models.song import Song, SongFileInput, SpotifyTrackInput, DANCE_TYPE_CHOICES, HOLIDAY_CHOICES, HOLIDAY_USE_OPTIONS, HOLIDAY_DEFAULT_USAGE #StreamingSongInput, 
 from .models.user import User
 from .models.playlist import Playlist
 
@@ -19,6 +19,15 @@ class SongFileInputForm(ModelForm):
         model = SongFileInput
         # allow user to specify file, dance_type, and select holiday if any
         fields = ['audio_file', 'dance_type', 'holiday']
+
+        
+
+class SpotifyTrackInputForm(ModelForm):
+    '''form for uploading new music from a file.'''
+    class Meta:
+        model = SpotifyTrackInput
+        # allow user to specify file, dance_type, and select holiday if any
+        fields = ['track_URI', 'dance_type', 'holiday']
 
 
 class SongEditForm(ModelForm):

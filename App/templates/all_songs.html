@@ -12,9 +12,14 @@
   <!-- first row in bootstrap grid is the page title, with some padding on the bottom -->
   <div class="row">
     <div class="col-12">
-      <h2 class="text-center pb-2">Songs</h2>
+      <h2 class="text-center">Songs</h2>
     </div>
-  </div>
+      <!-- link to create a song from an audio file or spotify URI-->
+    <div class="text-center my-2">
+      <a class="btn btn-primary" href="{% url 'App:add_song' %}">Add Song From File</a>
+      <a class="btn btn-primary" href="{% url 'App:add_spotify_track' %}">Add Spotify Track</a>
+    </div>
+  </div> 
   
    <!-- next row in bootstrap grid is a table, with dark borders --> 
   <div class="col-10 offset-1 border border-dark">
@@ -96,11 +101,7 @@
       {% endfor %}
     </tbody>
   </table>
-  
-  <!-- link to create a song from an audio file, may add other ways like Soundcloud -->
-  <div class="text-center mt-2">
-     <a class="btn btn-primary" href="{% url 'App:add_song' %}">Add Song From File</a>
-  </div>
+</div>
 
 {% endblock %}
 

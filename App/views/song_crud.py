@@ -7,12 +7,70 @@ import os
 # imported our models
 from App.models.song import Song
 from App.models.playlist import SongInPlaylist
-from App.forms import SongFileInputForm, SongEditForm
+from App.forms import SongFileInputForm, SpotifyTrackInputForm, SongEditForm
 
 # Create your views here.
 ###################################################
 # Song CRUD, add, update, and delete Song objects #
 ###################################################
+
+def authorized(user):
+    return user.is_authenticated and (user.is_superuser or user.is_teacher)
+        
+
+def add_spotify_track(request):
+    
+    import spotipy
+    from spotipy.oauth2 import SpotifyOAuth
+    import spotify_cred as cred 
+    
+    # must be an administrator or teacher to add songs
+    if not authorized(request.user):
+        return render(request, 'permission_denied.html')
+    
+    if request.method == "GET":   # display empty form
+        return render(request, 'add_song.html', {'form':SpotifyTrackInputForm()})    
+    
+    else:  # process data submitted from the form
+        form = SpotifyTrackInputForm(request.POST)
+    
+        # if form data invalid, display an error on the form
+        if not form.is_valid():
+            return render(request, 'add_song.html', {'form':SpotifyTrackInputForm(), 'error': "Invalid data submitted."})  
+        
+        song_instance = form.save(commit=False)
+        print(song_instance.track_URI)
+        
+        # authenticate with spotify 
+        scope = "user-read-recently-played"
+        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=cred.client_ID, 
+                                                       client_secret= cred.client_SECRET, 
+                                                       redirect_uri=cred.redirect_url, 
+                                                       scope=scope))        
+        
+        track = sp.track(song_instance.track_URI)
+        artist = track['artists'][0]['name']
+        title = track['name']
+        spotify_track_id = track['id']
+        image_link = track['album']['images'][0]['url']
+        print(spotify_track_id, image_link)
+        
+        # create a new Song object
+        new_song = Song()
+        
+        # save the audio file, metadata, dance_type, and holiday/theme
+        new_song.spotify_track_id = spotify_track_id
+        new_song.image_link = image_link
+        new_song.title = title
+        new_song.artist = artist
+        new_song.dance_type = song_instance.dance_type
+        new_song.holiday = song_instance.holiday
+        new_song.save()
+        print(new_song)
+    
+        # return to list of songs
+        return redirect('App:all_songs')           
+        
 
 def add_song(request):
     ''' allows the superuser to enter a song into the database. '''
@@ -27,10 +85,7 @@ def add_song(request):
     from get_cover_art import CoverFinder
     
     # must be an administrator or teacher to add songs
-    if not (request.user.is_authenticated):
-        return render(request, 'permission_denied.html')
-    
-    if not (request.user.is_superuser or request.user.is_teacher):
+    if not authorized(request.user):
         return render(request, 'permission_denied.html')
     
     if request.method == "GET":   # display empty form
