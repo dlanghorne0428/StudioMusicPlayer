@@ -14,3 +14,6 @@ class User(AbstractUser):
     
     # this field stores the user's preferences when generating random playlists
     preferences = models.JSONField(null=True)
+    
+    # this field indicates if the user is signed into Spotify
+    has_spotify_token = models.BooleanField(default=False)
