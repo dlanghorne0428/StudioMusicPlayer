@@ -27,4 +27,6 @@ urlpatterns = [
     path('playSongList/<int:playlist_id>', views.play_song_list, name="play_song_list"),
     path('playSongList/<int:playlist_id>/<int:start_index>', views.play_song_list, name="play_song_list"),    
     path("preferences/", views.user_preferences, name="user_preferences"),    
+    path("spotify/", views.spotify_root, name="spotify_root"),  
+    path("spotify/sign_out", views.spotify_sign_out, name="spotify_sign_out"),
 ]
