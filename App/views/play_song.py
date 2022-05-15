@@ -21,8 +21,11 @@ def play_song(request, song_id):
     
     if song.spotify_track_id is not None:
         return render(request, "play_spotify_song.html", 
-                  {'song':song, 
-                   'default_url': default_url}
+                  {'track_id': song.spotify_track_id,
+                   'title': song.title,
+                   'artist': song.artist,
+                   'cover_art': song.image_link,
+                   'dance_type': song.get_dance_type_display}
                   )    
     else:
         # render the template
