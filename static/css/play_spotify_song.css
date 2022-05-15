@@ -1,0 +1,35 @@
+body {
+    background-color: MidnightBlue;
+    margin: 0 24px;
+}
+
+/****** Song info  *****/
+.dance-type {
+    margin: 1rem;
+    font-size: 72px;
+    color: Yellow;
+}
+
+.song-title {
+    margin: 1rem;
+    font-size: 48px;
+    color: White;
+    padding-top: 1.0rem;
+    padding-bottom: 1.0rem;
+}
+
+.song-artist {
+    margin: 1rem;
+    font-size: 32px;
+    color: White;
+    padding-top: 1rem;
+}
+
+/****** Cover Art  *****/
+.cover {
+    margin: 1rem auto;
+}
+
+.cover img {
+    width: 90%;
+}
