@@ -90,15 +90,24 @@
                     {% if user.has_spotify_token %}
                       <a class="dropdown-item" href="{% url 'App:spotify_sign_out' %}">Sign Out of Spotify</a>
                     {% else %}
-                      <a class="dropdown-item" href="{% url 'App:spotify_root' %}">Sign In to Spotify</a>
+                      <a class="dropdown-item" href="{% url 'App:spotify_sign_in' %}">Sign In to Spotify</a>
                     {% endif %}
                     <a class="dropdown-item" href="{% url 'password_change' %}">Change Password</a>
                     <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
                 </div>
               </li>
               {% if user.has_spotify_token %}
-              <li><a href="{% url 'App:spotify_root' %}">
-                    <img class="nav-bar-img" src={% static 'img/Spotify_Logo_RGB_Green.png' %}></a>
+              <li class="nav-item mx-2 dropdown">
+                <a class="nav-link dropdown-toggle py-0" href="#" id="navbarSpotifyDropdown" role="button" data-bs-toggle="dropdown">
+                  <img class="nav-bar-img" src={% static 'img/Spotify_Logo_RGB_Green.png' %}>
+                </a>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="{% url 'App:spotify_followed_artists' %}">Followed Artists</a>
+                  <a class="dropdown-item" href="{% url 'App:spotify_liked_songs' %}">Liked Songs</a>
+                  <a class="dropdown-item" href="{% url 'App:spotify_recently_played' %}">Recently Played</a>
+                  <a class="dropdown-item" href="{% url 'App:spotify_saved_albums' %}">Saved Albums</a>         
+                  <a class="dropdown-item" href="{% url 'App:spotify_sign_out' %}">Sign Out of Spotify</a>
+                </div>
               </li>
               {% endif %}
             {% else %}
