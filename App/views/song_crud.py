@@ -14,6 +14,10 @@ from App.forms import SongFileInputForm, SongEditForm
 # Song CRUD, add, update, and delete Song objects #
 ###################################################
 
+def authorized(user):
+    return user.is_authenticated and (user.is_superuser or user.is_teacher)
+        
+
 def add_song(request):
     ''' allows the superuser to enter a song into the database. '''
     
@@ -27,10 +31,7 @@ def add_song(request):
     from get_cover_art import CoverFinder
     
     # must be an administrator or teacher to add songs
-    if not (request.user.is_authenticated):
-        return render(request, 'permission_denied.html')
-    
-    if not (request.user.is_superuser or request.user.is_teacher):
+    if not authorized(request.user):
         return render(request, 'permission_denied.html')
     
     if request.method == "GET":   # display empty form

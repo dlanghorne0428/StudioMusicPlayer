@@ -6,5 +6,6 @@ from .play_song import *
 from .play_song_list import *
 from .playlist_crud import *
 from .song_crud import *
+from .spotify_views import *
 from .user_access import *
 

@@ -26,4 +26,13 @@ urlpatterns = [
     path('playSongList/<int:playlist_id>', views.play_song_list, name="play_song_list"),
     path('playSongList/<int:playlist_id>/<int:start_index>', views.play_song_list, name="play_song_list"),    
     path("preferences/", views.user_preferences, name="user_preferences"),    
+    path("spotify/sign_in", views.spotify_sign_in, name="spotify_sign_in"),  
+    path("spotify/sign_out", views.spotify_sign_out, name="spotify_sign_out"),
+    path('spotify/liked-songs', views.spotify_liked_songs, name="spotify_liked_songs"),
+    path('spotify/followed-artists', views.spotify_followed_artists, name="spotify_followed_artists"),
+    path('spotify/recently-played', views.spotify_recently_played, name="spotify_recently_played"),
+    path('spotify/saved-albums', views.spotify_saved_albums, name="spotify_saved_albums"),
+    path("spotify/artist-albums/<str:artist_id>", views.spotify_artist_albums, name="spotify_artist_albums"),
+    path("spotify/album-tracks/<str:album_id>", views.spotify_album_tracks, name="spotify_album_tracks"),
+    path("spotify/import-track/<str:track_id>", views.add_spotify_track, name="add_spotify_track"),
 ]

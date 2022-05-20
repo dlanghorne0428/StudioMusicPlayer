@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+  <div class="row">
+    <div class="col-12">
+      <!-- home page only has titles -->
+      <h1 class="text-center">Spotify Access</h1>
+      <h2>Hello, {{ spotify_user }} </h2>
+      <h3>{{ artist_list_description }}</h3>
+    </div>
+  </div>
+  
+  <!-- next row in bootstrap grid is a series of cards, one per artist -->
+  <div class="row border border-dark">
+
+    {% for artist in artist_list %}
+    
+      <div class="col-3 card">
+        <img src="{{artist.artist_image}}" class="card-img-top p-1">
+        <div class="card-body">
+        <h4 class="card-title">{{ artist.artist_name }}</h4>
+        <a href="{% url 'App:spotify_artist_albums' artist.id %}" class="btn btn-primary">View Albums</a>
+      </div>
+      
+
+    {% endfor %}
+
+  </div>
+{% endblock %}

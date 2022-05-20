@@ -4,6 +4,7 @@ from django.conf import settings
 # imported our models
 from App.models.song import Song
 from App.models.playlist import Playlist, SongInPlaylist
+from App.views.spotify_views import spotify_token 
 
 # Create your views here
 
@@ -44,13 +45,26 @@ def play_song_list(request, playlist_id, start_index=0):
     # pass the path to the default cover art for any songs that don't have art 
     default_url = settings.STATIC_URL + "img/default.png"
     
-    # render the template
-    return render(request, "play_song_list.html", {
-        'playlist_info': playlist, 
-        'song_list':song_list, 
-        'start_index': start_index,
-        'max_song_duration_in_sec': max_song_duration_in_sec,
-        'default_url': default_url,
-        "playlist_indices": playlist_indices,
-        'is_feature_list': is_feature_list
-    })   
+    if song_list[0].spotify_track_id:
+        # render the template
+        return render(request, "play_list_spotify_songs.html", {
+            'playlist_info': playlist, 
+            'song': song_list[0], 
+            'start_index': start_index,
+            'max_song_duration_in_sec': max_song_duration_in_sec,
+            'default_url': default_url,
+            "playlist_indices": playlist_indices,
+            'user_token': spotify_token(request.user)['access_token'],
+            'is_feature_list': is_feature_list
+        })          
+    else:
+        # render the template
+        return render(request, "play_song_list.html", {
+            'playlist_info': playlist, 
+            'song_list':song_list, 
+            'start_index': start_index,
+            'max_song_duration_in_sec': max_song_duration_in_sec,
+            'default_url': default_url,
+            "playlist_indices": playlist_indices,
+            'is_feature_list': is_feature_list
+        })   

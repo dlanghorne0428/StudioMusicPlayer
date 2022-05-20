@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block extra_css %}
+  <!-- special styling needed for this page -->
+  <link rel="stylesheet" href="{% static 'css/play_spotify_song.css' %}">
+{% endblock %}
+
+{% block content %}
+
+  <div class="row player-page">
+    <!-- bootstrap grid, left side is 8 out of 12 columns -->
+    <div class = "col-8">
+      <!-- Dance Type and metadata of current song -->
+      <h1 class="dance-type text-center">{{dance_type}}</h1>
+      <h2 class="song-title text-center">{{title}}</h2>
+      <h3 class="song-artist text-center">{{artist}}</span></h3>
+      <br />
+      <iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/{{ track_id }}?utm_source=generator" 
+        width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+    </div>
+    <div class="col-4">
+      <!-- the right side is 4 of 12 columns and has the cover art -->
+      <div class="cover text-center">
+        <img src="{{cover_art}}"/>
+      </div>
+    </div>
+  </div>
+  
+  <!-- this row covers all 12 columns and links back to the list of all songs -->
+  <div class="row">
+    <div class="col-12">
+      <p class="text-center mt-4"><a href="{% url 'App:all_songs' %}">Back to Song List</a></p>
+    </div>
+  </div>
+
+
+{% endblock %}
