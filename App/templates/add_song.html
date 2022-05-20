@@ -4,7 +4,13 @@
 
 {% block content %}
 <div class="row">
-  <div class="col-12">
+
+  {% if cover_art %}
+    <div class="col-6 offset-2">
+  {% else %}
+    <div class="col-12">  
+  {% endif %}
+
     <!-- Page title and placeholder for errors -->
     <h2 class="text-center">Add Song</h2>
     <h4 class="text-center">{{ error }}</h4>
@@ -22,6 +28,12 @@
       
     </form>
   </div>
+  {% if cover_art %}
+    <div class="col-4">
+      <img src="{{cover_art}}" style="width:100%;"/>
+    </div>
+  {% endif %}
+  
 </div>
 
 {% endblock %}
