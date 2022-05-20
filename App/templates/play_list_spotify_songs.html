@@ -151,6 +151,8 @@
     var pause_control = document.getElementById('pause-control');
     var progress_timer;
     
+    const zeroPad = (num, places) => String(num).padStart(places, '0');
+    
     window.onSpotifyWebPlaybackSDKReady = () => {
     // You can now initialize Spotify.Player and use the SDK
     
@@ -172,7 +174,7 @@
           console.log('Position in Song', position, "Duration:", duration);
         var pct_played = position / duration;
         var total_minutes = Math.trunc(duration / 60000);
-        var total_seconds = Math.trunc((duration - total_minutes * 60000) / 1000);
+        var total_seconds = Math.round((duration - total_minutes * 60000) / 1000);
     
         {% if playlist_info.max_song_duration %} 
         const limit = {{ max_song_duration_in_sec }};
@@ -191,8 +193,8 @@
         {% endif %}
     
         if (duration_time.hasAttribute('hidden')) {
-            duration_minutes.innerHTML = total_minutes;
-          duration_seconds.innerHTML = total_seconds;
+          duration_minutes.innerHTML = total_minutes;
+          duration_seconds.innerHTML = zeroPad(total_seconds, 2);
           duration_time.removeAttribute('hidden');
     
           {% if playlist_info.max_song_duration %}
