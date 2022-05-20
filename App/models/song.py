@@ -150,7 +150,10 @@ class SongFileInput(models.Model):
 class SpotifyTrackInput(models.Model):
     '''This model is for uploading spotify preview auido. It consists of the track URI,
       dance type, and holiday (if any) '''
-    track_URI = models.CharField(max_length=100) 
+    track_id = models.CharField(max_length=100)
+    title = models.CharField(max_length=200,default="Unknown")
+    artist = models.CharField(max_length=200,default="Unknown")   
+    
     dance_type = models.CharField(
         max_length = 10,
         choices = DANCE_TYPE_CHOICES,
@@ -164,7 +167,7 @@ class SpotifyTrackInput(models.Model):
         )
     
     def __str__(self):
-        return self.track_URI + ": " + self.dance_type 
+        return self.track_id + ": " + self.dance_type 
     
 
 class Song(models.Model):

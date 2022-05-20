@@ -27,7 +27,7 @@ class SpotifyTrackInputForm(ModelForm):
     class Meta:
         model = SpotifyTrackInput
         # allow user to specify file, dance_type, and select holiday if any
-        fields = ['track_URI', 'dance_type', 'holiday']
+        fields = ['track_id', 'title', 'artist', 'dance_type', 'holiday']
 
 
 class SongEditForm(ModelForm):
