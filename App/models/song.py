@@ -198,7 +198,10 @@ class Song(models.Model):
         choices = HOLIDAY_CHOICES,
         blank = True,
         default = ""
-        )  
+        )
+    
+    def spotify_uri(self):
+        return "spotify:track:" + self.spotify_track_id
         
     def __str__(self):
         return self.title

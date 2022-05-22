@@ -21,7 +21,9 @@
           <span>{{song.get_dance_type_display}}</span>
         </h1>
       {% else %}
-        <h1 class="dance-type text-center">{{song.get_dance_type_display}}</h1>
+        {% for song in song_list %}
+          <h1 class="dance-type text-center" id="{{forloop.counter0}}-dance-type-index">{{song.get_dance_type_display}}</h1>
+        {% endfor %}
       {% endif %}
     </div>
     <div class="col-4">
@@ -34,21 +36,30 @@
     <!-- next row in bootstrap grid broken into three sections -->
     <div class = "col-5">
       <!-- current song metadata in left section -->
-      <h2 class="song-title text-center">{{song.title}}</h2>
-      <h3 class="song-artist text-center">{{song.artist}}</span></h3>
+      {% for song in song_list %}
+        <h2 class="song-title text-center" id="{{forloop.counter0}}-song-title-index">{{song.title}}</h2>
+        <h3 class="song-artist text-center" id="{{forloop.counter0}}-song-artist-index"">{{song.artist}}</span></h3>
+      {% endfor %}
     </div>
     
     <div class="col-3">
       <!-- cover art in middle section -->
       <div class="cover text-center">
-        <img src="{{song.image_link}}"/>
+        {% for song in song_list %}
+          <img src="{{song.image_link}}" hidden id="{{forloop.counter0}}-cover-art-index""/>
+        {% endfor %}
       </div>
     </div>
     
     <div class="col-4">
       <!-- upcoming songs in right section, show dance_type and title only --> 
-      <h3 class="text-white">Song info</h3>
-      <h3 class="text-white">Goes here</h3>
+      {% for song in song_list %}
+        <div class="song-meta-container" id="{{forloop.counter0}}-upcoming-song-index" >
+          <span class="upcoming-dance-type text-center">{{song.get_dance_type_display}}</span>
+          <span class="upcoming-song-name text-center">{{song.title}}</span>
+        </div>
+      {% endfor %}
+    </div>
   </div>
 
   <div class="row align-items-center">
@@ -118,44 +129,90 @@
 {% block extra_js %}
   <!-- django way to make this list available to javascript -->
   {{ is_feature_list|json_script:"is-feature-list-data" }}
+  {{ spotify_uris|json_script:"spotify-uris-data" }}
   
   <!-- Javascript for the Spotify player -->
   <script src="https://sdk.scdn.co/spotify-player.js"></script>
   <script> 
     var my_device_id; 
     
+    const is_feature_list = JSON.parse(document.getElementById('is-feature-list-data').textContent);
+    const spotify_uris = JSON.parse(document.getElementById('spotify-uris-data').textContent);
+    
     const play = ({
-      spotify_uri,
+      spotify_uris,
+      offset, 
       player_instance
       }) => {
         fetch(`https://api.spotify.com/v1/me/player/play?device_id=${my_device_id}`, {
           method: 'PUT',
-        body: JSON.stringify({ uris: [spotify_uri] }),
-        headers: {
+          body: JSON.stringify({ uris: spotify_uris, offset: offset}),
+          headers: {
             'Content-Type': 'application/json',
-          'Authorization': `Bearer {{user_token}}`
+            'Authorization': `Bearer {{user_token}}`
         },
       });
     };
+    
+    /* common function to hide song elements at the given index */
+    function hideSongElementsForIndex(index_to_hide) {
+      /* ensure index is valid */
+      if (index_to_hide < {{ song_list|length }}) {
+        var index_string = index_to_hide.toString();
+        document.getElementById(index_string.concat("-dance-type-index")).style.display = "none";
+        document.getElementById(index_string.concat("-song-title-index")).style.display = "none";
+        document.getElementById(index_string.concat("-song-artist-index")).style.display = "none";
+        document.getElementById(index_string.concat("-cover-art-index")).setAttribute("hidden", "");
+      };
+    };
+    
+    /* common function to show song elements at the given index */
+    function showSongElementsForIndex(index_to_show) {
+      /* ensure index is valid */
+      if (index_to_show < {{ song_list|length }}) {
+        var index_string = index_to_show.toString();
+        document.getElementById(index_string.concat("-dance-type-index")).style.display = "block";
+        document.getElementById(index_string.concat("-song-title-index")).style.display = "block";
+        document.getElementById(index_string.concat("-song-artist-index")).style.display = "block";
+        document.getElementById(index_string.concat("-cover-art-index")).removeAttribute("hidden");
+      };
+    };
+    
+    function showUpNextElements(current) {
+      for (index = 0; index < {{ song_list|length }}; index += 1) {
+        var the_id_name = index.toString().concat("-upcoming-song-index");
+        if ((index > current) && (index < current + 5))   
+          document.getElementById(the_id_name).style.display = "inline-block";
+        else
+          document.getElementById(the_id_name).style.display = "none";
+      }
+    }
     
     const time_limit_para = document.getElementById("timelimit");
     var progress_bar = document.getElementById('song-played-progress');
     var duration_time = document.getElementById('id-duration');
     var duration_minutes = document.getElementById('duration-minutes');
-    var duration_seconds = document.getElementById('duration-seconds');
+    var duration_secs = document.getElementById('duration-seconds');
+
     const volume_control = document.getElementById('volume_control');
+    var prev_button = document.getElementById('prev-control');
+    var next_button = document.getElementById('next-control');
+    
     var initial_load;
     var saved_volume = 0.8;
+    var current_index = {{ start_index }};
+    var current_state = 'paused';
     
     var play_control = document.getElementById('play-control');
     var pause_control = document.getElementById('pause-control');
     var progress_timer;
     
-    const zeroPad = (num, places) => String(num).padStart(places, '0');
-    
     window.onSpotifyWebPlaybackSDKReady = () => {
     // You can now initialize Spotify.Player and use the SDK
     
+      showSongElementsForIndex(current_index);
+      showUpNextElements(current_index); 
+      
       const token = '{{ user_token }}';
       const player = new Spotify.Player({
           name: 'Studio Streaming Player',
@@ -164,150 +221,221 @@
         });
     
       function pause_the_song() {
-          pause_control.setAttribute('hidden','');
+        pause_control.setAttribute('hidden','');
         play_control.removeAttribute('hidden');
-        clearInterval(progress_timer);
+        current_state = 'paused';
         player.pause();
-        };
+      };
+      
+      function play_next_song() {
+        player.nextTrack().then(() => {              
+          play_control.setAttribute('hidden','');
+          pause_control.removeAttribute('hidden');
+          current_state = 'playing';
+        });
+      };
     
+      function play_previous_song() {
+        player.previousTrack().then(() => {              
+          progress_timer = setInterval(getProgress, 1000);
+          play_control.setAttribute('hidden','');
+          pause_control.removeAttribute('hidden');
+          current_state = 'playing';
+        });
+      };
+      
       function update_progress_bar (position, duration) {
-          console.log('Position in Song', position, "Duration:", duration);
-        var pct_played = position / duration;
-        var total_minutes = Math.trunc(duration / 60000);
-        var total_seconds = Math.round((duration - total_minutes * 60000) / 1000);
+        var pct_played, total_minutes, total_seconds;
+        var duration_seconds = Math.round(duration/1000);
+    
+        const zeroPad = (num, places) => String(num).padStart(places, '0');
     
         {% if playlist_info.max_song_duration %} 
-        const limit = {{ max_song_duration_in_sec }};
-        if (Math.trunc(position / 1000) > limit) {
-            /* highlight the time limit text when time has expired */
-          time_limit_para.style.backgroundColor = 'red';
-          saved_volume -= 0.1;
-          if (saved_volume < 0.2) {
-              saved_volume = 0;
-            pause_the_song()
-          }
-          player.setVolume(saved_volume).then(() => {
-              volume_control.value = saved_volume;
-            });
+          const limit = {{ max_song_duration_in_sec }};
+          const fading_limit = limit - 5;
+          
+          if (duration_seconds > limit) {
+            /* use the max song duration limit as the duration */
+            total_minutes = Math.trunc(limit / 60);
+            total_seconds = Math.round(limit - total_minutes * 60);
+            pct_played = position / (limit * 1000)
+            duration_time.style.backgroundColor = 'red';
+            
+            if (Math.round(position / 1000) > fading_limit) {
+              /* highlight the time limit text when time has expired */
+              time_limit_para.style.backgroundColor = 'red';
+              console.log(position, fading_limit);
+              fade_volume();
+            }
+            else {
+              time_limit_para.style.backgroundColor = 'transparent';  
+            };
           };
+        {% else %}
+          pct_played = position / duration;
+          total_minutes = Math.trunc(duration / 60000);
+          total_seconds = Math.round((duration - total_minutes * 60000) / 1000);
+          console.log(position, duration, pct_played, total_minutes, total_seconds);
+          duration_time.style.backgroundColor = 'transparent';
         {% endif %}
     
-        if (duration_time.hasAttribute('hidden')) {
-          duration_minutes.innerHTML = total_minutes;
-          duration_seconds.innerHTML = zeroPad(total_seconds, 2);
-          duration_time.removeAttribute('hidden');
-    
-          {% if playlist_info.max_song_duration %}
-          /* find position based on ratio of time limit to song duration and center the text */
-          /* 856 is width of container, 30 is half of the fadeout time text */
-          var duration_in_sec = Math.round(duration / 1000);
-          left_margin = Math.round(limit / duration_in_sec * 856.0) - 30;
-          left_margin_str = String(left_margin).concat('px');
-    
-          /* get the element for fadeout time, set the left margin, and un-hide it */
-          fadeout_time = document.getElementById('id-fadeout-time');
-          fadeout_time.style.left = left_margin_str;
-          fadeout_time.removeAttribute('hidden');
-    
-          {% endif %}
-          };
-    
+        duration_minutes.innerHTML = total_minutes;
+        duration_secs.innerHTML = zeroPad(total_seconds, 2);
+        duration_time.removeAttribute('hidden');
         progress_bar.setAttribute("value", pct_played);
-        };
+      };
     
-        // Ready
-        player.addListener('ready', ({ device_id }) => {
-          console.log('Ready with Device ID', device_id);
-          my_device_id = device_id;
-          initial_load = true;
-          play_control.removeAttribute('hidden');
-          });
-    
-        // Not Ready
-        player.addListener('not_ready', ({ device_id }) => {
-          console.log('Device ID has gone offline', device_id);
-        });
-    
-        player.addListener('initialization_error', ({ message }) => {
-          console.error(message);
-        });
-    
-        player.addListener('authentication_error', ({ message }) => {
-          console.error(message);
-        });
-    
-        player.addListener('account_error', ({ message }) => {
-          console.error(message);
-        });
-    
-    
-        function getProgress() {
-          player.getCurrentState().then(state => {
-            if (!state) {
-              console.error('User is not playing music through the Web Playback SDK');
-              return;
-            };
-            
+      // Ready
+      player.addListener('ready', ({ device_id }) => {
+        console.log('Ready with Device ID', device_id);
+        my_device_id = device_id;
+        initial_load = true;
+        play_control.removeAttribute('hidden');
+      });
+  
+      // Not Ready
+      player.addListener('not_ready', ({ device_id }) => {
+        console.log('Device ID has gone offline', device_id);
+      });
+  
+      player.addListener('initialization_error', ({ message }) => {
+        console.error(message);
+      });
+  
+      player.addListener('authentication_error', ({ message }) => {
+        console.error(message);
+      });
+  
+      player.addListener('account_error', ({ message }) => {
+        console.error(message);
+      });
+  
+  
+      function getProgress() {
+        player.getCurrentState().then(state => {
+          if (!state) {
+            console.error('User is not playing music through the Web Playback SDK');
+            return;
+          };
+          
+          function index_matches_current_track(uri) {
+            return uri == state.track_window.current_track.uri;
+          };
+          
+          if (index_matches_current_track(spotify_uris[current_index])) {
+              
             var duration = state.duration;
             var position = state.position;
-            
-            if (state.paused) {
+          
+            if (state.paused && (current_state == 'playing')) {
               console.log("Song has been paused");
               pause_the_song();
             };
-          
             update_progress_bar(position, duration);
-          });
-        };
-    
-        play_control.onclick = function() {
-          if (initial_load) {
-            play({
-              playerInstance: player,
-            spotify_uri: 'spotify:track:{{song.spotify_track_id}}',
+            
+          } else {
+            /* determine which song is playing */
+            new_index = spotify_uris.findIndex(index_matches_current_track);
+            
+            /* show and hide the metadata */
+            hideSongElementsForIndex(current_index);
+            current_index = new_index;
+            showSongElementsForIndex(current_index); 
+            showUpNextElements(current_index);
+            
+            /* reset volume in case previous song faded or user adjusted */
+            saved_volume = 0.8;
+            player.setVolume(saved_volume).then(() => {
+             volume_control.value = saved_volume;
             });
-            initial_load = false;
-          }
-          else {
-            player.resume();
-          }
-        
-          play_control.setAttribute('hidden','');
-          pause_control.removeAttribute('hidden');
+          };
+        });
+      };
+  
+      play_control.onclick = function() {
+        if (initial_load) {
+          offset = {"position": current_index};
+          play({
+            playerInstance: player,
+            spotify_uris: spotify_uris,
+            offset: offset
+          });
+          initial_load = false;
           progress_timer = setInterval(getProgress, 1000);
-        };
-    
-        pause_control.onclick = function() {
-          pause_the_song();
-        };
-    
-        var volume_button = document.getElementById('volume-button');
-        var mute_button = document.getElementById('mute-button');
-    
-        volume_button.onclick = function() {
-          player.setVolume(0).then(() => {
-            volume_button.setAttribute('hidden','');
-            mute_button.removeAttribute('hidden');
-          });
-        };
-    
-        mute_button.onclick = function() {
-          player.setVolume(saved_volume).then(() => {
-            mute_button.setAttribute('hidden','');
-            volume_button.removeAttribute('hidden');
-          });
-        };
-    
-        volume_control.onclick = function() {
-          saved_volume = volume_control.value;
-          player.setVolume(saved_volume).then(() => {
-            console.log('volume is:', saved_volume);
-          });
-        };
-    
-        player.connect().then(success => {
-          if (success) {
-            console.log('The Web Playback SDK successfully connected to Spotify!');
+        }
+        else {
+          player.resume();
+        }
+      
+        play_control.setAttribute('hidden','');
+        pause_control.removeAttribute('hidden');
+        current_state = 'playing';
+      };
+  
+      pause_control.onclick = function() {
+        pause_the_song();
+      };
+      
+      next_button.onclick = function() {
+        if (current_index + 1 < spotify_uris.length) 
+          play_next_song();
+        else 
+          console.log("on last song, next is disabled");
+      };
+      
+      prev_button.onclick = function() {
+        if (current_index > 0) 
+          play_previous_song();
+        else 
+          console.log("on first song, prev is disabled");
+      };
+      
+      function fade_volume() {
+         if (saved_volume > 0.5) {
+           saved_volume = 0.5;
+         }
+         else if (saved_volume > 0.2) { 
+           saved_volume -= 0.1;
+         }
+         else {
+           saved_volume = 0;
+           /*pause_the_song() */
+         }
+         player.setVolume(saved_volume).then(() => {
+             volume_control.value = saved_volume;
+         });
+         if (saved_volume == 0) {
+           play_next_song()
+         }   
+      };
+  
+      var volume_button = document.getElementById('volume-button');
+      var mute_button = document.getElementById('mute-button');
+  
+      volume_button.onclick = function() {
+        player.setVolume(0).then(() => {
+          volume_button.setAttribute('hidden','');
+          mute_button.removeAttribute('hidden');
+        });
+      };
+  
+      mute_button.onclick = function() {
+        player.setVolume(saved_volume).then(() => {
+          mute_button.setAttribute('hidden','');
+          volume_button.removeAttribute('hidden');
+        });
+      };
+  
+      volume_control.onclick = function() {
+        saved_volume = volume_control.value;
+        player.setVolume(saved_volume).then(() => {
+          console.log('volume is:', saved_volume);
+        });
+      };
+  
+      player.connect().then(success => {
+        if (success) {
+          console.log('The Web Playback SDK successfully connected to Spotify!');
         }
       })
     

@@ -46,15 +46,24 @@ def play_song_list(request, playlist_id, start_index=0):
     default_url = settings.STATIC_URL + "img/default.png"
     
     if song_list[0].spotify_track_id:
+        
+        token_dict = spotify_token(request.user)
+        if token_dict is None:
+            return render(request, 'not_signed_in_spotify.html')
+        
+        spotify_uris = list()
+        for song in song_list:
+            spotify_uris.append(song.spotify_uri())
+            
         # render the template
         return render(request, "play_list_spotify_songs.html", {
             'playlist_info': playlist, 
-            'song': song_list[0], 
+            'song_list': song_list, 
+            "spotify_uris": spotify_uris,
             'start_index': start_index,
             'max_song_duration_in_sec': max_song_duration_in_sec,
             'default_url': default_url,
-            "playlist_indices": playlist_indices,
-            'user_token': spotify_token(request.user)['access_token'],
+            'user_token': token_dict['access_token'],
             'is_feature_list': is_feature_list
         })          
     else:
