@@ -19,8 +19,8 @@
   top: 256px;           /* value based on heights of header form and row with play/clear buttons */
 }
 
-/* this hides the dropdown menu button when scrolling behind other elements */
-.dropdown {
+/* this hides the dropdown menu buttons in the table body when scrolling behind other elements */
+span.dropdown {
   position: inherit;  
 }
 
