@@ -3,7 +3,7 @@ from django.conf import settings
 
 from App.models import User
 from App.models.song import Song, SpotifyTrackInput
-from App.forms import SpotifyTrackInputForm
+from App.forms import SpotifyTrackInputForm, SpotifySearchForm
 
 import os
 import sys
@@ -31,7 +31,10 @@ def track_info_subset (spotify_track, album_name=None, cover_art=None):
     new_track['artist_name'] = spotify_track['artists'][0]['name']
     if 'album' in spotify_track: 
         new_track['album_name'] = spotify_track['album']['name']
-        new_track['cover_art'] = spotify_track['album']['images'][0]['url']
+        if len(spotify_track['album']['images']) > 0:
+            new_track['cover_art'] = spotify_track['album']['images'][0]['url']
+        else:
+            new_track['cover_art'] = None
     else:
         new_track['album_name'] = album_name
         new_track['cover_art'] = cover_art
@@ -51,19 +54,37 @@ def album_info_subset (spotify_album):
     new_album['id'] = spotify_album['id']
     new_album['album_name'] = spotify_album['name']
     new_album['artist_name'] = spotify_album['artists'][0]['name']
-    new_album['cover_art'] = spotify_album['images'][0]['url']
+    if len(spotify_album['images']) > 0:
+        new_album['cover_art'] = spotify_album['images'][0]['url']
+    else:
+        new_album['cover_art'] = None       # may need default image here
     return new_album
 
 
 def artist_info_subset (spotify_artist):
     '''This function saves the information about a Spotify artist needed by our app'''
-    print(spotify_artist)
     new_artist = dict()
     new_artist['id'] = spotify_artist['id']
     new_artist['artist_name'] = spotify_artist['name']
-    new_artist['artist_image'] = spotify_artist['images'][0]['url']
+    if len(spotify_artist['images']) > 0:
+        new_artist['artist_image'] = spotify_artist['images'][0]['url']
+    else:
+        new_artist['artist_image'] = None  # may need default image here
     return new_artist
-            
+
+
+def playlist_info_subset (spotify_playlist):
+    '''This function saves the information about a Spotify artist needed by our app'''
+    new_playlist = dict()
+    new_playlist['id'] = spotify_playlist['id']
+    new_playlist['name'] = spotify_playlist['name']
+    new_playlist['owner'] = spotify_playlist['owner']['display_name']   
+    if len(spotify_playlist['images']) > 0:
+        new_playlist['image'] = spotify_playlist['images'][0]['url']
+    else:
+        new_playlist['image'] = None        
+    return new_playlist
+                  
             
 def find_unique_tracks(items, limit=16):
     '''Filter out duplicates from a list of tracks'''
@@ -103,6 +124,13 @@ class Spotify_Api():
             album_list.append(album_info_subset(i['album']))
         return album_list
 
+    def playlist_collection(self):
+        items = self.spotify.current_user_playlists(limit=16)['items']
+        playlists = list()
+        for i in items:
+            playlists.append(playlist_info_subset(i))
+        return playlists
+
     def artist_albums(self, artist_id):
         items = self.spotify.artist_albums(artist_id, limit=16)['items']
         album_list = list()
@@ -125,12 +153,56 @@ class Spotify_Api():
             artist_list.append(artist_info_subset(i))
         return artist_list
 
+    def artist_tracks(self, artist_id):
+        tracks = self.spotify.artist_top_tracks(artist_id)['tracks']
+        track_list = list()
+        for track in tracks:
+            track_list.append(track_info_subset(track))
+        return track_list     
+    
+    def playlist_tracks(self, playlist_id):
+        playlist = self.spotify.playlist(playlist_id)
+        tracks = playlist['tracks']['items']
+        track_list = list()
+        for track in tracks:
+            track_list.append(track_info_subset(track['track']))
+        return track_list        
+    
     def saved_tracks(self):
         return self.spotify.current_user_saved_tracks()['items']
     
     def track_info(self, track_id):
         track = self.spotify.track(track_id)
         return track_info_subset(track)
+    
+    def search(self, search_term, content_type):
+        results = self.spotify.search(q=search_term, type=[content_type], limit = 16)
+        
+        if content_type == 'artist':
+            artist_list = list()
+            for artist in results['artists']['items']:
+                artist_list.append(artist_info_subset(artist))
+            return artist_list
+        
+        if content_type == 'album':
+            album_list = list()
+            for album in results['albums']['items']:
+                album_list.append(album_info_subset(album))
+            return album_list   
+        
+        if content_type == 'playlist':
+            list_of_playlists = list()
+            for playlist in results['playlists']['items']:
+                list_of_playlists.append(playlist_info_subset(playlist))
+            return list_of_playlists  
+
+        if content_type == 'track':
+            track_list = list()
+            for track in results['tracks']['items']:
+                track_list.append(track_info_subset(track))
+            return track_list  
+        
+        return None
         
     
 def spotify_token(user):
@@ -250,6 +322,20 @@ def spotify_saved_albums(request):
         })      
 
 
+def spotify_saved_playlists(request):
+    '''This view displays the Spotify albums saved by the user'''
+    if this.spotify_api is None:
+        return render(request, 'not_signed_in_spotify.html')
+    
+    playlists = this.spotify_api.playlist_collection()
+    
+    return render(request, "spotify_playlists.html", {
+        "spotify_user": this.spotify_api.current_username(),
+        'playlists_description': "Your Saved Playlists",
+        "playlists": playlists,
+        })      
+
+
 def spotify_liked_songs(request):
     '''This view displays the Spotify songs liked by the user'''
     if this.spotify_api is None:
@@ -261,7 +347,68 @@ def spotify_liked_songs(request):
         "recently_played": find_unique_tracks(this.spotify_api.saved_tracks()),
         })  
 
+
+def spotify_search(request):
+    '''This view displays the Spotify songs liked by the user'''
+    if this.spotify_api is None:
+        return render(request, 'not_signed_in_spotify.html')
+    
+    if request.method == "GET":
+        form = SpotifySearchForm()
+        return render(request, "spotify_search.html", {'form': form})
+        
+    else:
+        form = SpotifySearchForm(request.POST)
+        if form.is_valid():
+            st = form.cleaned_data['search_term']
+            ct = form.cleaned_data['content_type']
+            results = this.spotify_api.search(st, ct)
+            
+            if ct == 'artist':
+                return render(request, "spotify_artist_list.html", {
+                    "spotify_user": this.spotify_api.current_username(),
+                    'artist_list_description': "Artists Matching - " + st,
+                    "artist_list": results}) 
+            
+            if ct == 'album':
+                return render(request, "spotify_album_list.html", {
+                    "spotify_user": this.spotify_api.current_username(),
+                    'artist_list_description': "Albums Matching - " + st,
+                    "album_list": results})  
+            
+            if ct == 'playlist':
+                return render(request, "spotify_playlists.html", {
+                    "spotify_user": this.spotify_api.current_username(),
+                    'playlists_description': "Albums Matching - " + st,
+                    "playlists": results})  
+            
+            if ct == 'track':
+                return render(request, "spotify_track_list.html", {
+                    "spotify_user": this.spotify_api.current_username(),
+                    'artist_list_description': "Tracks Matching - " + st,
+                    "recently_played": results})              
+            
+        else: 
+            # display error on form
+            return render(request, 'spotify_search.html', {
+                'form': form,
+                'error': "Invalid data submitted."})
       
+      
+def spotify_playlist_tracks (request, playlist_id):
+    '''This view displays a list of tracks on a specific Spotify album'''
+    if this.spotify_api is None:
+        return render(request, 'not_signed_in_spotify.html')
+    
+    track_list = this.spotify_api.playlist_tracks(playlist_id)
+    
+    return render(request, "spotify_track_list.html", {
+        "spotify_user": this.spotify_api.current_username(),
+        'track_list_description': "Playlist Contents",
+        "recently_played": track_list,
+        })      
+
+
 def spotify_album_tracks (request, album_id):
     '''This view displays a list of tracks on a specific Spotify album'''
     if this.spotify_api is None:
@@ -272,6 +419,20 @@ def spotify_album_tracks (request, album_id):
     return render(request, "spotify_track_list.html", {
         "spotify_user": this.spotify_api.current_username(),
         'track_list_description': "Album Contents",
+        "recently_played": track_list,
+        })      
+
+
+def spotify_artist_tracks (request, artist_id):
+    '''This view displays a list of tracks on a specific Spotify album'''
+    if this.spotify_api is None:
+        return render(request, 'not_signed_in_spotify.html')
+    
+    track_list = this.spotify_api.artist_tracks(artist_id)
+    
+    return render(request, "spotify_track_list.html", {
+        "spotify_user": this.spotify_api.current_username(),
+        'track_list_description': "Top Tracks by Artist",
         "recently_played": track_list,
         })      
 
