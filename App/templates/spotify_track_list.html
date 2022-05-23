@@ -13,44 +13,47 @@
     </div>
   </div>
   
-  <!-- next row in bootstrap grid is a table, with dark borders --> 
-  <div class="col-12 border border-dark">
-  <table class="table table-bordered table-sm">
-    <!-- column headers have a dark background -->
-    <thead class='table-dark'>
-      <!-- use sticky to keep header row from scrolling off the page -->
-      <tr id='table-header-sticky' >
-        <th class="text-center">Artist</th>
-        <th class="text-center">Title</th>
-        <th class="text-center">Album</th>
-        <th class="text-center">Duration</th>
-        <th class="text-center">Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- the rest of the table has the list of songs, one song per row -->
-      {% for track in recently_played %}
-      <tr>
-        <td class="text-center">{{ track.artist_name }}</td>
-        <td class="text-center">{{ track.name }}</td>
-        <td class="text-center">{{ track.album_name }}</td>
-        <td class="text-center">{{ track.duration}}</td>
-        <td class="text-center">
-          <button class="btn btn-primary btn-sm">Play</button>
-          <span hidden>{{ track.id }}</span>
-          <a class="btn btn-sm btn-primary" href="{% url 'App:add_spotify_track' track.id %}">Import</a>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
-<div hidden id='spotify-player-section' class="row">
+  <!-- The spotify player starts out hidden, it will appear above the list of tracks -->
+  <div hidden id='spotify-player-section' class="row">
   <div class="col-8 offset-2">
     <iframe id='spotify-iframe-player' style="border-radius:12px" 
             width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
   </div>
 </div>
+  
+  <!-- next row in bootstrap grid is a table, with dark borders --> 
+  <div class="col-12 border border-dark">
+    <table class="table table-bordered table-sm">
+      <!-- column headers have a dark background -->
+      <thead class='table-dark'>
+        <!-- use sticky to keep header row from scrolling off the page -->
+        <tr id='table-header-sticky' >
+          <th class="text-center" style="width:20%">Artist</th>
+          <th class="text-center" style="width:30%">Title</th>
+          <th class="text-center" style="width:30%">Album</th>
+          <th class="text-center" style="width:10%">Duration</th>
+          <th class="text-center" style="width:10%">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- the rest of the table has the list of songs, one song per row -->
+        {% for track in recently_played %}
+          <tr>
+            <td class="text-center">{{ track.artist_name }}</td>
+            <td class="text-center">{{ track.name }}</td>
+            <td class="text-center">{{ track.album_name }}</td>
+            <td class="text-center">{{ track.duration}}</td>
+            <td class="text-center">
+              <button class="btn btn-primary btn-sm">Play</button>
+              <span hidden>{{ track.id }}</span>
+              <a class="btn btn-sm btn-primary" href="{% url 'App:add_spotify_track' track.id %}">Import</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+  </table>
+  </div>
+
 {% endblock %}
 
 {% block extra_js %}
