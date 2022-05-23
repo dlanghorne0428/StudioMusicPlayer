@@ -20,10 +20,11 @@
       <div class="col-3 card">
         <img src="{{artist.artist_image}}" class="card-img-top p-1">
         <div class="card-body">
-        <h4 class="card-title">{{ artist.artist_name }}</h4>
-        <a href="{% url 'App:spotify_artist_albums' artist.id %}" class="btn btn-primary">View Albums</a>
+          <h4 class="card-title">{{ artist.artist_name }}</h4>
+          <a href="{% url 'App:spotify_artist_albums' artist.id %}" class="btn btn-primary">Albums</a>
+          <a href="{% url 'App:spotify_artist_tracks' artist.id %}" class="btn btn-primary">Top Tracks</a>
+       </div>
       </div>
-      
 
     {% endfor %}
 
