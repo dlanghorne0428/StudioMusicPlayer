@@ -21,7 +21,6 @@ class SongFileInputForm(ModelForm):
         fields = ['audio_file', 'dance_type', 'holiday']
 
         
-
 class SpotifyTrackInputForm(ModelForm):
     '''form for uploading new music from a file.'''
     class Meta:
@@ -29,6 +28,22 @@ class SpotifyTrackInputForm(ModelForm):
         # allow user to specify file, dance_type, and select holiday if any
         fields = ['track_id', 'title', 'artist', 'dance_type', 'holiday']
 
+
+class SpotifySearchForm(Form):
+    
+    search_term = forms.CharField(
+            label='Keywords', 
+            max_length=100,
+            required  = True)
+        
+    content_type = forms.ChoiceField(
+            choices   = [("album", "Album"), 
+                         ("artist", "Artist"),
+                         ("playlist", "Playlist"),
+                         ("track", "Track")],
+            widget    = forms.RadioSelect,
+            required  = True)
+         
 
 class SongEditForm(ModelForm):
     '''form to edit info for an existing song.'''
