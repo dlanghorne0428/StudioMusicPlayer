@@ -37,7 +37,7 @@
       </thead>
       <tbody>
         <!-- the rest of the table has the list of songs, one song per row -->
-        {% for track in recently_played %}
+        {% for track in tracks %}
           <tr>
             <td class="text-center">{{ track.artist_name }}</td>
             <td class="text-center">{{ track.name }}</td>

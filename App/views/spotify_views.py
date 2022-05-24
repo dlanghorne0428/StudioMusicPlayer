@@ -20,88 +20,8 @@ this.spotify_api = None
 # define the folder to cache spotify tokens
 CACHE_FOLDER = os.path.join(settings.MEDIA_ROOT, '.spotify_caches')
 
-
-def track_info_subset (spotify_track, album_name=None, cover_art=None):
-    '''This function saves the information about a Spotify track needed by our app'''    
-    new_track = dict()
-    
-    # populate main fields
-    new_track['id'] = spotify_track['id']
-    new_track['name'] = spotify_track['name']
-    new_track['artist_name'] = spotify_track['artists'][0]['name']
-    if 'album' in spotify_track: 
-        new_track['album_name'] = spotify_track['album']['name']
-        if len(spotify_track['album']['images']) > 0:
-            new_track['cover_art'] = spotify_track['album']['images'][0]['url']
-        else:
-            new_track['cover_art'] = None
-    else:
-        new_track['album_name'] = album_name
-        new_track['cover_art'] = cover_art
-
-    # build a duration string
-    seconds = round(spotify_track['duration_ms']/1000)
-    minutes = seconds // 60
-    seconds = seconds - (minutes * 60)
-    new_track['duration'] = str(minutes) + ":" + "{:02d}".format(seconds)
-    
-    return new_track
-
-
-def album_info_subset (spotify_album):
-    '''This function saves the information about a Spotify album needed by our app'''
-    new_album = dict()
-    new_album['id'] = spotify_album['id']
-    new_album['album_name'] = spotify_album['name']
-    new_album['artist_name'] = spotify_album['artists'][0]['name']
-    if len(spotify_album['images']) > 0:
-        new_album['cover_art'] = spotify_album['images'][0]['url']
-    else:
-        new_album['cover_art'] = None       # may need default image here
-    return new_album
-
-
-def artist_info_subset (spotify_artist):
-    '''This function saves the information about a Spotify artist needed by our app'''
-    new_artist = dict()
-    new_artist['id'] = spotify_artist['id']
-    new_artist['artist_name'] = spotify_artist['name']
-    if len(spotify_artist['images']) > 0:
-        new_artist['artist_image'] = spotify_artist['images'][0]['url']
-    else:
-        new_artist['artist_image'] = None  # may need default image here
-    return new_artist
-
-
-def playlist_info_subset (spotify_playlist):
-    '''This function saves the information about a Spotify artist needed by our app'''
-    new_playlist = dict()
-    new_playlist['id'] = spotify_playlist['id']
-    new_playlist['name'] = spotify_playlist['name']
-    new_playlist['owner'] = spotify_playlist['owner']['display_name']   
-    if len(spotify_playlist['images']) > 0:
-        new_playlist['image'] = spotify_playlist['images'][0]['url']
-    else:
-        new_playlist['image'] = None        
-    return new_playlist
                   
             
-def find_unique_tracks(items, limit=16):
-    '''Filter out duplicates from a list of tracks'''
-    unique_tracks = list()
-    for item in items:
-        for t in unique_tracks:
-            if item['track']['id'] == t['id']:
-                break;
-        else:  # this item is not in the track list
-            new_track = track_info_subset(item['track'])
-            unique_tracks.append(new_track)
-        if len(unique_tracks) >= limit:
-            break
-        
-    return unique_tracks
-
-
 class Spotify_Api():
     ''' This class is a wrapper around the Spotipy library to access Spotify content'''
     
@@ -111,31 +31,107 @@ class Spotify_Api():
         self.user = user
         self.spotify = spotipy.Spotify(auth_manager = self.auth_manager)
         
+    def track_info_subset (self, spotify_track, album_name=None, cover_art=None):
+        '''This function saves the information about a Spotify track needed by our app'''    
+        new_track = dict()
+        
+        # populate main fields
+        new_track['id'] = spotify_track['id']
+        new_track['name'] = spotify_track['name']
+        new_track['artist_name'] = spotify_track['artists'][0]['name']
+        if 'album' in spotify_track: 
+            new_track['album_name'] = spotify_track['album']['name']
+            if len(spotify_track['album']['images']) > 0:
+                new_track['cover_art'] = spotify_track['album']['images'][0]['url']
+            else:
+                new_track['cover_art'] = None
+        else:
+            new_track['album_name'] = album_name
+            new_track['cover_art'] = cover_art
+    
+        # build a duration string
+        seconds = round(spotify_track['duration_ms']/1000)
+        minutes = seconds // 60
+        seconds = seconds - (minutes * 60)
+        new_track['duration'] = str(minutes) + ":" + "{:02d}".format(seconds)
+        
+        return new_track
+    
+    
+    def album_info_subset (self, spotify_album):
+        '''This function saves the information about a Spotify album needed by our app'''
+        new_album = dict()
+        new_album['id'] = spotify_album['id']
+        new_album['album_name'] = spotify_album['name']
+        new_album['artist_name'] = spotify_album['artists'][0]['name']
+        if len(spotify_album['images']) > 0:
+            new_album['cover_art'] = spotify_album['images'][0]['url']
+        else:
+            new_album['cover_art'] = None       # may need default image here
+        return new_album
+    
+    
+    def artist_info_subset (self, spotify_artist):
+        '''This function saves the information about a Spotify artist needed by our app'''
+        new_artist = dict()
+        new_artist['id'] = spotify_artist['id']
+        new_artist['artist_name'] = spotify_artist['name']
+        if len(spotify_artist['images']) > 0:
+            new_artist['artist_image'] = spotify_artist['images'][0]['url']
+        else:
+            new_artist['artist_image'] = None  # may need default image here
+        return new_artist
+    
+    
+    def playlist_info_subset (self, spotify_playlist):
+        '''This function saves the information about a Spotify artist needed by our app'''
+        new_playlist = dict()
+        new_playlist['id'] = spotify_playlist['id']
+        new_playlist['name'] = spotify_playlist['name']
+        new_playlist['owner'] = spotify_playlist['owner']['display_name']   
+        if len(spotify_playlist['images']) > 0:
+            new_playlist['image'] = spotify_playlist['images'][0]['url']
+        else:
+            new_playlist['image'] = None        
+        return new_playlist        
+        
     def current_username(self):
         return self.spotify.current_user()["display_name"]
     
-    def recently_played_tracks(self):
-        return self.spotify.current_user_recently_played()['items']
+    def recently_played_tracks(self, limit=16):
+        items = self.spotify.current_user_recently_played()['items']
+        unique_tracks = list()
+        for item in items:
+            for t in unique_tracks:
+                if item['track']['id'] == t['id']:
+                    break;
+            else:  # this item is not in the track list
+                new_track = self.track_info_subset(item['track'])
+                unique_tracks.append(new_track)
+            if len(unique_tracks) >= limit:
+                break
+            
+        return unique_tracks
 
     def album_collection(self):
         items = self.spotify.current_user_saved_albums(limit=16)['items']
         album_list = list()
         for i in items:
-            album_list.append(album_info_subset(i['album']))
+            album_list.append(self.album_info_subset(i['album']))
         return album_list
 
     def playlist_collection(self):
         items = self.spotify.current_user_playlists(limit=16)['items']
         playlists = list()
         for i in items:
-            playlists.append(playlist_info_subset(i))
+            playlists.append(self.playlist_info_subset(i))
         return playlists
 
     def artist_albums(self, artist_id):
         items = self.spotify.artist_albums(artist_id, limit=16)['items']
         album_list = list()
         for i in items:
-            album_list.append(album_info_subset(i))
+            album_list.append(self.album_info_subset(i))
         return album_list  
     
     def album_tracks(self, album_id):
@@ -143,21 +139,21 @@ class Spotify_Api():
         tracks = album['tracks']['items']
         track_list = list()
         for track in tracks:
-            track_list.append(track_info_subset(track, album['name'], album['images'][0]['url']))
+            track_list.append(self.track_info_subset(track, album['name'], album['images'][0]['url']))
         return track_list        
     
     def artists_followed(self):
         items = self.spotify.current_user_followed_artists(limit=16)['artists']['items']
         artist_list = list()
         for i in items:
-            artist_list.append(artist_info_subset(i))
+            artist_list.append(self.artist_info_subset(i))
         return artist_list
 
     def artist_tracks(self, artist_id):
         tracks = self.spotify.artist_top_tracks(artist_id)['tracks']
         track_list = list()
         for track in tracks:
-            track_list.append(track_info_subset(track))
+            track_list.append(self.track_info_subset(track))
         return track_list     
     
     def playlist_tracks(self, playlist_id):
@@ -165,15 +161,19 @@ class Spotify_Api():
         tracks = playlist['tracks']['items']
         track_list = list()
         for track in tracks:
-            track_list.append(track_info_subset(track['track']))
+            track_list.append(self.track_info_subset(track['track']))
         return track_list        
     
-    def saved_tracks(self):
-        return self.spotify.current_user_saved_tracks()['items']
+    def saved_tracks(self):        
+        tracks = self.spotify.current_user_saved_tracks()['items']
+        track_list = list()
+        for track in tracks:
+            track_list.append(self.track_info_subset(track['track']))
+        return track_list  
     
     def track_info(self, track_id):
         track = self.spotify.track(track_id)
-        return track_info_subset(track)
+        return self.track_info_subset(track)
     
     def search(self, search_term, content_type):
         results = self.spotify.search(q=search_term, type=[content_type], limit = 16)
@@ -181,25 +181,25 @@ class Spotify_Api():
         if content_type == 'artist':
             artist_list = list()
             for artist in results['artists']['items']:
-                artist_list.append(artist_info_subset(artist))
+                artist_list.append(self.artist_info_subset(artist))
             return artist_list
         
         if content_type == 'album':
             album_list = list()
             for album in results['albums']['items']:
-                album_list.append(album_info_subset(album))
+                album_list.append(self.album_info_subset(album))
             return album_list   
         
         if content_type == 'playlist':
             list_of_playlists = list()
             for playlist in results['playlists']['items']:
-                list_of_playlists.append(playlist_info_subset(playlist))
+                list_of_playlists.append(self.playlist_info_subset(playlist))
             return list_of_playlists  
 
         if content_type == 'track':
             track_list = list()
             for track in results['tracks']['items']:
-                track_list.append(track_info_subset(track))
+                track_list.append(self.track_info_subset(track))
             return track_list  
         
         return None
@@ -230,7 +230,7 @@ def spotify_sign_in(request):
     auth_manager = spotipy.oauth2.SpotifyOAuth(client_id=cred.client_ID, 
                                                client_secret= cred.client_SECRET, 
                                                redirect_uri=cred.redirect_url, 
-                                               scope="streaming, user-modify-playback-state, user-read-playback-state, user-read-currently-playing, user-read-recently-played, user-follow-read playlist-modify-private",
+                                               scope="streaming, user-modify-playback-state, user-read-playback-state, user-read-currently-playing, user-read-recently-played, user-library-read user-follow-read playlist-modify-private",
                                                cache_handler=cache_handler, 
                                                show_dialog=True)    
     
@@ -253,7 +253,7 @@ def spotify_sign_in(request):
     return render(request, "spotify_track_list.html", {
         "spotify_user": this.spotify_api.current_username(),
         'track_list_description': "Your Recently Played Songs",
-        "recently_played": find_unique_tracks(this.spotify_api.recently_played_tracks()),
+        "tracks": this.spotify_api.recently_played_tracks(),
         })  
 
 
@@ -290,7 +290,7 @@ def spotify_recently_played(request):
     return render(request, "spotify_track_list.html", {
         "spotify_user": this.spotify_api.current_username(),
         'track_list_description': "Your Recently Played Songs",
-        "recently_played": find_unique_tracks(this.spotify_api.recently_played_tracks()),
+        "tracks": this.spotify_api.recently_played_tracks(),
         })      
 
 
@@ -341,10 +341,12 @@ def spotify_liked_songs(request):
     if this.spotify_api is None:
         return render(request, 'not_signed_in_spotify.html')
     
+    tracks = this.spotify_api.saved_tracks()
+    
     return render(request, "spotify_track_list.html", {
         "spotify_user": this.spotify_api.current_username(),
         'track_list_description': "Your Liked Songs",
-        "recently_played": find_unique_tracks(this.spotify_api.saved_tracks()),
+        "tracks": tracks,
         })  
 
 
@@ -386,7 +388,7 @@ def spotify_search(request):
                 return render(request, "spotify_track_list.html", {
                     "spotify_user": this.spotify_api.current_username(),
                     'artist_list_description': "Tracks Matching - " + st,
-                    "recently_played": results})              
+                    "tracks": results})              
             
         else: 
             # display error on form
@@ -405,7 +407,7 @@ def spotify_playlist_tracks (request, playlist_id):
     return render(request, "spotify_track_list.html", {
         "spotify_user": this.spotify_api.current_username(),
         'track_list_description': "Playlist Contents",
-        "recently_played": track_list,
+        "tracks": track_list,
         })      
 
 
@@ -419,7 +421,7 @@ def spotify_album_tracks (request, album_id):
     return render(request, "spotify_track_list.html", {
         "spotify_user": this.spotify_api.current_username(),
         'track_list_description': "Album Contents",
-        "recently_played": track_list,
+        "tracks": track_list,
         })      
 
 
@@ -433,7 +435,7 @@ def spotify_artist_tracks (request, artist_id):
     return render(request, "spotify_track_list.html", {
         "spotify_user": this.spotify_api.current_username(),
         'track_list_description': "Top Tracks by Artist",
-        "recently_played": track_list,
+        "tracks": track_list,
         })      
 
 
