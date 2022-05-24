@@ -30,8 +30,9 @@
         <tr id='table-header-sticky' >
           <th class="text-center" style="width:20%">Artist</th>
           <th class="text-center" style="width:30%">Title</th>
-          <th class="text-center" style="width:30%">Album</th>
-          <th class="text-center" style="width:10%">Duration</th>
+          <th class="text-center" style="width:25%">Album</th>
+          <th class="text-center" style="width:8%">Duration</th>
+          <th class="text-center" style="width:7%">Tempo</th>
           <th class="text-center" style="width:10%">Action</th>
         </tr>
       </thead>
@@ -43,6 +44,7 @@
             <td class="text-center">{{ track.name }}</td>
             <td class="text-center">{{ track.album_name }}</td>
             <td class="text-center">{{ track.duration}}</td>
+            <td class="text-center">{{ track.tempo}}</td>
             <td class="text-center">
               <button class="btn btn-primary btn-sm">Play</button>
               <span hidden>{{ track.id }}</span>

@@ -48,6 +48,9 @@ class Spotify_Api():
         else:
             new_track['album_name'] = album_name
             new_track['cover_art'] = cover_art
+            
+        features = self.spotify.audio_features(spotify_track['id'])
+        new_track['tempo'] = round(features[0]['tempo'])
     
         # build a duration string
         seconds = round(spotify_track['duration_ms']/1000)
@@ -67,7 +70,7 @@ class Spotify_Api():
         if len(spotify_album['images']) > 0:
             new_album['cover_art'] = spotify_album['images'][0]['url']
         else:
-            new_album['cover_art'] = None       # may need default image here
+            new_album['cover_art'] = settings.STATIC_URL + "img/default.png"
         return new_album
     
     
@@ -79,7 +82,7 @@ class Spotify_Api():
         if len(spotify_artist['images']) > 0:
             new_artist['artist_image'] = spotify_artist['images'][0]['url']
         else:
-            new_artist['artist_image'] = None  # may need default image here
+            new_artist['artist_image'] = settings.STATIC_URL + "img/default.png"
         return new_artist
     
     
@@ -92,7 +95,7 @@ class Spotify_Api():
         if len(spotify_playlist['images']) > 0:
             new_playlist['image'] = spotify_playlist['images'][0]['url']
         else:
-            new_playlist['image'] = None        
+            new_playlist['image'] = settings.STATIC_URL + "img/default.png"      
         return new_playlist        
         
     def current_username(self):
