@@ -1,6 +1,8 @@
 from django.shortcuts import render, get_object_or_404
 from django.conf import settings
 
+import os
+
 # imported our models
 from App.models.song import Song
 from App.models.playlist import Playlist, SongInPlaylist
@@ -53,7 +55,9 @@ def play_song_list(request, playlist_id, start_index=0):
         
         spotify_uris = list()
         for song in song_list:
-            spotify_uris.append(song.spotify_uri())
+            if song.spotify_track_id is not None:
+                spotify_uris.append(song.spotify_uri())
+                
             
         # render the template
         return render(request, "play_list_spotify_songs.html", {
