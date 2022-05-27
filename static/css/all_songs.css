@@ -16,3 +16,11 @@
 span.dropdown {
   position: inherit;  
 }
+
+.spotify-logo {
+  width: 100%;
+}
+
+.table-row {
+  vertical-align: middle;
+}

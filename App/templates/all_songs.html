@@ -21,17 +21,18 @@
   </div> 
   
    <!-- next row in bootstrap grid is a table, with dark borders --> 
-  <div class="col-10 offset-1 border border-dark">
+  <div class="col-12 border border-dark">
   <table class="table table-bordered table-sm">
     <!-- column headers have a dark background -->
     <thead class='table-dark'>
       <!-- use sticky to keep header row from scrolling off the page -->
       <tr id='table-header-sticky' >
-        <th class="text-center">Artist</th>
-        <th class="text-center">Title</th>
-        <th class="text-center">Dance</th>
-        <th class="text-center">Holiday</th>
-        <th class="text-center">Action</th>
+        <th class="text-center"style="width:20%">Artist</th>
+        <th class="text-center"style="width:30%">Title</th>
+        <th class="text-center"style="width:10%">Storage</th>
+        <th class="text-center"style="width:15%">Dance</th>
+        <th class="text-center"style="width:15%">Holiday</th>
+        <th class="text-center"style="width:10%">Action</th>
       </tr>
     </thead>
     <tbody>
@@ -45,6 +46,7 @@
             <!-- user can filter on any of these columns --> 
             <td id='artist-filter' class="text-center">{{ filter.form.artist }}</td>
             <td id='title-filter' class="text-center">{{ filter.form.title }}</td>
+            <td></td>
             <td id='dance-type-filter' class="text-center">{{ filter.form.dance_type }}</td>
             <td id='holiday-filter' class="text-center">{{ filter.form.holiday }}</td>
             <!-- the last button is used to submit filter data -->
@@ -57,9 +59,14 @@
       </div>
       <!-- the rest of the table has the list of songs, one song per row -->
       {% for song in songs %}
-      <tr>
+      <tr class="table-row">
         <td class="text-center">{{ song.artist }}</td>
         <td class="text-center">{{ song.title }}</td>
+        {% if song.audio_file %}
+          <td>Computer</td>
+        {% else %}
+          <td><img class="spotify-logo" src={% static 'img/Spotify_Logo_RGB_Green.png' %}></td>
+        {% endif %}
         <!-- display the "readable" string for the dance type and holiday -->
         <td class="text-center">{{ song.get_dance_type_display }}</td>
         <td class="text-center">{{ song.get_holiday_display }}</td>
