@@ -26,7 +26,7 @@ def all_playlists(request, user_id=None):
         
             # get the playlists owned by that user and change the page title 
             playlists = Playlist.objects.filter(owner=user).order_by(Lower('title'))
-            page_title = "My Playlists"
+            page_title = "Playlists for " + user.username
     
     # render the template
     return render(request, 'all_playlists.html', 
