@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import Paginator
 from django.db.models.functions import Lower
 
@@ -6,30 +6,53 @@ from django.db.models.functions import Lower
 from App.models.playlist import Playlist
 from App.models.user import User
 
-def all_playlists(request, user_id=None):
-    ''' shows all the Playlists in the database. '''
+def show_playlists(user, owner_only=False):
     
     # assume there are no playlists
     playlists = None
-    page_title = "All Playlists"
+    page_title = "No Playlists Found"
     
     # if there are any playlists
     if Playlist.objects.count() > 0:
         
-        if user_id is None:
-            # get all the playlists, ordered by owner's username then title
-            playlists = Playlist.objects.all().order_by(Lower('owner__username'), Lower('title'))
-        
+        if owner_only:
+            if user.has_spotify_token:
+                # get the streaming playlists owned by that user and change the page title 
+                playlists = Playlist.objects.filter(owner=user, streaming=True).order_by(Lower('title'))
+                page_title = "Playlists of Spotify tracks for " + user.username                
+            else:
+                # get the local playlists owned by that user and change the page title 
+                playlists = Playlist.objects.filter(owner=user, streaming=False).order_by(Lower('title'))
+                page_title = "Playlists of songs on this computer for " + user.username
+                    
         else:
-            # find user based on id
-            user = get_object_or_404(User, pk=user_id)
-        
-            # get the playlists owned by that user and change the page title 
-            playlists = Playlist.objects.filter(owner=user).order_by(Lower('title'))
-            page_title = "Playlists for " + user.username
+            if user.has_spotify_token:
+                # get all the playlists, ordered by owner's username then title
+                playlists = Playlist.objects.filter(streaming=True).order_by(Lower('owner__username'), Lower('title'))
+                page_title = 'All Playlists of Spotify tracks'
+            else:
+                playlists = Playlist.objects.filter(streaming=False).order_by(Lower('owner__username'), Lower('title'))
+                page_title = 'All Playlists of songs on this computer'              
     
-    # render the template
-    return render(request, 'all_playlists.html', 
-                  {'playlists': playlists,
-                   'page_title': page_title})
+    return {'playlists': playlists,
+            'page_title': page_title}
 
+
+def all_playlists(request):
+    ''' shows all the Playlists in the database. '''
+    if not request.user.is_authenticated:
+        return redirect('login')
+    else:
+        playlist_data = show_playlists(request.user)
+        # render the template
+        return render(request, 'show_playlists.html', playlist_data)      
+        
+
+def user_playlists(request):
+    ''' shows all the Playlists in the database. '''
+    if not request.user.is_authenticated:
+        return redirect('login')
+    else:
+        playlist_data = show_playlists(request.user, owner_only=True)
+        # render the template
+        return render(request, 'show_playlists.html', playlist_data)   

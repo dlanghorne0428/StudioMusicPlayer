@@ -83,7 +83,7 @@ def user_preferences(request):
             user.save()
             
             # TODO: need to indicate data was saved somehow     
-            return redirect('App:all_playlists', user.id) 
+            return redirect('App:user_playlists') 
         
         else:  # save box was not checked
             return redirect('App:user_preferences') 
@@ -116,5 +116,5 @@ class TeacherSignUpView(CreateView):
         # login the user that just signed up
         login(self.request, user)
         
-        # new users have no playlists, so redirect to show all the p;aylists in the database
-        return redirect("App:all_playlists")
+        # return to the home page
+        return redirect("App:home")

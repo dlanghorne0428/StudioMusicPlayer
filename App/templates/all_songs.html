@@ -12,13 +12,16 @@
   <!-- first row in bootstrap grid is the page title, with some padding on the bottom -->
   <div class="row">
     <div class="col-12">
-      <h2 class="text-center">Songs</h2>
+      <h2 class="text-center">{{page_title}}</h2>
     </div>
-      <!-- link to create a song from an audio file or spotify URI-->
-    <div class="text-center my-2">
-      <a class="btn btn-primary" href="{% url 'App:add_song' %}">Add Song From File</a>
+    
+    <!-- link to create a song from an audio file -->
+    {% if not streaming %}
+      <div class="text-center my-2">
+        <a class="btn btn-primary" href="{% url 'App:add_song' %}">Add Song From File</a>
+      </div>
     </div>
-  </div> 
+  {% endif %}
   
    <!-- next row in bootstrap grid is a table, with dark borders --> 
   <div class="col-12 border border-dark">
@@ -27,12 +30,11 @@
     <thead class='table-dark'>
       <!-- use sticky to keep header row from scrolling off the page -->
       <tr id='table-header-sticky' >
-        <th class="text-center"style="width:20%">Artist</th>
-        <th class="text-center"style="width:30%">Title</th>
-        <th class="text-center"style="width:10%">Storage</th>
+        <th class="text-center"style="width:25%">Artist</th>
+        <th class="text-center"style="width:33%">Title</th>
         <th class="text-center"style="width:15%">Dance</th>
         <th class="text-center"style="width:15%">Holiday</th>
-        <th class="text-center"style="width:10%">Action</th>
+        <th class="text-center"style="width:12%">Action</th>
       </tr>
     </thead>
     <tbody>
@@ -46,7 +48,6 @@
             <!-- user can filter on any of these columns --> 
             <td id='artist-filter' class="text-center">{{ filter.form.artist }}</td>
             <td id='title-filter' class="text-center">{{ filter.form.title }}</td>
-            <td></td>
             <td id='dance-type-filter' class="text-center">{{ filter.form.dance_type }}</td>
             <td id='holiday-filter' class="text-center">{{ filter.form.holiday }}</td>
             <!-- the last button is used to submit filter data -->
@@ -62,11 +63,6 @@
       <tr class="table-row">
         <td class="text-center">{{ song.artist }}</td>
         <td class="text-center">{{ song.title }}</td>
-        {% if song.audio_file %}
-          <td>Computer</td>
-        {% else %}
-          <td><img class="spotify-logo" src={% static 'img/Spotify_Logo_RGB_Green.png' %}></td>
-        {% endif %}
         <!-- display the "readable" string for the dance type and holiday -->
         <td class="text-center">{{ song.get_dance_type_display }}</td>
         <td class="text-center">{{ song.get_holiday_display }}</td>

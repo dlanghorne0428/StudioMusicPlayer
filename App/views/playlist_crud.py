@@ -29,6 +29,7 @@ def create_playlist(request, random=None):
     # set playlist owner to current user
     user = request.user
     new_playlist.owner = user 
+    new_playlist.streaming = user.has_spotify_token
     
     # initialize submit_title
     submit_title = None
@@ -74,7 +75,7 @@ def create_playlist(request, random=None):
                 return redirect('App:build_random_playlist', new_playlist.id)
             else:
                 # return to list of user's playlists   
-                return redirect('App:all_playlists', user.id)
+                return redirect('App:user_playlists')
         else: 
             # display error on form
             return render(request, 'create_playlist.html', {
@@ -89,11 +90,15 @@ def pick_random_song(playlist, dance_type, focus_holiday=None):
     # initialize return variable
     missed_a_holiday_song = None
     
-    # first find the songs in the database of this dance type, or all songs if no type specified
-    if dance_type is None:
-        candidate_songs = Song.objects.all()
+    # first find either the streaming songs or local songs iin the database 
+    if playlist.streaming:
+        candidate_songs = Song.objects.exclude(spotify_track_id__isnull=True)
     else:
-        candidate_songs = Song.objects.filter(dance_type=dance_type)
+        candidate_songs = Song.objects.filter(spotify_track_id__isnull=True)  
+    
+    # filter by dance type if necessary    
+    if dance_type is not None:
+        candidate_songs = candidate_songs.filter(dance_type=dance_type)
     
     # create a list for songs that match     
     available_songs = list()
@@ -182,7 +187,7 @@ def build_random_playlist(request, playlist_id):
             # if playlist is empty, delete it and redirect to user's playslist
             if playlist.songs.all().count() == 0:
                 playlist.delete()
-                return redirect('App:all_playlists', user.id)            
+                return redirect('App:user_playlists')            
             else: # redirect to existing playlist
                 return redirect('App:edit_playlist', playlist.id) 
         
@@ -440,7 +445,7 @@ def edit_playlist(request, playlist_id):
             if playlist.max_song_duration == time(minute=30):
                 playlist.max_song_duration = None
             form.save()
-            return redirect('App:all_playlists', request.user.id)
+            return redirect('App:user_playlists')
         else: 
             # display error on form
             return render(request, 'edit_playlist.html', {

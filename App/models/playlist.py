@@ -16,6 +16,9 @@ class Playlist(models.Model):
     
     # the owner of the playlist will be allowed to edit and delete their playlist
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    
+    # if the songs in this playlist are streamed from Spotify, this field is True 
+    streaming = models.BooleanField(default=False)
 
     # a playlist has many songs, a song can be in multiple playlists
     songs = models.ManyToManyField(Song, through='SongInPlaylist')
