@@ -172,6 +172,7 @@ def build_random_playlist(request, playlist_id):
         return render(request, 'build_random_playlist.html', {
             'form': form, 
             'playlist': playlist,
+            'user': user
         })
     
     else:  # POST
