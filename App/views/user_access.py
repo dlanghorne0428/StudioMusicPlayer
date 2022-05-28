@@ -12,7 +12,7 @@ from App.models.song import DANCE_TYPE_DEFAULT_PERCENTAGES, HOLIDAY_DEFAULT_USAG
 def user_profile(request):
     '''This view redirects to the list of playlists for the current user.'''
     user = request.user
-    return redirect('App:all_playlists', user.id)
+    return redirect('App:home')
 
       
 def user_preferences(request):
@@ -38,6 +38,7 @@ def user_preferences(request):
         return render(request, 'build_random_playlist.html', {
             'form': form, 
             'playlist': playlist,
+            'user': user
         })
     else:  # POST
         cancel = request.POST.get("cancel")
