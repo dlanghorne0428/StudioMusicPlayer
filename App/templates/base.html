@@ -69,18 +69,20 @@
             <li class="nav-item">
               <a class="nav-link" href="{% url 'App:home' %}">Home</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'App:all_songs' %}">Songs</a>
-            </li>
-            <li class="nav-item mx-2 dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="navbarPlaylistDropdown" role="button" data-bs-toggle="dropdown">Playlists</a>
-              <div class="dropdown-menu">
-                {% if user.is_authenticated %}
-                  <a class="dropdown-item" href="{% url 'App:all_playlists' user.id %}">Your Playlists</a>
+            <!-- only show links to songs and playlists once the user is authenticated -->
+            {% if user.is_authenticated %}
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'App:all_songs' %}">Songs</a>
+              </li>
+              <li class="nav-item mx-2 dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarPlaylistDropdown" role="button" data-bs-toggle="dropdown">Playlists</a>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="{% url 'App:user_playlists' %}">Your Playlists</a>
                   <a class="dropdown-item" href="{% url 'App:user_preferences' %}">Your Playlist Preferences</a>
-                {% endif %}
-                <a class="dropdown-item" href="{% url 'App:all_playlists' %}">All Playlists</a>
-            </li>
+  
+                  <a class="dropdown-item" href="{% url 'App:all_playlists' %}">All Playlists</a>
+              </li>
+            {% endif %}
           </ul>
         </div>
         <!-- this section of the navbar is right-justified and shows the logged in user or login link -->
