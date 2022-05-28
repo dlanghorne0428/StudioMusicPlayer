@@ -4,14 +4,48 @@
 
 {% block content %}
 
-  <div class="row">
-    <div class="col-12">
-      <!-- home page only has titles -->
-      <h1 class="text-center">Studio Music Player</h1>
-      <br>
-      <!-- this could be a logo image stored in the static folder --> 
-      <img src={% static 'img/DD Vector Logo final latest.svg' %}>
+  {% if not user.is_authenticated %}
+    <h1 class="text-center mb-3">Studio Music Player</h1>
+    <div class="row">
+      <div class="text-center">
+        <a class="btn btn-primary" href="{% url 'login' %}">Login</a> 
+        <a class="btn btn-primary" href="{% url 'signup' %}">Create Account</a>
+      </div>
     </div>
+  {% else %}
+    <h1 class="text-center mb-3">Hello, <span class="text-danger"> {{user.username}} <span></h1>
+    {% if user.has_spotify_token %}
+      <div class="row mb-2"> 
+        <div class="col-6 text-end">
+          <h3 class="text-success">You are currently streaming from Spotify</h3>
+        </div>
+        <div class="col-6 text-start">
+          <a class="btn btn-primary" href="{% url 'App:spotify_sign_out' %}">Use Local Music</a> 
+        </div>
+      </div>
+    {% else %}
+      <div class="row mb-2"> 
+        <div class="col-6 text-end">
+          <h3 class="text-dark" href="#">You are currently playing Local Music</h3> 
+        </div>
+        <div class="col-6 text-start">
+          <a class="btn btn-primary" href="{% url 'App:spotify_sign_in' %}">Sign In to Spotify</a>
+        </div>
+      </div>
+    {% endif %}
+    <div class="row mb-0">
+      <div class="col-6 text-end">
+        <a class="btn btn-secondary" href="{% url 'password_change' %}">Change Password</a>
+      </div>
+      <div class="col-6 text-start">
+        <a class="btn btn-secondary" href="{% url 'logout' %}">Logout</a>
+      </div>
+    </div>
+  {% endif %}
+    
+  <div class="text-center mt-0">
+    <!-- this could be a logo image stored in the static folder --> 
+    <img src={% static 'img/DD Vector Logo final latest.svg' %}>
   </div>
 
 {% endblock %}

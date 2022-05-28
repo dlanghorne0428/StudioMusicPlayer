@@ -72,34 +72,25 @@
             <li class="nav-item">
               <a class="nav-link" href="{% url 'App:all_songs' %}">Songs</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'App:all_playlists' %}">Playlists</a>
+            <li class="nav-item mx-2 dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarPlaylistDropdown" role="button" data-bs-toggle="dropdown">Playlists</a>
+              <div class="dropdown-menu">
+                {% if user.is_authenticated %}
+                  <a class="dropdown-item" href="{% url 'App:all_playlists' user.id %}">Your Playlists</a>
+                  <a class="dropdown-item" href="{% url 'App:user_preferences' %}">Your Playlist Preferences</a>
+                {% endif %}
+                <a class="dropdown-item" href="{% url 'App:all_playlists' %}">All Playlists</a>
             </li>
           </ul>
         </div>
         <!-- this section of the navbar is right-justified and shows the logged in user or login link -->
-        <div class="collapse navbar-collapse justify-content-center" id="navbarSupportedContent">
+        <div class="collapse navbar-collapse justify-content-end" id="navbarSupportedContent">
           <ul class="navbar-nav">
             {% if user.is_authenticated %}
-              <!-- user logged in, show options in a dropdown menu -->
-              <li class="nav-item mx-2 dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">{{ user.username }}</a>
-                <div class="dropdown-menu">
-                    <a class="dropdown-item" href="{% url 'App:all_playlists' user.id %}">My Playlists</a>
-                    <a class="dropdown-item" href="{% url 'App:user_preferences' %}">My Preferences</a>
-                    {% if user.has_spotify_token %}
-                      <a class="dropdown-item" href="{% url 'App:spotify_sign_out' %}">Sign Out of Spotify</a>
-                    {% else %}
-                      <a class="dropdown-item" href="{% url 'App:spotify_sign_in' %}">Sign In to Spotify</a>
-                    {% endif %}
-                    <a class="dropdown-item" href="{% url 'password_change' %}">Change Password</a>
-                    <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
-                </div>
-              </li>
               {% if user.has_spotify_token %}
               <li class="nav-item mx-2 dropdown">
                 <a class="nav-link dropdown-toggle py-0" href="#" id="navbarSpotifyDropdown" role="button" data-bs-toggle="dropdown">
-                  <img class="nav-bar-img" src={% static 'img/Spotify_Logo_RGB_Green.png' %}>
+                  <span class="text-sucess mx-2">Find tracks on</span><img class="nav-bar-img" src={% static 'img/Spotify_Logo_RGB_Green.png' %}>
                 </a>
                 <div class="dropdown-menu">
                   <a class="dropdown-item" href="{% url 'App:spotify_followed_artists' %}">Followed Artists</a>
@@ -112,14 +103,7 @@
                 </div>
               </li>
               {% endif %}
-            {% else %}
-              <!-- Ask visitor to login or sign up -->
-              <li class="nav-item">
-                <a class="nav-link" href="{% url 'login' %}">Login</a> 
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="{% url 'signup' %}">Sign Up</a>
-              </li>
+              <!-- else clause deleted -->
             {% endif %}
           </ul>
         </div>
