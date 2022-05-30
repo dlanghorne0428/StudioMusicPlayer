@@ -129,7 +129,7 @@
   {{ is_feature_list|json_script:"is-feature-list-data" }}
   
   <!-- Javascript for the AmplitudeJS player -->
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/amplitudejs@latest/dist/amplitude.js"></script>
+  <script type="text/javascript" src={% static "js/amplitude.min.js" %}></script>
   <script>
   
     /* common function to hide a song at the given index from the "up next" list */
