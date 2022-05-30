@@ -1,13 +1,33 @@
 {% extends "base.html" %}
-
+{% load my_tags %} 
 
 {% block content %}
 
   <div class="row">
     <div class="col-12">
       <!-- home page only has titles -->
-      <h1 class="text-center">Spotify Access for {{spotify_user}}</h1>
+      <h1 class="text-center">Spotify Access for <span class='text-danger'>{{spotify_user}}</span></h1>
       <h3>{{ playlists_description }}</h3>
+    </div>
+  </div>
+  
+  <div class="row mb-2">
+    <div class="col-2">
+      {% if first > 16 %}
+        <a class="btn btn-primary" href="?{% param_replace offset=first|add:"-17" %}">Previous</a>
+      {% endif %}
+    </div>
+    <div class="col-8">
+      {% if total > 0 %}
+        <h4 class='text-center'>Displaying playlists {{first}} - {{last }} out of {{total}} available</h4>
+      {% else %}
+          <h4 class='text-center'>No playlists found</h4>
+      {% endif %}
+    </div>
+    <div class="col-2">
+      {% if last < total %}
+        <a class="btn btn-primary" href="?{% param_replace offset=last %}">Next</a>
+      {% endif %}
     </div>
   </div>
   
