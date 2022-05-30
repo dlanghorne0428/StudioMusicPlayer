@@ -663,6 +663,10 @@ def add_spotify_track(request, track_id):
     '''This view adds a Spotify track into the Studio song database'''    
     from App.views.song_crud import authorized
     
+    matching_song = Song.objects.filter(spotify_track_id = track_id)
+    if matching_song.count() > 0:
+        return redirect('App:show_songs', matching_song[0].id)
+    
     # must be an administrator or teacher to add songs
     if not authorized(request.user):
         return render(request, 'permission_denied.html')
@@ -705,4 +709,4 @@ def add_spotify_track(request, track_id):
         print(new_song)
     
         # return to list of songs
-        return redirect('App:all_songs')   
+        return redirect('App:show_songs')   
