@@ -260,7 +260,7 @@ class Spotify_Api():
            The content_type can be 'album', 'artist', 'playlist', or 'track'.
            The offset parameter can be used to get additional pages of matching items.'''
         
-        results = self.spotify.search(q=search_term, limit=16, offset=offset, type=content_type)
+        results = self.spotify.search(q=search_term, limit=16, offset=offset, type=content_type, market='US')
         
         if content_type == 'artist':
             return self.artist_list_info(results['artists'])
