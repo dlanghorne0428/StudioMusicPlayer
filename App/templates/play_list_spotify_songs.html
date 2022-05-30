@@ -157,7 +157,7 @@
     /* common function to hide song elements at the given index */
     function hideSongElementsForIndex(index_to_hide) {
       /* ensure index is valid */
-      if (index_to_hide < {{ song_list|length }}) {
+      if ((index_to_hide >= 0) && (index_to_hide < {{ song_list|length }})) {
         var index_string = index_to_hide.toString();
         document.getElementById(index_string.concat("-dance-type-index")).style.display = "none";
         document.getElementById(index_string.concat("-song-title-index")).style.display = "none";
@@ -169,7 +169,7 @@
     /* common function to show song elements at the given index */
     function showSongElementsForIndex(index_to_show) {
       /* ensure index is valid */
-      if (index_to_show < {{ song_list|length }}) {
+      if ((index_to_show >= 0) && (index_to_show < {{ song_list|length }})) {
         var index_string = index_to_show.toString();
         document.getElementById(index_string.concat("-dance-type-index")).style.display = "block";
         document.getElementById(index_string.concat("-song-title-index")).style.display = "block";
@@ -337,11 +337,16 @@
             /* determine which song is playing */
             new_index = spotify_uris.findIndex(index_matches_current_track);
             
-            /* show and hide the metadata */
-            hideSongElementsForIndex(current_index);
-            current_index = new_index;
-            showSongElementsForIndex(current_index); 
-            showUpNextElements(current_index);
+            if (new_index == -1) {
+              console.log(state.track_window);
+              spotify_uris[current_index] = state.track_window.current_track.uri;
+            } else {
+              /* show and hide the metadata */
+              hideSongElementsForIndex(current_index);
+              current_index = new_index;
+              showSongElementsForIndex(current_index); 
+              showUpNextElements(current_index);
+            };
             
             /* reset volume in case previous song faded or user adjusted */
             saved_volume = 0.8;
