@@ -67,7 +67,7 @@
 
 {% block extra_js %}
   <!-- Javascript for the AmplitudeJS player -->
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/amplitudejs@latest/dist/amplitude.js"></script>
+  <script type="text/javascript" src={% static "js/amplitude.min.js" %}></script>
   <script>
     <!-- similar to example at https://521dimensions.com/open-source/amplitudejs/docs/examples/single-song.html -->
     Amplitude.init({
