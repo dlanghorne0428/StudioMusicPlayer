@@ -26,11 +26,20 @@ class Spotify_Api():
     ''' This class is a wrapper around the Spotipy library to access Spotify content'''
     
     def __init__(self, auth_manager, cache_handler, user):
+        '''This app supports one spotify user at a time. 
+           The auth_manager and cache_handler are passed in along with the Django user object
+        '''
         self.auth_manager = auth_manager
         self.cache_handler = cache_handler
         self.user = user
+        # initialize the API
         self.spotify = spotipy.Spotify(auth_manager = self.auth_manager)
-        
+        # this object caches the Spotify display name of the current user
+        self.user_display_name = None
+
+    #################################################################
+    # CONVERSION METHODS FOR SPOTIFY CONTENT TO DJANGO MODELS 
+    #################################################################
     def track_info_subset (self, spotify_track, album_name=None, cover_art=None):
         '''This function saves the information about a Spotify track needed by our app'''    
         new_track = dict()
@@ -60,6 +69,22 @@ class Spotify_Api():
         
         return new_track
     
+    def track_list_info(self, tracks): 
+        '''This method processes a list of spotify tracks and returns the required information 
+           for each track. It also returns the offset, last, and total index fields, which
+           can be used to get another page of tracks.'''
+        track_list = list()
+        for track in tracks['items']:
+            if 'track' in track:
+                track_list.append(self.track_info_subset(track['track']))
+            else:
+                track_list.append(self.track_info_subset(track))
+                
+        return {'track_list': track_list,
+                'first': tracks['offset'] + 1,
+                'last' : tracks['offset'] + len(tracks['items']),
+                'total': tracks['total']}
+    
     
     def album_info_subset (self, spotify_album):
         '''This function saves the information about a Spotify album needed by our app'''
@@ -73,6 +98,21 @@ class Spotify_Api():
             new_album['cover_art'] = settings.STATIC_URL + "img/default.png"
         return new_album
     
+    def album_list_info(self, albums):
+        '''This method processes a list of spotify albums and returns the required information 
+           for each album. It also returns the offset, last, and total index fields, which
+           can be used to get another page of albums.'''        
+        album_list = list()
+        for i in albums['items']:
+            if 'album' in i:
+                album_list.append(self.album_info_subset(i['album']))
+            else:
+                album_list.append(self.album_info_subset(i))
+        return {'album_list': album_list, 
+                'first': albums['offset'] + 1, 
+                'last' : albums['offset'] + len(albums['items']),
+                'total': albums['total']}
+    
     
     def artist_info_subset (self, spotify_artist):
         '''This function saves the information about a Spotify artist needed by our app'''
@@ -85,6 +125,24 @@ class Spotify_Api():
             new_artist['artist_image'] = settings.STATIC_URL + "img/default.png"
         return new_artist
     
+    def artist_list_info (self, artists):
+        '''This method processes a list of spotify artists and returns the required information 
+           for each artist. It also returns the offset, last, and total index fields, which
+           can be used to get another page of artists.'''        
+        artist_list = list()
+        for i in artists['items']:
+            artist_list.append(self.artist_info_subset(i))
+        if 'offset' in artists: 
+            return {'artist_list': artist_list,
+                    'first': artists['offset'] + 1,
+                    'last' : artists['offset'] + len(artists['items']),
+                    'total': artists['total']}
+        else:
+            return {'artist_list': artist_list,                   
+                    'first': 1,
+                    'last' : len(artists['items']),
+                    'total': artists['total']}
+                                                 
     
     def playlist_info_subset (self, spotify_playlist):
         '''This function saves the information about a Spotify artist needed by our app'''
@@ -98,121 +156,132 @@ class Spotify_Api():
             new_playlist['image'] = settings.STATIC_URL + "img/default.png"      
         return new_playlist        
         
+        
+    def info_for_playlists (self, playlists):
+        '''This method processes a list of spotify playlists and returns the required information 
+           for each playlist. It also returns the offset, last, and total index fields, which
+           can be used to get another page of playlists.'''        
+        list_of_playlists = list()
+        for i in playlists['items']:
+            list_of_playlists.append(self.playlist_info_subset(i)) 
+        return {'list_of_playlists': list_of_playlists,
+                'first': playlists['offset'] + 1,
+                'last' : playlists['offset'] + len(playlists['items']),
+                'total': playlists['total']}
+    
+        
     def current_username(self):
-        return self.spotify.current_user()["display_name"]
+        '''This method returns the display name of the Spotify user.'''
+        # if na name is saved, call Spotify to get the name
+        if self.user_display_name is None:
+            self.user_display_name = self.spotify.current_user()["display_name"]
+        return self.user_display_name
     
     def recently_played_tracks(self, limit=16):
-        items = self.spotify.current_user_recently_played()['items']
+        '''This method returns the last 16 unique tracks played by the current user.'''
+        items = self.spotify.current_user_recently_played(limit=25)['items']
         unique_tracks = list()
         for item in items:
+            # check if this item is already in the list
             for t in unique_tracks:
                 if item['track']['id'] == t['id']:
                     break;
             else:  # this item is not in the track list
                 new_track = self.track_info_subset(item['track'])
                 unique_tracks.append(new_track)
+            # stop when track limit is readhed
             if len(unique_tracks) >= limit:
                 break
             
         return unique_tracks
 
-    def album_collection(self):
-        items = self.spotify.current_user_saved_albums(limit=16)['items']
-        album_list = list()
-        for i in items:
-            album_list.append(self.album_info_subset(i['album']))
-        return album_list
-
-    def playlist_collection(self):
-        items = self.spotify.current_user_playlists(limit=16)['items']
-        playlists = list()
-        for i in items:
-            playlists.append(self.playlist_info_subset(i))
-        return playlists
-
-    def artist_albums(self, artist_id):
-        items = self.spotify.artist_albums(artist_id, limit=16)['items']
-        album_list = list()
-        for i in items:
-            album_list.append(self.album_info_subset(i))
-        return album_list  
-    
-    def album_tracks(self, album_id):
-        album = self.spotify.album(album_id)
-        tracks = album['tracks']['items']
-        track_list = list()
-        for track in tracks:
-            track_list.append(self.track_info_subset(track, album['name'], album['images'][0]['url']))
-        return track_list        
+    def album_collection(self, offset=0):
+        '''This method returns a list of albums saved in the current user's spotify library.'''
+        albums = self.spotify.current_user_saved_albums(offset=offset, limit=16)
+        return self.album_list_info(albums)
     
     def artists_followed(self):
-        items = self.spotify.current_user_followed_artists(limit=16)['artists']['items']
-        artist_list = list()
-        for i in items:
-            artist_list.append(self.artist_info_subset(i))
-        return artist_list
+        '''This method returns a list of the first 16 artists follwed by the current user.
+           Note: the spotify API doesn't provide an offset or total fields for this oepration.'''        
+        artists = self.spotify.current_user_followed_artists(limit=16)['artists']
+        return self.artist_list_info(artists)    
+
+    def playlist_collection(self):
+        '''This method returns a list of playlists saved in the current user's spotify library.'''        
+        playlists = self.spotify.current_user_playlists(limit=16)
+        return self.info_for_playlists(playlists)
+    
+    def saved_tracks(self, offset):        
+        '''This method returns a list of tracks liked on Spotify the current user.'''               
+        tracks = self.spotify.current_user_saved_tracks(offset=offset, limit=16)
+        return self.track_list_info(tracks)
+
+    def artist_albums(self, artist_id, offset=0):
+        '''This method returns a list of up to 16 albums by a given artist.
+           The offset parameter is used to get a different set of albums.''' 
+        albums = self.spotify.artist_albums(artist_id, limit=16, offset=offset)
+        return self.album_list_info(albums)
+    
+    def album_tracks(self, album_id):
+        '''This method returns a list of all tracks on a given album.'''
+        album = self.spotify.album(album_id)  # get the album
+        tracks = album['tracks']['items']     # get the tracks from that album
+        track_list = list()
+        for track in tracks:
+            # pass in the album name and cover art, as that info is not stored with each track
+            track_list.append(self.track_info_subset(track, album['name'], album['images'][0]['url']))
+        return {'track_list': track_list,
+                'first': album['tracks']['offset'] + 1,
+                'last' : album['tracks']['offset'] + len(album['tracks']['items']),
+                'total': album['tracks']['total'] 
+                }
 
     def artist_tracks(self, artist_id):
+        '''This method returns a list of the top 10 tracks for a given artist.'''
         tracks = self.spotify.artist_top_tracks(artist_id)['tracks']
         track_list = list()
         for track in tracks:
             track_list.append(self.track_info_subset(track))
         return track_list     
     
-    def playlist_tracks(self, playlist_id):
-        playlist = self.spotify.playlist(playlist_id)
-        tracks = playlist['tracks']['items']
-        track_list = list()
-        for track in tracks:
-            track_list.append(self.track_info_subset(track['track']))
-        return track_list        
-    
-    def saved_tracks(self):        
-        tracks = self.spotify.current_user_saved_tracks()['items']
-        track_list = list()
-        for track in tracks:
-            track_list.append(self.track_info_subset(track['track']))
-        return track_list  
+    def playlist_tracks(self, playlist_id, offset):
+        '''This method returns a list of up to 16 tracks from a given playlist.
+           The offset parameter is used to get a different set of tracks.'''         
+        tracks = self.spotify.playlist_tracks(playlist_id, offset=offset, limit=16)
+        return self.track_list_info(tracks)   
     
     def track_info(self, track_id):
+        '''This method returns the information for a single spotify track.'''
         track = self.spotify.track(track_id)
         return self.track_info_subset(track)
     
-    def search(self, search_term, content_type):
-        results = self.spotify.search(q=search_term, type=[content_type], limit = 16)
+    def search(self, search_term, content_type, offset=0):
+        '''This method searches spotify for items matching the given search term.
+           The content_type can be 'album', 'artist', 'playlist', or 'track'.
+           The offset parameter can be used to get additional pages of matching items.'''
+        
+        results = self.spotify.search(q=search_term, limit=16, offset=offset, type=content_type)
         
         if content_type == 'artist':
-            artist_list = list()
-            for artist in results['artists']['items']:
-                artist_list.append(self.artist_info_subset(artist))
-            return artist_list
+            return self.artist_list_info(results['artists'])
         
-        if content_type == 'album':
-            album_list = list()
-            for album in results['albums']['items']:
-                album_list.append(self.album_info_subset(album))
-            return album_list   
+        if content_type == 'album':        
+            return self.album_list_info(results['albums'])
         
         if content_type == 'playlist':
-            list_of_playlists = list()
-            for playlist in results['playlists']['items']:
-                list_of_playlists.append(self.playlist_info_subset(playlist))
-            return list_of_playlists  
+            return self.info_for_playlists(results['playlists']) 
 
         if content_type == 'track':
-            track_list = list()
-            for track in results['tracks']['items']:
-                track_list.append(self.track_info_subset(track))
-            return track_list  
+            return self.track_list_info(results['tracks']) 
         
         return None
-        
+###########################################
+# end of the Spotify_API class
+###########################################
     
 def spotify_token(user):
-    '''
-    This routine returns the user's spotify token for use by the audio player.
-    If the user does not have a token, this function returns None
-    '''
+    '''This routine returns the user's spotify token for use by the audio player.
+       If the user does not have a token, this function returns None.'''
     if this.spotify_api is None:
         return None
     if user == this.spotify_api.user:    
@@ -237,26 +306,37 @@ def spotify_sign_in(request):
                                                cache_handler=cache_handler, 
                                                show_dialog=True)    
     
+    #print("auth manager created")
     if request.GET.get("code"):
         # Step 3. Being redirected from Spotify auth page
         auth_manager.get_access_token(request.GET.get("code"))
+        print("code obtained")
         return redirect('App:spotify_sign_in')
 
     if not auth_manager.validate_token(cache_handler.get_cached_token()):
         # Step 2. Display sign in link when no token
+        #print("requesting authorization")
         auth_url = auth_manager.get_authorize_url()
         return redirect(auth_url)    
 
     # Step 4. Signed in, display list of user's recently played tracks
     this.spotify_api = Spotify_Api(auth_manager, cache_handler, user)
+    #print("API initialized")
     if not user.has_spotify_token:
         user.has_spotify_token = True
+        #print("saving token")
         user.save()
-        
+    
+    #print("obtaining liked songs")
+    tracks = this.spotify_api.saved_tracks(offset=0)
+    
     return render(request, "spotify_track_list.html", {
         "spotify_user": this.spotify_api.current_username(),
-        'track_list_description': "Your Recently Played Songs",
-        "tracks": this.spotify_api.recently_played_tracks(),
+        'track_list_description': "Your Liked Songs",
+        "tracks": tracks['track_list'],
+        "first" : tracks['first'],
+        "last"  : tracks['last'],
+        "total" : tracks['total']        
         })  
 
 
@@ -294,6 +374,9 @@ def spotify_recently_played(request):
         "spotify_user": this.spotify_api.current_username(),
         'track_list_description': "Your Recently Played Songs",
         "tracks": this.spotify_api.recently_played_tracks(),
+        "first" : 1,
+        "last"  : 16,
+        "total" : 16             
         })      
 
 
@@ -307,8 +390,32 @@ def spotify_followed_artists(request):
     return render(request, "spotify_artist_list.html", {
         "spotify_user": this.spotify_api.current_username(),
         'artist_list_description': "Your Followed Artists",
-        "artist_list": artists,
+        'artist_list': artists['artist_list'],
+        'first': artists['first'],
+        'last' : artists['last'],
+        'total': artists['total']
         })      
+
+
+def spotify_liked_songs(request):
+    '''This view displays the Spotify songs liked by the user'''
+    if this.spotify_api is None:
+        return render(request, 'not_signed_in_spotify.html')
+    
+    offset = request.GET.get('offset')
+    if offset is None:
+        offset = 0        
+    
+    tracks = this.spotify_api.saved_tracks(offset)
+    
+    return render(request, "spotify_track_list.html", {
+        "spotify_user": this.spotify_api.current_username(),
+        'track_list_description': "Your Liked Songs",
+        "tracks": tracks['track_list'],
+        "first" : tracks['first'],
+        "last"  : tracks['last'],
+        "total" : tracks['total']
+        })  
 
 
 def spotify_saved_albums(request):
@@ -316,13 +423,20 @@ def spotify_saved_albums(request):
     if this.spotify_api is None:
         return render(request, 'not_signed_in_spotify.html')
     
-    albums = this.spotify_api.album_collection()
+    offset = request.GET.get('offset')
+    if offset is None:
+        offset = 0    
+    
+    albums = this.spotify_api.album_collection(offset)
     
     return render(request, "spotify_album_list.html", {
         "spotify_user": this.spotify_api.current_username(),
         'album_list_description': "Your Saved Albums",
-        "album_list": albums,
-        })      
+        "album_list": albums['album_list'],
+        "first": albums['first'],
+        "last": albums['last'],
+        "total": albums['total'],
+        })     
 
 
 def spotify_saved_playlists(request):
@@ -335,82 +449,158 @@ def spotify_saved_playlists(request):
     return render(request, "spotify_playlists.html", {
         "spotify_user": this.spotify_api.current_username(),
         'playlists_description': "Your Saved Playlists",
-        "playlists": playlists,
+        "playlists": playlists['list_of_playlists'],
+        "first": playlists['first'],
+        "last" : playlists['last'],
+        "total": playlists['total']        
         })      
 
 
-def spotify_liked_songs(request):
-    '''This view displays the Spotify songs liked by the user'''
-    if this.spotify_api is None:
-        return render(request, 'not_signed_in_spotify.html')
-    
-    tracks = this.spotify_api.saved_tracks()
-    
-    return render(request, "spotify_track_list.html", {
-        "spotify_user": this.spotify_api.current_username(),
-        'track_list_description': "Your Liked Songs",
-        "tracks": tracks,
-        })  
-
-
 def spotify_search(request):
-    '''This view displays the Spotify songs liked by the user'''
+    '''This view allows the user to search for Spotify content'''
     if this.spotify_api is None:
         return render(request, 'not_signed_in_spotify.html')
     
     if request.method == "GET":
+        # display the form for the user to enter search options
         form = SpotifySearchForm()
         return render(request, "spotify_search.html", {'form': form})
         
     else:
         form = SpotifySearchForm(request.POST)
         if form.is_valid():
+            # get data from the form
             st = form.cleaned_data['search_term']
             ct = form.cleaned_data['content_type']
-            results = this.spotify_api.search(st, ct)
             
+            # redirect to the appropriate view. 
+            # This redirect step allows the offset parameter to search for additional data 
             if ct == 'artist':
-                return render(request, "spotify_artist_list.html", {
-                    "spotify_user": this.spotify_api.current_username(),
-                    'artist_list_description': "Artists Matching - " + st,
-                    "artist_list": results}) 
+                return redirect('App:spotify_search_artists', st)
             
             if ct == 'album':
-                return render(request, "spotify_album_list.html", {
-                    "spotify_user": this.spotify_api.current_username(),
-                    'artist_list_description': "Albums Matching - " + st,
-                    "album_list": results})  
+                return redirect('App:spotify_search_albums', st)
             
             if ct == 'playlist':
-                return render(request, "spotify_playlists.html", {
-                    "spotify_user": this.spotify_api.current_username(),
-                    'playlists_description': "Albums Matching - " + st,
-                    "playlists": results})  
+                return redirect('App:spotify_search_playlists', st)                    
             
             if ct == 'track':
-                return render(request, "spotify_track_list.html", {
-                    "spotify_user": this.spotify_api.current_username(),
-                    'artist_list_description': "Tracks Matching - " + st,
-                    "tracks": results})              
+                return redirect('App:spotify_search_tracks', st)                             
             
         else: 
             # display error on form
             return render(request, 'spotify_search.html', {
                 'form': form,
                 'error': "Invalid data submitted."})
-      
+        
+        
+def spotify_search_albums(request, search_term):
+    '''This view obtains spotify albums that match the search term'''
+    if this.spotify_api is None:
+        return render(request, 'not_signed_in_spotify.html')
+    
+    # get the offset query parameter from the URL
+    offset = request.GET.get('offset')
+    if offset is None:
+        offset = 0      
+    
+    # get results using the spotify API    
+    results = this.spotify_api.search(search_term, 'album', offset)
+    
+    # render those results
+    return render(request, "spotify_album_list.html", {
+        "spotify_user": this.spotify_api.current_username(),
+        'album_list_description': "Albums Matching - " + search_term,
+        "album_list": results['album_list'],
+        "first": results['first'],
+        "last":  results['last'],
+        "total": results['total']})   
+
+def spotify_search_artists(request, search_term):
+    '''This view obtains spotify artists that match the search term'''
+    if this.spotify_api is None:
+        return render(request, 'not_signed_in_spotify.html')
+    
+    # get the offset query parameter from the URL    
+    offset = request.GET.get('offset')
+    if offset is None:
+        offset = 0      
+    
+    # get results using the spotify API           
+    results = this.spotify_api.search(search_term, 'artist', offset)
+    
+    # render those results
+    return render(request, "spotify_artist_list.html", {
+        "spotify_user": this.spotify_api.current_username(),
+        'artist_list_description': "Artists Matching - " + search_term,
+        "artist_list": results['artist_list'],
+        "first": results['first'],
+        "last" : results['last'],
+        "total": results['total']})     
+
+def spotify_search_playlists(request, search_term):
+    '''This view obtains spotify playlists that match the search term'''
+    if this.spotify_api is None:
+        return render(request, 'not_signed_in_spotify.html')
+
+    # get the offset query parameter from the URL     
+    offset = request.GET.get('offset')
+    if offset is None:
+        offset = 0      
+       
+    # get results using the spotify API    
+    results = this.spotify_api.search(search_term, 'playlist', offset)
+
+    # render those results
+    return render(request, "spotify_playlists.html", {
+        "spotify_user": this.spotify_api.current_username(),
+        'playlists_description': "Playlists Matching - " + search_term,
+        "playlists": results['list_of_playlists'],
+        "first": results['first'],
+        "last":  results['last'],
+        "total": results['total']})            
+
+def spotify_search_tracks(request, search_term):
+    '''This view obtains spotify tracks that match the search term'''
+    if this.spotify_api is None:
+        return render(request, 'not_signed_in_spotify.html')
+    
+    # get the offset query parameter from the URL         
+    offset = request.GET.get('offset')
+    if offset is None:
+        offset = 0      
+    
+    # get the offset query parameter from the URL      
+    results = this.spotify_api.search(search_term, 'track', offset)
+
+    # render those results
+    return render(request, "spotify_track_list.html", {
+        "spotify_user": this.spotify_api.current_username(),
+        'artist_list_description': "Tracks Matching - " + search_term,
+        "tracks": results['track_list'],
+        "first": results['first'],
+        "last":  results['last'],
+        "total": results['total']})               
+
       
 def spotify_playlist_tracks (request, playlist_id):
     '''This view displays a list of tracks on a specific Spotify album'''
     if this.spotify_api is None:
         return render(request, 'not_signed_in_spotify.html')
     
-    track_list = this.spotify_api.playlist_tracks(playlist_id)
+    offset = request.GET.get('offset')
+    if offset is None:
+        offset = 0    
+    
+    tracks = this.spotify_api.playlist_tracks(playlist_id, offset)
     
     return render(request, "spotify_track_list.html", {
         "spotify_user": this.spotify_api.current_username(),
         'track_list_description': "Playlist Contents",
-        "tracks": track_list,
+        "tracks": tracks['track_list'],
+        "first" : tracks['first'],
+        "last"  : tracks['last'],
+        "total" : tracks['total']
         })      
 
 
@@ -419,12 +609,15 @@ def spotify_album_tracks (request, album_id):
     if this.spotify_api is None:
         return render(request, 'not_signed_in_spotify.html')
     
-    track_list = this.spotify_api.album_tracks(album_id)
+    tracks = this.spotify_api.album_tracks(album_id)
     
     return render(request, "spotify_track_list.html", {
         "spotify_user": this.spotify_api.current_username(),
         'track_list_description': "Album Contents",
-        "tracks": track_list,
+        "tracks": tracks['track_list'],
+        "first" : tracks['first'],
+        "last"  : tracks['last'],
+        "total" : tracks['total']
         })      
 
 
@@ -437,8 +630,11 @@ def spotify_artist_tracks (request, artist_id):
     
     return render(request, "spotify_track_list.html", {
         "spotify_user": this.spotify_api.current_username(),
-        'track_list_description': "Top Tracks by Artist",
+        'track_list_description': "Top Ten Tracks by Artist",
         "tracks": track_list,
+        "first" : 1,
+        "last"  : 10,
+        "total" : 10           
         })      
 
 
@@ -447,12 +643,19 @@ def spotify_artist_albums (request, artist_id):
     if this.spotify_api is None:
         return render(request, 'not_signed_in_spotify.html')
     
-    album_list = this.spotify_api.artist_albums(artist_id)
+    offset = request.GET.get('offset')
+    if offset is None:
+        offset = 0
+    
+    artist_albums = this.spotify_api.artist_albums(artist_id, offset)
     
     return render(request, "spotify_album_list.html", {
         "spotify_user": this.spotify_api.current_username(),
         'album_list_description': "Albums by Artist",
-        "album_list": album_list,
+        "album_list": artist_albums['album_list'],
+        "first": artist_albums['first'],
+        "last": artist_albums['last'],
+        "total": artist_albums['total'],
         })      
 
 
