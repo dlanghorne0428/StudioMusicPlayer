@@ -64,9 +64,13 @@
             <td class="text-center">{{ track.duration}}</td>
             <td class="text-center">{{ track.tempo}}</td>
             <td class="text-center">
-              <button class="btn btn-primary btn-sm">Play</button>
-              <span hidden>{{ track.id }}</span>
-              <a class="btn btn-sm btn-primary" href="{% url 'App:add_spotify_track' track.id %}">Add</a>
+              {% if track.id %}
+                <button class="btn btn-primary btn-sm">Play</button>
+                <span hidden>{{ track.id }}</span>
+                <a class="btn btn-sm btn-primary" href="{% url 'App:add_spotify_track' track.id %}">Add</a>
+              {% else %}
+                <span>Unavailable</span>
+              {% endif %}
             </td>
           </tr>
         {% endfor %}

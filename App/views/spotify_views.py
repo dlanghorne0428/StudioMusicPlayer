@@ -58,8 +58,11 @@ class Spotify_Api():
             new_track['album_name'] = album_name
             new_track['cover_art'] = cover_art
             
-        features = self.spotify.audio_features(spotify_track['id'])
-        new_track['tempo'] = round(features[0]['tempo'])
+        if spotify_track['id'] is None:
+            new_track['tempo'] = "Unknown"
+        else:
+            features = self.spotify.audio_features(spotify_track['id'])
+            new_track['tempo'] = round(features[0]['tempo'])
     
         # build a duration string
         seconds = round(spotify_track['duration_ms']/1000)
@@ -79,6 +82,8 @@ class Spotify_Api():
                 track_list.append(self.track_info_subset(track['track']))
             else:
                 track_list.append(self.track_info_subset(track))
+        
+        print('track filtering completed')
                 
         return {'track_list': track_list,
                 'first': tracks['offset'] + 1,
@@ -108,6 +113,9 @@ class Spotify_Api():
                 album_list.append(self.album_info_subset(i['album']))
             else:
                 album_list.append(self.album_info_subset(i))
+                
+        print('album filtering completed')
+        
         return {'album_list': album_list, 
                 'first': albums['offset'] + 1, 
                 'last' : albums['offset'] + len(albums['items']),
@@ -132,6 +140,9 @@ class Spotify_Api():
         artist_list = list()
         for i in artists['items']:
             artist_list.append(self.artist_info_subset(i))
+        
+        print('Artist filtering completed')
+        
         if 'offset' in artists: 
             return {'artist_list': artist_list,
                     'first': artists['offset'] + 1,
@@ -164,6 +175,9 @@ class Spotify_Api():
         list_of_playlists = list()
         for i in playlists['items']:
             list_of_playlists.append(self.playlist_info_subset(i)) 
+            
+        print ('playlist filtering complete')
+        
         return {'list_of_playlists': list_of_playlists,
                 'first': playlists['offset'] + 1,
                 'last' : playlists['offset'] + len(playlists['items']),
@@ -261,6 +275,7 @@ class Spotify_Api():
            The offset parameter can be used to get additional pages of matching items.'''
         
         results = self.spotify.search(q=search_term, limit=16, offset=offset, type=content_type, market='US')
+        print("spotify search returned")
         
         if content_type == 'artist':
             return self.artist_list_info(results['artists'])
