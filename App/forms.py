@@ -78,7 +78,7 @@ class SongEditForm(ModelForm):
             FormActions(
                 # submit button and cancel link in the form of a button
                 Submit('save', 'Save changes'),
-                HTML("""<a href="{% url 'App:all_songs' %}" class="btn btn-secondary">Cancel</a>"""),
+                HTML("""<a href="{% url 'App:show_songs' %}" class="btn btn-secondary">Cancel</a>"""),
                 # add some y-margin around the buttons.
                 css_class="my-3"
             )

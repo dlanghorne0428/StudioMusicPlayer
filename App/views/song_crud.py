@@ -136,7 +136,7 @@ def add_song(request):
             return redirect('App:update_song', new_song.id)
         else:
             # return to list of songs
-            return redirect('App:all_songs')
+            return redirect('App:show_songs')
     
 
 def update_song(request, song_id):
@@ -161,7 +161,7 @@ def update_song(request, song_id):
         if form.is_valid():
             # save the updated info and return to song list
             form.save() 
-            return redirect('App:all_songs')
+            return redirect('App:show_songs')
         else:
             # display error on form
             return render(request, 'update_song.html', {'form':SongEditForm(), 'error': "Invalid data submitted."})
@@ -201,4 +201,4 @@ def delete_song(request, song_id):
     # remove Song from database and redirect to song list. 
     print("Deleting " +  str(song))
     song.delete()    
-    return redirect('App:all_songs')
+    return redirect('App:show_songs')
