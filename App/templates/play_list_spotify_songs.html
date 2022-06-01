@@ -83,12 +83,7 @@
           <span class="current-time">
             <span id='current-minutes'>0</span>:<span class="current-seconds">00</span>
           </span>
-          <!-- Display time when song will start to fade out. Initially this is hidden until it is calculated -->
-          {% if playlist_info.max_song_duration %}
-            <span class="fadeout-time" id='id-fadeout-time' hidden>
-              <span>{{ playlist_info.max_song_duration|time:"i:s"}}</span>
-            </span>
-          {% endif %}
+
           <span class="duration" id='id-duration' hidden>
             <span id='duration-minutes'>0</span>:<span id='duration-seconds'>00</span>
           </span>     
