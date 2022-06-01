@@ -69,7 +69,7 @@
       
         <!-- Progress Bar -->
         <div class="bottom-container">
-          <progress class="amplitude-song-played-progress" amplitude-main-song-played-progress="true" id="song-played-progress"></progress>
+          <progress id="song-played-progress"></progress>
         </div>
   
         <!-- Time information, current, fadeout-time, and duration -->
@@ -77,14 +77,8 @@
           <span class="current-time">
             <span class="amplitude-current-minutes" amplitude-main-current-minutes="true"></span>:<span class="amplitude-current-seconds" amplitude-main-current-seconds="true"></span>
           </span>
-          <!-- Display time when song will start to fade out. Initially this is hidden until it is calculated -->
-          {% if playlist_info.max_song_duration %}
-            <span class="fadeout-time" id='id-fadeout-time' hidden>
-              <span>{{ playlist_info.max_song_duration|time:"i:s"}}</span>
-            </span>
-          {% endif %}
           <span class="duration" id='id-duration'>
-            <span class="amplitude-duration-minutes" amplitude-main-duration-minutes="true"></span>:<span class="amplitude-duration-seconds" amplitude-main-duration-seconds="true"></span>
+            <span id="duration-minutes">0</span>:<span id="duration-seconds">00</span>
           </span>     
         </div>
   
@@ -97,7 +91,7 @@
           
           <div class="volume-container">
             <div class="amplitude-mute"></div>
-            <input type="range" class="amplitude-volume-slider" step=".1"/>
+            <input type="range" class="amplitude-volume-slider" id="volume_control" step=".1"/>
           </div>
 
         </div>
@@ -160,7 +154,16 @@
     const time_limit_para = document.getElementById("timelimit");
     const heat_number_elem = document.getElementById("id-heat-number");
     const is_feature_list = JSON.parse(document.getElementById('is-feature-list-data').textContent);
+    
+    const volume_control = document.getElementById('volume_control');
+    
+    var progress_bar = document.getElementById('song-played-progress');
+    var duration_time = document.getElementById('id-duration');
+    var duration_minutes = document.getElementById('duration-minutes');
+    var duration_secs = document.getElementById('duration-seconds');
+    var current_index = {{start_index}};
 
+    const zeroPad = (num, places) => String(num).padStart(places, '0');
     
     Amplitude.init({
       "bindings": {
@@ -210,75 +213,90 @@
           updateHeatNumber({{ start_index }});
         },
         
-        {% if playlist_info.max_song_duration %}
-        /* if playlist has a max duration, fade volume at that time, unless the song is a feature */
         'timeupdate': function(){
         
           /* is this song a feature? */
           index = Amplitude.getActiveIndex();
           var is_feature = is_feature_list[index];
-                      
-          if ( is_feature ) {
-            /* hide the time limit paragraph */ 
-            time_limit_para.setAttribute('hidden','');
-          } else{
-            /* not a feature song, show the time limit paragraph */
-            time_limit_para.removeAttribute('hidden');
+          var fading_limit;
+          var pct_played, total_minutes, total_seconds;
+ 
+          /* check how long this song has been playing */
+          played = Amplitude.getSongPlayedSeconds();
+          new_song_duration = Amplitude.getSongDuration();
+          
+          if (played > 1) {
+          
+            {% if playlist_info.max_song_duration %} 
+              if ( is_feature ) {
+                /* hide the time limit paragraph, and play entire song except for last second */ 
+                time_limit_para.setAttribute('hidden','');
+                limit = Math.round(new_song_duration) - 1;
+                fading_limit = limit;
+                duration_time.style.backgroundColor = 'transparent';
+              } else if (new_song_duration < {{ max_song_duration_in_sec }} ) {
+                limit = new_song_duration;
+                fading_limit = limit;
+                duration_time.style.backgroundColor = 'transparent';
+              } else {
+                /* not a feature song, show the time limit paragraph and set time limit*/
+                time_limit_para.removeAttribute('hidden');
+                limit = {{ max_song_duration_in_sec }};
+                fading_limit = limit - 5;
+                duration_time.style.backgroundColor = 'red';
+              }
+            {% else %}
+              limit = new_song_duration;
+              fading_limit = limit;
+              duration_time.style.backgroundColor = 'transparent';
+            {% endif %}
             
-            /* check how long this song has been playing */
-            played = Amplitude.getSongPlayedSeconds();
+            /* update progress bar and end duration */
+            total_minutes = Math.trunc(limit / 60);
+            total_seconds = Math.round(limit - total_minutes * 60);
+            pct_played = played / limit;
+          
+            /* update the duration fields and progress bar */
+            duration_minutes.innerHTML = total_minutes;
+            duration_secs.innerHTML = zeroPad(total_seconds, 2);
+            duration_time.removeAttribute('hidden');
+            progress_bar.setAttribute("value", pct_played);
             
-            /* if song has been playing for two seconds, calculate the position of the fadeout time */
-            if (Math.round(played) == 2) {
-                          
-              new_song_duration = Amplitude.getSongDuration();
-              limit = {{ max_song_duration_in_sec }};
-            
-              /* if song is longer than the time limit, display the fadeout time */
-              if (limit < new_song_duration) {
-                /* find position based on ratio of time limit to song duration and center the text */
-                /* 856 is width of container, 30 is half of the fadeout time text */
-                left_margin = Math.round(limit / new_song_duration * 856.0) - 30;
-                left_margin_str = String(left_margin).concat('px');
-                
-                /* get the element for fadeout time, set the left margin, and un-hide it */
-                fadeout_time = document.getElementById('id-fadeout-time');
-                fadeout_time.style.left = left_margin_str;
-                fadeout_time.removeAttribute('hidden');
-                
-                /* get the element for the song duration and hide it */
-                duration_label = document.getElementById('id-duration');
-                duration_label.setAttribute('hidden','');
-               }
-            };
-            if (played > {{ max_song_duration_in_sec }}) {
+            if (played > fading_limit) {
               /* highlight the time limit text when time has expired */
               time_limit_para.style.backgroundColor = 'red';
                   
               curr_volume = Amplitude.getVolume();
               if (curr_volume > 40) {
                   /* drop volume by 10% after time limit hit */
-                  Amplitude.setVolume(curr_volume - 10);
+                  new_volume = curr_volume - 10;
               } else if (curr_volume > 10) {
                   /* once volume gets to 40, continue fading 2% each time, until volume gets below 10% */
-                  Amplitude.setVolume(curr_volume - 2); 
+                  new_volume = curr_volume - 2;
               } else {
                   /* at lower than 10%, set volume to 0 */
-                  Amplitude.setVolume(0);
+                  new_volume = 0;
+                  Amplitude.setVolume(new_volume);
+                  console.log("setting volume to", new_volume);
+                  volume_control.value = new_volume; 
+  
                   {% if playlist_info.auto_continue %}
-                    /* fade takes about 5 sec, delay until 8 sec after limit then play next */
-                    if (played - 8 > {{ max_song_duration_in_sec }}) {
+                    /* delay two additional seconds then play next */
+                    if (played - 3 > {{ max_song_duration_in_sec }}) {
                       Amplitude.next();
                     }
                   {% else %}
                     /* playlist not auto-continue, so pause after fading complete */
                     Amplitude.pause();
                   {% endif %}
+                  return;
               }
+              Amplitude.setVolume(new_volume);
+              console.log("setting volume to", new_volume);
+              volume_control.value = new_volume; 
             }
-          } 
+          }
         },
-        {% endif %}
           
         'prev': function() {          
           var current_index = Amplitude.getActiveIndex();
@@ -299,19 +317,13 @@
           
           /* reset volume level and clear any highlighing */
           Amplitude.setVolume(startVolume);
+          console.log("setting volume to ", startVolume);
+          volume_control.value = startVolume; 
           {% if playlist_info.max_song_duration %}
             time_limit_para.style.backgroundColor = 'transparent';    
-            
-            /* hide the fadeout time until we can calculate it for the new song */
-            fadeout_time = document.getElementById('id-fadeout-time');
-            fadeout_time.setAttribute('hidden','');
-            
-            /* un-hide the duration label, until we compare to time limit */
-            duration_label = document.getElementById('id-duration');
-            duration_label.removeAttribute('hidden');
           {% endif %}
 
-          var current_index = Amplitude.getActiveIndex();
+          current_index = Amplitude.getActiveIndex();
 
           /* don't show current song in 'up next' list */
           hideSongInUpNext(current_index);

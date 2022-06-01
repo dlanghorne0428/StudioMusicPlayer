@@ -51,7 +51,7 @@ div.bottom-container {
     border-bottom-left-radius: 10px; 
 }
 
-progress.amplitude-song-played-progress {
+progress#song-played-progress {
     background-color: #313252;
     -webkit-appearance: none;
     appearance: none;
@@ -62,7 +62,7 @@ progress.amplitude-song-played-progress {
     border: none; 
 }
   
-progress.amplitude-song-played-progress:not([value]) {
+progress#song-played-progress:not([value]) {
     background-color: #313252; 
 }
 
