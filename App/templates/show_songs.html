@@ -30,8 +30,8 @@
     <thead class='table-dark'>
       <!-- use sticky to keep header row from scrolling off the page -->
       <tr id='table-header-sticky' >
-        <th class="text-center"style="width:25%">Artist</th>
         <th class="text-center"style="width:33%">Title</th>
+        <th class="text-center"style="width:25%">Artist</th>
         <th class="text-center"style="width:15%">Dance</th>
         <th class="text-center"style="width:15%">Holiday</th>
         <th class="text-center"style="width:12%">Action</th>
@@ -46,8 +46,8 @@
           <!-- use sticky to keep this row from scrolling off the page -->
           <tr id='song-filter-sticky' class="table-secondary">
             <!-- user can filter on any of these columns --> 
-            <td id='artist-filter' class="text-center">{{ filter.form.artist }}</td>
             <td id='title-filter' class="text-center">{{ filter.form.title }}</td>
+            <td id='artist-filter' class="text-center">{{ filter.form.artist }}</td>
             <td id='dance-type-filter' class="text-center">{{ filter.form.dance_type }}</td>
             <td id='holiday-filter' class="text-center">{{ filter.form.holiday }}</td>
             <!-- the last button is used to submit filter data -->
@@ -61,12 +61,12 @@
       <!-- the rest of the table has the list of songs, one song per row -->
       {% for song in songs %}
       <tr class="table-row">
-        <td class="text-center">{{ song.artist }}</td>
         <td class="text-center">{{ song.title }}
           {% if song.explicit %}
             <img src={% static 'img/explicit-fill.svg' %}>
           {% endif %}
         </td>
+        <td class="text-center">{{ song.artist }}</td>
         <!-- display the "readable" string for the dance type and holiday -->
         <td class="text-center">{{ song.get_dance_type_display }}</td>
         <td class="text-center">{{ song.get_holiday_display }}</td>
