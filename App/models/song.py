@@ -185,6 +185,7 @@ class Song(models.Model):
     artist = models.CharField(max_length=200,default="Unknown")
     image = models.ImageField(upload_to=create_valid_image_filename, null=True)
     image_link = models.CharField(max_length=200,blank=True, null=True) 
+    explicit = models.BooleanField(default=False)
     
 
     dance_type = models.CharField(
