@@ -47,8 +47,8 @@
       <thead class='table-dark'>
         <!-- use sticky to keep header row from scrolling off the page -->
         <tr id='table-header-sticky' >
+          <th class="text-center" style="width:30%">Title</th>          
           <th class="text-center" style="width:20%">Artist</th>
-          <th class="text-center" style="width:30%">Title</th>
           <th class="text-center" style="width:25%">Album</th>
           <th class="text-center" style="width:8%">Duration</th>
           <th class="text-center" style="width:7%">Tempo</th>
@@ -59,12 +59,12 @@
         <!-- the rest of the table has the list of songs, one song per row -->
         {% for track in tracks %}
           <tr>
-            <td class="text-center">{{ track.artist_name }}</td>
             <td class="text-center">{{ track.name }}
               {% if track.explicit %}
                 <img src={% static 'img/explicit-fill.svg' %}>
               {% endif %}
             </td>
+            <td class="text-center">{{ track.artist_name }}</td>
             <td class="text-center">{{ track.album_name }}</td>
             <td class="text-center">{{ track.duration}}</td>
             <td class="text-center">{{ track.tempo}}</td>

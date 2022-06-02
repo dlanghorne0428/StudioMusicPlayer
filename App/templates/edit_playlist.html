@@ -53,8 +53,8 @@
       <!-- use sticky to keep table header from scrolling off the page -->
       <tr id='table-header-sticky' >
         <th class="text-center">Index</th>
-        <th class="text-center">Artist</th>
         <th class="text-center">Title</th>
+        <th class="text-center">Artist</th>
         <th class="text-center">Dance</th>
         <th class="text-center">Play <br>Whole Song?</th>
         <th class="text-center">Action</th>
@@ -69,12 +69,12 @@
         <!-- show a one-based index as the first column. -->
         <td class="text-center">{{ forloop.counter }}</td>
         
-        <td class="text-center">{{ s.song.artist }}</td>
         <td class="text-center">{{ s.song.title }}
           {% if s.song.explicit %}
             <img src={% static 'img/explicit-fill.svg' %}>
           {% endif %}
         </td>
+        <td class="text-center">{{ s.song.artist }}</td>
         
         <!-- display the "readable" string for the dance type -->
         <td class="text-center">{{ s.song.get_dance_type_display }}</td>
