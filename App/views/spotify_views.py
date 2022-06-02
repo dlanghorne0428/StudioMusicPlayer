@@ -47,6 +47,7 @@ class Spotify_Api():
         # populate main fields
         new_track['id'] = spotify_track['id']
         new_track['name'] = spotify_track['name']
+        new_track['explicit'] = spotify_track['explicit']
         new_track['artist_name'] = spotify_track['artists'][0]['name']
         if 'album' in spotify_track: 
             new_track['album_name'] = spotify_track['album']['name']
@@ -699,7 +700,7 @@ def add_spotify_track(request, track_id):
             artist = track['artist_name'])
         
         form = SpotifyTrackInputForm(instance=track_input)
-        return render(request, 'add_song.html', {'form': form, 'cover_art': image_link})    
+        return render(request, 'add_song.html', {'form': form, 'warning': track['explicit'], 'cover_art': image_link})    
     
     else:  # process data submitted from the form
         form = SpotifyTrackInputForm(request.POST)
