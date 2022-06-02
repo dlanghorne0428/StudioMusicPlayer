@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load my_tags %} 
+{% load static %}
 
 {% block content %}
 
@@ -59,7 +60,11 @@
         {% for track in tracks %}
           <tr>
             <td class="text-center">{{ track.artist_name }}</td>
-            <td class="text-center">{{ track.name }}</td>
+            <td class="text-center">{{ track.name }}
+              {% if track.explicit %}
+                <img src={% static 'img/explicit-fill.svg' %}>
+              {% endif %}
+            </td>
             <td class="text-center">{{ track.album_name }}</td>
             <td class="text-center">{{ track.duration}}</td>
             <td class="text-center">{{ track.tempo}}</td>
