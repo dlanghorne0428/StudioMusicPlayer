@@ -13,6 +13,9 @@
     <!-- first row in bootstrap grid is the page title -->
     <div class="col-12">
       <h2 class="text-center">{{ page_title }}</h2>
+      {% if owner %}
+        <h3 class="text-center">Created by {{ owner }}</h3>
+      {% endif %}
     </div>
   </div>
   

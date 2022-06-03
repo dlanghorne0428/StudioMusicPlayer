@@ -20,13 +20,13 @@
           <h3 class="text-success">You are currently streaming from Spotify</h3>
         </div>
         <div class="col-6 text-start">
-          <a class="btn btn-primary" href="{% url 'App:spotify_sign_out' %}">Use Local Music</a> 
+          <a class="btn btn-primary" href="{% url 'App:spotify_sign_out' %}">Use Music on this Device</a> 
         </div>
       </div>
     {% else %}
       <div class="row mb-2"> 
         <div class="col-6 text-end">
-          <h3 class="text-dark" href="#">You are currently playing Local Music</h3> 
+          <h3 class="text-dark" href="#">You are currently using Music on this Device</h3> 
         </div>
         <div class="col-6 text-start">
           <a class="btn btn-primary" href="{% url 'App:spotify_sign_in' %}">Sign In to Spotify</a>
