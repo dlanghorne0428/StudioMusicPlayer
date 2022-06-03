@@ -10,32 +10,35 @@ def show_playlists(user, owner_only=False):
     
     # assume there are no playlists
     playlists = None
+    owner = None
     page_title = "No Playlists Found"
     
     # if there are any playlists
     if Playlist.objects.count() > 0:
         
         if owner_only:
+            owner = user.username
             if user.has_spotify_token:
                 # get the streaming playlists owned by that user and change the page title 
                 playlists = Playlist.objects.filter(owner=user, streaming=True).order_by(Lower('title'))
-                page_title = "Playlists of Spotify tracks for " + user.username                
+                page_title = 'Playlists of Spotify tracks'
             else:
                 # get the local playlists owned by that user and change the page title 
                 playlists = Playlist.objects.filter(owner=user, streaming=False).order_by(Lower('title'))
-                page_title = "Playlists of songs on this computer for " + user.username
+                page_title = 'Playlists of Songs on this Device' 
                     
         else:
             if user.has_spotify_token:
                 # get all the playlists, ordered by owner's username then title
                 playlists = Playlist.objects.filter(streaming=True).order_by(Lower('owner__username'), Lower('title'))
-                page_title = 'All Playlists of Spotify tracks'
+                page_title = 'Playlists of Spotify tracks'
             else:
                 playlists = Playlist.objects.filter(streaming=False).order_by(Lower('owner__username'), Lower('title'))
-                page_title = 'All Playlists of songs on this computer'              
+                page_title = 'Playlists of Songs on this Device'              
     
     return {'playlists': playlists,
-            'page_title': page_title}
+            'page_title': page_title, 
+            'owner': owner}
 
 
 def all_playlists(request):

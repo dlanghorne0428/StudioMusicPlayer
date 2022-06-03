@@ -464,7 +464,7 @@ def spotify_saved_playlists(request):
     
     return render(request, "spotify_playlists.html", {
         "spotify_user": this.spotify_api.current_username(),
-        'playlists_description': "Your Saved Playlists",
+        'playlists_description': "Your Saved Playlists on Spotify",
         "playlists": playlists['list_of_playlists'],
         "first": playlists['first'],
         "last" : playlists['last'],
@@ -570,7 +570,7 @@ def spotify_search_playlists(request, search_term):
     # render those results
     return render(request, "spotify_playlists.html", {
         "spotify_user": this.spotify_api.current_username(),
-        'playlists_description': "Playlists Matching - " + search_term,
+        'playlists_description': "Spotify Playlists Matching - " + search_term,
         "playlists": results['list_of_playlists'],
         "first": results['first'],
         "last":  results['last'],
@@ -612,7 +612,7 @@ def spotify_playlist_tracks (request, playlist_id):
     
     return render(request, "spotify_track_list.html", {
         "spotify_user": this.spotify_api.current_username(),
-        'track_list_description': "Playlist Contents",
+        'track_list_description': "Spotify Playlist Contents",
         "tracks": tracks['track_list'],
         "first" : tracks['first'],
         "last"  : tracks['last'],

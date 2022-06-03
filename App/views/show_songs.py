@@ -30,7 +30,7 @@ def show_songs(request, song_id = None):
         
     else:
         songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=True).order_by('title')) 
-        page_title = "Songs on this Computer"
+        page_title = "Songs on this Device"
         streaming = False
         
         # get all local playlists owned by the current user
