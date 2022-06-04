@@ -38,11 +38,11 @@ def play_song_list(request, playlist_id, start_index=0):
             is_feature_list.append(False)
     
     # convert max_duration to seconds for javascript player
-    if playlist.max_song_duration is not None:
+    if playlist.category == 'Norm':
+        max_song_duration_in_sec = None
+    else:
         max_song_duration_in_sec = playlist.max_song_duration.minute * 60 + \
                                    playlist.max_song_duration.second
-    else:
-        max_song_duration_in_sec = None
     
     # pass the path to the default cover art for any songs that don't have art 
     default_url = settings.STATIC_URL + "img/default.png"

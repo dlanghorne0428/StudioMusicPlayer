@@ -28,9 +28,8 @@
         <!-- define the column headers -->
         <th class="text-center">Title</th>
         <th class="text-center">Owner</th>
-        <th class="text-center">Comp Or </br>Showcase?</th>        
+        <th class="text-center">Category</th>        
         <th class="text-center">Song </br> Time Limit</th>
-        <th class="text-center">Autoplay</br>Next Song</th>
         <th class="text-center">Description</th>
         <th class="text-center">Action</th>
       </tr>
@@ -40,29 +39,16 @@
       <!-- each playlist is a row in the table -->
       {% for playlist in playlists %}
         <tr>
-          <!-- first columns are title and owner -->
+          <!-- first columns are title,  owner, and category -->
           <td class="text-center">{{ playlist.title }}</td>
           <td>{{ playlist.owner }}</td>
-          
-          <!-- display a checkmark if showcase field is true, red x otherwise -->
-          {% if playlist.is_showcase_or_comp %}
-            <td>&#9989;</td>
-          {% else %}
-            <td>&#10060;</td>
-          {% endif %}
+          <td>{{ playlist.get_category_display}}</td>
           
           <!-- if max song duration is set, display in minutes:seconds format -->
-          {% if playlist.max_song_duration %}
+          {% if playlist.category != 'Norm' and playlist.max_song_duration %}
             <td>{{ playlist.max_song_duration|time:"i:s" }}</td>
           {% else %}
             <td>None</td>
-          {% endif %}
-          
-          <!-- display a checkmark if auto_continue field is true, red x otherwise -->
-          {% if playlist.auto_continue %}
-            <td>&#9989;</td>
-          {% else %}
-            <td>&#10060;</td>
           {% endif %}
           
           <td>{{ playlist.description }}</td>

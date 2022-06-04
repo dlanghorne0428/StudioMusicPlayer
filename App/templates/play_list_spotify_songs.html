@@ -14,11 +14,11 @@
     <div class = "col-8">
       <!-- dance type on left side, 8 out of 12 columns -->
       {% for song in song_list %}
-        {% if playlist_info.is_showcase_or_comp %}
-          <h1 class="dance-type text-center" id="{{forloop.counter0}}-dance-type-index">
+        {% if playlist_info.category == 'Show' %}
+          <h1 class="dance-type-smaller text-center" id="{{forloop.counter0}}-dance-type-index">
             <span>Heat </span>
             <span id="id-heat-number">{{forloop.counter}}</span>
-            <span>: </span>
+            <span>- </span>
             <span>{{song.get_dance_type_display}}</span>
           </h1>
         {% else %}
@@ -51,11 +51,11 @@
       </div>
     </div>
     
-    <div class="col-4">
+    <div class="col-4 up-next-list">
       <!-- upcoming songs in right section, show dance_type and title only --> 
       {% for song in song_list %}
         <div class="song-meta-container" id="{{forloop.counter0}}-upcoming-song-index" >
-          {% if playlist_info.is_showcase_or_comp %}
+          {% if playlist_info.category == 'Show' %}
             <span class="upcoming-dance-type text-center">Heat {{forloop.counter}}</span>
             <span class="upcoming-song-name text-center">{{song.get_dance_type_display}}</span>
           {% else %}
@@ -81,7 +81,7 @@
         <!-- Time information, current, fadeout-time, and duration -->
         <div class="time-container">
           <span class="current-time">
-            <span id='current-minutes'>0</span>:<span class="current-seconds">00</span>
+            <span id='current-minutes'>0</span>:<span id="current-seconds">00</span>
           </span>
 
           <span class="duration" id='id-duration' hidden>
@@ -95,6 +95,10 @@
           <div class="play-pause" id="play-control" hidden></div>
           <div class="play-pause" id="pause-control" hidden></div>  
           <div class="next" id="next-control"></div>
+          <div class="spotify-logo">
+            <p class='mb-0'>Streaming from</p>
+            <img class="nav-bar-img" src={% static 'img/Spotify_Logo_RGB_Green.png' %}>
+          </div>
           
           <div class="volume-container">
             <div class="volume-mute" id="volume-button"></div>
@@ -112,14 +116,14 @@
          <span data-amplitude-playlist-info="title" data-amplitude-playlist="the_list"></span>
          <span><a href="{% url 'App:edit_playlist' playlist_info.id %}">Edit</a></span>
       </p>
-      {% if playlist_info.max_song_duration %}
+      {% if playlist_info.category != 'Norm'%}
         <p class="text-info my-2" id="timelimit">Song time limit: {{ playlist_info.max_song_duration|time:"i:s" }}</p>
         <p class="text-info my-2" id="feature-text" hidden>Featured song</p>
       {% endif %}
-      {% if playlist_info.auto_continue %}
-        <p class="text-info my-1">Next track played automatically</p>
-      {% else %}
+      {% if playlist_info.category == 'Show'%} 
         <p class="text-info my-1">Pause before playing next track</p>
+      {% else %}
+        <p class="text-info my-1">Next track played automatically</p>
       {% endif %}
       <p class="text-center my-2"><a href="{% url 'App:all_playlists' %}">Back to All Playlists</a></p>
     </div>
@@ -192,6 +196,8 @@
     const time_limit_para = document.getElementById("timelimit");
     const feature_text_para = document.getElementById("feature-text");
     var progress_bar = document.getElementById('song-played-progress');
+    var current_minutes = document.getElementById('current-minutes');
+    var current_seconds = document.getElementById('current-seconds');
     var duration_time = document.getElementById('id-duration');
     var duration_minutes = document.getElementById('duration-minutes');
     var duration_secs = document.getElementById('duration-seconds');
@@ -255,45 +261,56 @@
       function update_progress_bar (position, duration) {
         var pct_played, total_minutes, total_seconds;
         var duration_seconds = Math.round(duration/1000);
-        var limit;
+        var limit, fading_limit;
     
         const zeroPad = (num, places) => String(num).padStart(places, '0');
     
-        {% if playlist_info.max_song_duration %} 
+        {% if playlist_info.category != 'Norm' %} 
+        
           if (is_feature_list[current_index]) {
             limit = duration_seconds - 1;
+            fading_limit = limit;
             time_limit_para.setAttribute('hidden','');
             feature_text_para.removeAttribute('hidden');
-          } else {
-            limit = {{ max_song_duration_in_sec }};
+            duration_time.style.backgroundColor = 'transparent';
+            
+          } else if (duration_seconds < {{ max_song_duration_in_sec }}) {
+            limit = duration_seconds;
+            fading_limit = limit;
             feature_text_para.setAttribute('hidden','');
             time_limit_para.removeAttribute('hidden');
-          }
-          const fading_limit = limit - 5;
-          
-          if (duration_seconds > limit) {
-            /* use the max song duration limit as the duration */
-            total_minutes = Math.trunc(limit / 60);
-            total_seconds = Math.round(limit - total_minutes * 60);
-            pct_played = position / (limit * 1000)
-            duration_time.style.backgroundColor = 'red';
+            duration_time.style.backgroundColor = 'transparent';
             
-            if (Math.round(position / 1000) > fading_limit) {
-              /* highlight the time limit text when time has expired */
-              time_limit_para.style.backgroundColor = 'red';
-              /* console.log(position, fading_limit); */
-              fade_volume();
-            }
-            else {
-              time_limit_para.style.backgroundColor = 'transparent';  
-            };
+          } else {
+            limit = {{ max_song_duration_in_sec }};
+            fading_limit = limit - 5;
+            feature_text_para.setAttribute('hidden','');
+            time_limit_para.removeAttribute('hidden');
+            duration_time.style.backgroundColor = 'red';
+          }
+          
+          total_minutes = Math.trunc(limit / 60);
+          total_seconds = Math.trunc(limit - total_minutes * 60);
+          pct_played = position / (limit * 1000)
+
+          
+          if (Math.round(position / 1000) > fading_limit) {
+            /* highlight the time limit text when time has expired */
+            time_limit_para.style.backgroundColor = 'red';
+            /* console.log(position, fading_limit); */
+            fade_volume();          
           };
         {% else %}
           pct_played = position / duration;
           total_minutes = Math.trunc(duration / 60000);
-          total_seconds = Math.round((duration - total_minutes * 60000) / 1000);
+          total_seconds = Math.trunc((duration - total_minutes * 60000) / 1000);
           duration_time.style.backgroundColor = 'transparent';
         {% endif %}
+        
+        played_minutes = Math.trunc(position / 60000);
+        played_seconds = Math.trunc((position - played_minutes * 60000) / 1000);
+        current_minutes.innerHTML = played_minutes
+        current_seconds.innerHTML = zeroPad(played_seconds, 2)
     
         duration_minutes.innerHTML = total_minutes;
         duration_secs.innerHTML = zeroPad(total_seconds, 2);
@@ -335,7 +352,18 @@
           };
           
           function index_matches_current_track(uri) {
-            return uri == state.track_window.current_track.uri;
+            try {
+              return uri == state.track_window.current_track.uri;
+            }
+            catch(err) {
+              if (state.paused) {
+                console.log('Unexpected pause');
+                pause_the_song()
+              } else {
+                console.log(err.message);
+              }
+              return true;
+            }
           };
           
           if (index_matches_current_track(spotify_uris[current_index])) {
@@ -354,7 +382,6 @@
             new_index = spotify_uris.findIndex(index_matches_current_track);
             
             if (new_index == -1) {
-              console.log(state.track_window);
               spotify_uris[current_index] = state.track_window.current_track.uri;
             } else {
               /* show and hide the metadata */
@@ -429,10 +456,10 @@
             volume_control.value = saved_volume;
         });
           if (saved_volume == 0) {
-          {% if playlist_info.auto_continue %}  
-            play_next_song()
-          {% else %}
+          {% if playlist_info.category == 'Show' %}  
             pause_the_song(between_songs=true)
+          {% else %}
+            play_next_song()
           {% endif %} 
         }   
       };

@@ -92,7 +92,7 @@
               {% if user.has_spotify_token %}
               <li class="nav-item mx-2 dropdown">
                 <a class="nav-link dropdown-toggle py-0" href="#" id="navbarSpotifyDropdown" role="button" data-bs-toggle="dropdown">
-                  <span class="text-sucess mx-2">Find tracks on</span><img class="nav-bar-img" src={% static 'img/Spotify_Logo_RGB_Green.png' %}>
+                  <span class="text-success mx-2">Find tracks on</span><img class="nav-bar-img" src={% static 'img/Spotify_Logo_RGB_Green.png' %}>
                 </a>
                 <div class="dropdown-menu">
                   <a class="dropdown-item" href="{% url 'App:spotify_followed_artists' %}">Followed Artists</a>

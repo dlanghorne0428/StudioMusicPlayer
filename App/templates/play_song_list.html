@@ -13,11 +13,11 @@
     <!-- Top Level Headers -->
     <div class = "col-8">
       <!-- dance type on left side, 8 out of 12 columns -->
-      {% if playlist_info.is_showcase_or_comp %}
-        <h1 class="dance-type text-center">
+      {% if playlist_info.category == 'Show' %}
+        <h1 class="dance-type-smaller text-center">
           <span>Heat </span>
           <span id="id-heat-number">?</span>
-          <span>: </span>
+          <span>- </span>
           <span data-amplitude-song-info="dance_type"></span>
         </h1>
       {% else %}
@@ -45,11 +45,11 @@
       </div>
     </div>
     
-    <div class="col-4">
+    <div class="col-4 up-next-list">
       <!-- upcoming songs in right section, show dance_type and title only -->
       {% for i in playlist_indices %}
         <div class="song-meta-container" id="index-{{i}}">
-          {% if playlist_info.is_showcase_or_comp %}
+          {% if playlist_info.category == 'Show' %}
             <span class="song-dance-type">Heat {{forloop.counter}}</span>
             <span class="song-name" data-amplitude-song-info="dance_type" data-amplitude-song-index="{{ i }}"></span>
           {% else %}
@@ -104,13 +104,13 @@
          <span data-amplitude-playlist-info="title" data-amplitude-playlist="the_list"></span>
          <span><a href="{% url 'App:edit_playlist' playlist_info.id %}">Edit</a></span>
       </p>
-      {% if playlist_info.max_song_duration %}
+      {% if playlist_info.category != 'Norm' %}
         <p class="text-info my-2" id="timelimit">Song time limit: {{ playlist_info.max_song_duration|time:"i:s" }}</p>
       {% endif %}
-      {% if playlist_info.auto_continue %}
-        <p class="text-info my-1">Next track played automatically</p>
-      {% else %}
+      {% if playlist_info.category == 'Show' %}
         <p class="text-info my-1">Pause before playing next track</p>
+      {% else %}
+         <p class="text-info my-1">Next track played automatically</p>
       {% endif %}
       <p class="text-center my-2"><a href="{% url 'App:all_playlists' %}">Back to All Playlists</a></p>
     </div>
@@ -227,7 +227,7 @@
           
           if (played > 1) {
           
-            {% if playlist_info.max_song_duration %} 
+            {% if playlist_info.category != 'Norm' %} 
               if ( is_feature ) {
                 /* hide the time limit paragraph, and play entire song except for last second */ 
                 time_limit_para.setAttribute('hidden','');
@@ -253,7 +253,7 @@
             
             /* update progress bar and end duration */
             total_minutes = Math.trunc(limit / 60);
-            total_seconds = Math.round(limit - total_minutes * 60);
+            total_seconds = Math.trunc(limit - total_minutes * 60);
             pct_played = played / limit;
           
             /* update the duration fields and progress bar */
@@ -280,14 +280,14 @@
                   console.log("setting volume to", new_volume);
                   volume_control.value = new_volume; 
   
-                  {% if playlist_info.auto_continue %}
+                  {% if playlist_info.category == 'Show' %}
+                    /* playlist not auto-continue, so pause after fading complete */
+                    Amplitude.pause();
+                  {% else %}
                     /* delay two additional seconds then play next */
                     if (played - 3 > {{ max_song_duration_in_sec }}) {
                       Amplitude.next();
                     }
-                  {% else %}
-                    /* playlist not auto-continue, so pause after fading complete */
-                    Amplitude.pause();
                   {% endif %}
                   return;
               }
@@ -319,7 +319,7 @@
           Amplitude.setVolume(startVolume);
           console.log("setting volume to ", startVolume);
           volume_control.value = startVolume; 
-          {% if playlist_info.max_song_duration %}
+          {% if playlist_info.category != 'Norm' %}
             time_limit_para.style.backgroundColor = 'transparent';    
           {% endif %}
 
@@ -336,12 +336,12 @@
         }
       },
       
-      /* if entire song played and playlist set to play next song automatically */
-      {% if playlist_info.auto_continue %}
-      "continue_next": true,
-      delay: 2000           /* delay 2 seconds between songs */
+      {% if playlist_info.category == 'Show' %}
+        "continue_next": false,
       {% else %}
-      "continue_next": false,
+      /* once entire song played and playlist set to play next song automatically */
+        "continue_next": true,
+        delay: 2000           /* delay 2 seconds between songs */
       {% endif %}
     });
 
