@@ -8,16 +8,24 @@ const playlist_info_form = document.getElementById("id-PlaylistEditForm");
 // get form fields
 const title = document.getElementById("id_title");
 const max_duration = document.getElementById("id_max_song_duration");
-const auto_continue = document.getElementById("id_auto_continue");
-const is_comp_or_showcase = document.getElementById("id_is_showcase_or_comp");
+const category = document.getElementById("id_category");
 const description = document.getElementById("id_description");
 
 // add event listener for changes to the selection on any of the form fields
 title.addEventListener('change', mySubmitFunction);
 max_duration.addEventListener('change', mySubmitFunction);
-auto_continue.addEventListener('change', mySubmitFunction);
-is_comp_or_showcase.addEventListener('change', mySubmitFunction);
 description.addEventListener('change', mySubmitFunction);
+
+category.addEventListener('change', mycategoryChangeFunction);
+
+// for normal playlist, set the max_duration field to the default indicator and then submit
+function mycategoryChangeFunction() {
+    if (category.value == 'Norm') {
+        max_duration.value = "------";
+    }
+    playlist_info_form.submit();
+};
+
 
 // submit the form when any of the events happen
 function mySubmitFunction() {
