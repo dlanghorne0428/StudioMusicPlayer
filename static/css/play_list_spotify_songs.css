@@ -10,6 +10,14 @@ body {
     display: none;  /* hidden by default, will be enabled by javascript */
 }
 
+.dance-type-smaller {
+    margin: 1rem;
+    font-size: 64px;
+    height: 72px;
+    color: Yellow;
+    display: none;  /* hidden by default, will be enabled by javascript */
+}
+
 .song-title {
     margin-bottom: 1rem;
     font-size: 48px;
@@ -35,6 +43,13 @@ td.info {
 .cover img {
     width: 100%;
 }
+
+
+/****** Up Next List  *****/
+.up-next-list {
+    height: 336px;
+}
+
 
 /****** Player  *****/
 #player {
@@ -142,6 +157,7 @@ div.control-container div.next {
     background: url("../img/skip-end-circle.svg");
     background-size: cover; 
 }
+
   
 /****** Play/Pause  *****/
 div.control-container div.play-pause {
@@ -285,6 +301,15 @@ div.control-container .volume-slider::-ms-thumb {
     content: "";
     display: table;
     clear: both; 
+}
+
+div.control-container .spotify-logo {
+    position: absolute;
+    background-color: black;
+    color: #1D8954;   /* spotify green */
+    left: 160px;
+    width: 160px;
+    padding: 0px 0px 4px 0px;
 }
 
 div.song-meta-container {
