@@ -9,41 +9,13 @@
 
 {% block content %}
 
-  <div class="row player-page">
+  <div class="row player-page align-items-center">
     <!-- bootstrap grid, left side is 8 out of 12 columns -->
     <div class = "col-8">
       <!-- Dance Type and metadata of current song -->
       <h1 class="dance-type text-center"><span data-amplitude-song-info="dance_type"></span></h1>
       <h2 class="song-title text-center"><span data-amplitude-song-info="name"></span></h2>
       <h3 class="song-artist text-center"><span data-amplitude-song-info="artist"></span></h3>
-      
-      <div id="single-song-player">
-      
-        <!-- Progress Bar -->
-        <div class="bottom-container">
-          <progress class="amplitude-song-played-progress" amplitude-main-song-played-progress="true" id="song-played-progress"></progress>
-        </div>
-  
-        <!-- Time information, current and duration -->
-        <div class="time-container">
-          <span class="current-time">
-            <span class="amplitude-current-minutes" amplitude-main-current-minutes="true"></span>:<span class="amplitude-current-seconds" amplitude-main-current-seconds="true"></span>
-          </span>
-          <span class="duration">
-            <span class="amplitude-duration-minutes" amplitude-main-duration-minutes="true"></span>:<span class="amplitude-duration-seconds" amplitude-main-duration-seconds="true"></span>
-          </span>
-        </div>
-  
-        <!-- Play/Pause, Mute button and volume slider, this is what does the work -->
-        <div class="control-container">
-          <div class="amplitude-play-pause" amplitude-main-play-pause="true" id="play-pause"></div>
-  
-          <div class="volume-container">
-            <div class="amplitude-mute"></div>
-            <input type="range" class="amplitude-volume-slider" step=".1"/>
-          </div>
-        </div>
-      </div>
     </div>
     
     <div class="col-4">
@@ -55,10 +27,39 @@
   </div>
   
   <!-- this row covers all 12 columns and links back to the list of all songs -->
-  <div class="row">
-    <div class="col-12">
+  <div class="row align-items-center">
+    <div class="col-8 my-3" id="single-song-player">
+  
+      <!-- Progress Bar -->
+      <div class="bottom-container">
+        <progress class="amplitude-song-played-progress" amplitude-main-song-played-progress="true" id="song-played-progress"></progress>
+      </div>
+    
+      <!-- Time information, current and duration -->
+      <div class="time-container">
+        <span class="current-time">
+          <span class="amplitude-current-minutes" amplitude-main-current-minutes="true"></span>:<span class="amplitude-current-seconds" amplitude-main-current-seconds="true"></span>
+        </span>
+        <span class="duration">
+          <span class="amplitude-duration-minutes" amplitude-main-duration-minutes="true"></span>:<span class="amplitude-duration-seconds" amplitude-main-duration-seconds="true"></span>
+        </span>
+      </div>
+    
+      <!-- Play/Pause, Mute button and volume slider, this is what does the work -->
+      <div class="control-container">
+        <div class="amplitude-play-pause" amplitude-main-play-pause="true" id="play-pause"></div>
+    
+        <div class="volume-container">
+          <div class="amplitude-mute"></div>
+          <input type="range" class="amplitude-volume-slider" step=".1"/>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-4">
       <p class="text-center mt-4"><a href="{% url 'App:show_songs' %}">Back to Song List</a></p>
     </div>
+    
   </div>
 
 
