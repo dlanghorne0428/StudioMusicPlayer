@@ -4,6 +4,13 @@ from App.models.song import Song
 from App.models.user import User
 
 
+CATEGORY_CHOICES = [
+    ("Norm", "Normal"),     # no time limit per song, play next
+    ("Party", "Party"),     # time limit per song, play next
+    ("Show", "Showcase"),   # time limit per song, pause before next
+    ]
+
+
 class Playlist(models.Model):
     '''A playlist has a short title and longer description. 
       A many-to-many field is used to represent the list of songs.'''
@@ -23,14 +30,15 @@ class Playlist(models.Model):
     # a playlist has many songs, a song can be in multiple playlists
     songs = models.ManyToManyField(Song, through='SongInPlaylist')
 
+    # the category of this playlist - see category choices
     # is this playlist for a showcase or competition?
-    is_showcase_or_comp = models.BooleanField(default=False)    
+    category = models.CharField(
+        max_length = 10,
+        choices = CATEGORY_CHOICES, 
+        default = 'Norm'
+    )
 
-    # should the playlist automatically play the next track?
-    auto_continue = models.BooleanField(default=True)
-
-    # should the playlist have a maximum song duration?
-    # if enabled, the volume will fade when the song hits this limit
+    # for Party or Showcase playlist, the time limit
     max_song_duration = models.TimeField(null=True, blank=True)
     
     # this field stores the preferences used when to generate this playlist

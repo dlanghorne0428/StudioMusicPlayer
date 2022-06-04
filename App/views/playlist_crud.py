@@ -362,12 +362,13 @@ def edit_playlist(request, playlist_id):
     playlist = get_object_or_404(Playlist, pk=playlist_id)
     
     if not (request.user.is_superuser or playlist.owner == request.user):
-        return render(request, 'permission_denied.html')           
+        return render(request, 'permission_denied.html')    
+    
+    # obtain list of songs in this playlist and its length
+    songs_in_playlist = SongInPlaylist.objects.filter(playlist=playlist).order_by('order')
+    playlist_length = len(songs_in_playlist)    
         
     if request.method == "GET":
-        # obtain list of songs in this playlist and its length
-        songs_in_playlist = SongInPlaylist.objects.filter(playlist=playlist).order_by('order')
-        playlist_length = len(songs_in_playlist)
  
         # get the URL parameters for command and index in string format
         command = request.GET.get('cmd')
@@ -440,12 +441,26 @@ def edit_playlist(request, playlist_id):
         # obtain information from the submitted form
         form = PlaylistInfoForm(request.POST, instance=playlist, submit_title=None)
         if form.is_valid():
-            # save the updated info and return to song list
-            form.save() 
+            form.save()
+            
+            # ensure the max song duration is appropriate for the playlist category
             if playlist.max_song_duration == time(minute=30):
                 playlist.max_song_duration = None
-            form.save()
+                form.save()
+                
+                if playlist.category != 'Norm':
+                    # ask the user to set a time limit
+                    return render(request, 'edit_playlist.html', {
+                        'playlist': playlist,
+                        'songs': songs_in_playlist,
+                        'dance_types': DANCE_TYPE_CHOICES,
+                        'form': form,
+                        'error': playlist.get_category_display() + " playlists must have a song time limit.", 
+                    })
+                           
+            # redirect to show playlists
             return redirect('App:user_playlists')
+        
         else: 
             # display error on form
             return render(request, 'edit_playlist.html', {

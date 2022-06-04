@@ -4,8 +4,15 @@ body {
 
 /****** Song info  *****/
 .dance-type {
-    margin: 1rem;
+    margin: 1rem 0;
     font-size: 72px;
+    color: Yellow;
+}
+
+.dance-type-smaller {
+    margin: 1rem 0;
+    font-size: 64px;
+    height: 72px;
     color: Yellow;
 }
 
@@ -32,6 +39,13 @@ td.info {
 .cover img {
     width: 100%;
 }
+
+
+/****** Up Next List  *****/
+.up-next-list {
+    height: 336px;
+}
+
 
 /****** Player  *****/
 #player {
