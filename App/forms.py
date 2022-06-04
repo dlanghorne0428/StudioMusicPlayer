@@ -10,7 +10,7 @@ from crispy_forms.bootstrap import AppendedText, FormActions
 
 from .models.song import Song, SongFileInput, SpotifyTrackInput, DANCE_TYPE_CHOICES, HOLIDAY_CHOICES, HOLIDAY_USE_OPTIONS, HOLIDAY_DEFAULT_USAGE #StreamingSongInput, 
 from .models.user import User
-from .models.playlist import Playlist
+from .models.playlist import Playlist, CATEGORY_CHOICES
 
 
 class SongFileInputForm(ModelForm):
@@ -100,16 +100,13 @@ class PlaylistInfoForm(ModelForm):
     description = forms.CharField(
         label  = "Description",
         required = False,
-        # limit height of this field to 3 rows
-        widget = Textarea(attrs={'rows': 3}))
+        # limit height of this field to 2 rows
+        widget = Textarea(attrs={'rows': 2}))
     
-    is_showcase_or_comp = forms.BooleanField(
-        label = "Competition/Showcase",
-        required = False)   # this field must not be required in order to set it to false
-
-    auto_continue = forms.BooleanField(
-        label = "Autoplay Next Song",
-        required = False)   # this field must not be required in order to set it to false
+    category = forms.ChoiceField(
+        label = "Cotegory",
+        choices = CATEGORY_CHOICES,
+        required = True)   
     
     max_song_duration = forms.ChoiceField(
         label = "Song Time Limit",
@@ -143,15 +140,12 @@ class PlaylistInfoForm(ModelForm):
             self.helper.layout = Layout(
                 # first row has two columns: title and checkboxes
                 Row(
-                    Column(
-                        Field('title', css_class='fs-3 px-0 text-center'),
-                        css_class="col-8 offset-2"),
-                    Column('is_showcase_or_comp', 'auto_continue', 
-                           css_class="col-2 text-start"),
+                    Field('title', css_class='fs-3 px-0 text-center'),
                 ),
-                # next row has two columns: description field in the right column is 3 rows tall
+                # next row has three columns: description field in the right column is 2 rows tall
                 Row(
-                    Column('max_song_duration', css_class="col-2 offset-2"),
+                    Column('category', css_class="col-2"),
+                    Column('max_song_duration', css_class="col-2"),
                     Column('description',css_class='text-start col-8 lh-sm'),
                 ),
                 # submit and cancel buttons are included, button text comes from submit_title
@@ -164,14 +158,11 @@ class PlaylistInfoForm(ModelForm):
         else: # same layout as above without submit/cancel buttons as javascript is used to submit the form
             self.helper.layout = Layout(
                 Row(
-                    Column(
-                        Field('title', css_class='fs-3 px-0 text-center'),
-                        css_class="col-8 offset-2"),
-                    Column('is_showcase_or_comp', 'auto_continue', 
-                           css_class="col-2 text-start"),
+                    Field('title', css_class='fs-3 px-0 text-center'),
                 ),
                 Row(
-                    Column('max_song_duration', css_class="col-2 offset-2"),
+                    Column('category', css_class="col-2"),
+                    Column('max_song_duration', css_class="col-2"),
                     Column('description',css_class='text-start col-8 lh-sm'),
                 ),
             )                
@@ -179,7 +170,7 @@ class PlaylistInfoForm(ModelForm):
     class Meta:
         model = Playlist
         # include these fields in the form
-        fields = ['title', 'description', 'is_showcase_or_comp', 'auto_continue', 'max_song_duration']
+        fields = ['title', 'description', 'category', 'max_song_duration']
         
 
 
