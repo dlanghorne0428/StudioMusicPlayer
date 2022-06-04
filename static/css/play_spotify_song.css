@@ -33,3 +33,276 @@ body {
 .cover img {
     width: 90%;
 }
+
+/****** Player  *****/
+#single-song-player {
+    border-radius: 10px;
+    background-color: grey;
+    margin: auto;
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
+    -webkit-font-smoothing: antialiased; 
+}
+
+/****** Progress Bar  *****/
+div.bottom-container {
+    background-color: #202136;
+    border-bottom-right-radius: 10px; 
+    border-bottom-left-radius: 10px; 
+}
+
+progress#song-played-progress {
+    background-color: #313252;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 12px;
+    display: block;
+    cursor: pointer;
+    border: none; 
+}
+  
+progress#song-played-progress:not([value]) {
+    background-color: #313252; 
+}
+
+progress[value]::-webkit-progress-bar {
+    background-color: #313252; 
+}
+
+progress[value]::-moz-progress-bar {
+    background-color: #00a0ff; 
+}
+
+progress[value]::-webkit-progress-value {
+    background-color: #00a0ff; 
+}
+
+/****** Time Container  *****/
+.time-container {
+    /* set position relative, so fadeout-time position can be calculated */
+    position: relative;
+    opacity: 0.75;
+    font-family: "Open Sans", sans-serif;
+    font-weight: 100;
+    font-size: 24px;
+    color: #fff;
+    height: 32px; 
+}
+
+.time-container span.current-time {
+    float: left;
+    margin-left: 5px; 
+}
+
+.time-container span.fadeout-time{
+    /* use absolute positioning, the left margin will be calculated by Javascript */
+    position: absolute;
+    left: 282px;
+    text-align: left;
+    color: red;
+    font-weight: bold; 
+}
+
+.time-container span.duration {
+    float: right;
+    margin-right: 5px; 
+}
+
+/****** Control Container  *****/
+div.control-container {
+    /* set position relative, so other controls can use absolute positioning */
+    position: relative;
+    margin-top: 10px;
+    padding-bottom: 10px; 
+}
+
+  
+/****** Play/Pause  *****/
+div.control-container div.play-pause {
+    /* put play/pause button in center of container */
+    float: left;
+    margin-left: 391px;  /* (856 - 74) / 2 */
+    display: inline-block;
+    width: 74px;
+    height: 74px;
+    cursor: pointer;
+}
+  
+div.control-container #play-control {
+    background: url("../img/play-circle.svg");
+    background-size: cover; 
+}
+
+div.control-container #pause-control {
+    background: url("../img/pause-circle.svg");
+    background-size: cover; 
+}
+
+div.control-container:after {
+    content: "";
+    display: table;
+    clear: both; 
+Í}
+
+/****** Volume / Mute Buttons *****/
+div.control-container div.volume-mute {
+    /* use absolute positioning to put mute/volume button on right side of play/pause */
+    position: absolute;
+    left: 481px;
+    margin: 0 16px;
+    width: 74px;
+    height: 74px;
+    cursor: pointer;
+}
+
+div.control-container #volume-button {
+    background: url("../img/volume-down-fill.svg");
+    background-size: cover; 
+}
+
+div.control-container #mute-button  {
+    background: url("../img/volume-mute-fill.svg");
+    background-size: cover; 
+}
+
+/****** Volume Slider *****/
+div.control-container .volume-slider {
+    /* use absolute positioning to put volume slider on right side of mute/volume button */
+    position: absolute;
+    left: 560px;
+    top: 35px;
+    width: 148px;  /* calc(100% - 30px);*/
+    -webkit-appearance: none;
+
+}
+
+div.control-container .volume-slider:focus {
+      outline: none; 
+}
+
+/****** Volume Slider: webkit *****/    
+div.control-container .volume-slider::-webkit-slider-runnable-track {
+      width: 75%;
+      height: 4px;
+      cursor: pointer;
+      animate: 0.2s;
+      background: red; 
+}
+
+div.control-container .volume-slider::-webkit-slider-thumb {
+      height: 18px;
+      width: 18px;
+      background-color: black;
+      cursor: pointer;
+      margin-top: -8px;
+      -webkit-appearance: none;
+      border-radius: 20px; 
+}
+    
+div.control-container .volume-slider:focus::-webkit-slider-runnable-track {
+      background: red; /*#cfd8dc; */
+}
+
+/****** Volume Slider: mozilla *****/ 
+div.control-container .volume-slider::-moz-range-track {
+    width: 75%;
+    height: 4px;
+    cursor: pointer;
+    animate: 0.2s;
+    background: red; 
+}
+
+div.control-container .volume-slider::-moz-range-thumb {
+    height: 18px;
+    width: 18px;
+    background-color: black;
+    cursor: pointer;
+    margin-top: -8px;
+    -webkit-appearance: none;
+    border-radius: 20px; 
+}
+
+div.control-container .volume-slider::-ms-track {
+    width: 148px;
+    height: 4px;
+    cursor: pointer;
+    animate: 0.2s;
+    background: red; 
+    border-width: 15px 0;
+    color: transparent;
+    border-color: #192029; 
+}
+
+/****** Volume Slider: microsoft *****/     
+div.control-container .volume-slider::-ms-fill-lower {
+    background: transparent;
+    border-radius: 2.6px; 
+}
+
+div.control-container .volume-slider::-ms-fill-upper {
+    background: transparent;
+    border-radius: 2.6px; 
+}
+
+div.control-container .volume-slider::-ms-thumb {
+    height: 18px;
+    width: 18px;
+    background-color: black;
+    cursor: pointer;
+    margin-top: 0px;
+    border: 20px; 
+}
+
+.volume-slider::-ms-tooltip {
+    display: none; 
+}
+
+.volume-container:after {
+    content: "";
+    display: table;
+    clear: both; 
+}
+
+div.control-container .spotify-logo {
+    position: absolute;
+    background-color: black;
+    color: #1D8954;   /* spotify green */
+    left: 160px;
+    width: 160px;
+    padding: 0px 0px 4px 0px;
+}
+
+div.song-meta-container {
+    display: none; /*inline-block; */
+    margin: 8px 4px;
+    vertical-align: middle;
+    width: 90%;
+    border: 2px LightGrey solid;
+}
+        
+div.song-meta-container span.upcoming-dance-type {
+    font-family: "Lato", sans-serif;
+    font-size: 28px;
+    line-height: 36px;
+    color: LightGreen;
+    letter-spacing: 0.47px;
+    display: block; 
+}
+
+div.song-meta-container span.upcoming-song-name {
+    font-family: "Lato", sans-serif;
+    font-size: 20px;
+    line-height: 28px;
+    color: white;
+    letter-spacing: 0.47px;
+    display: block; 
+}
+        
+div.song-meta-container span.upcoming-artist-album {
+    font-family: "Lato", sans-serif;
+    font-size: 16px;
+    line-height: 20x;
+    color: #fff;
+    letter-spacing: 0.47px;
+    display: block; 
+}
