@@ -358,8 +358,6 @@
       var desired_seek_in_sec = percent_of_progress_bar * limit;
       var percent_of_song_duration = Math.round(desired_seek_in_sec / new_song_duration * 100.0)
       
-      Amplitude.setDebug( true );
-      
       var buffered = Amplitude.getBuffered();
       console.log(x, this.offsetWidth, percent_of_progress_bar, desired_seek_in_sec, percent_of_song_duration);
       Amplitude.setSongPlayedPercentage(percent_of_song_duration);
