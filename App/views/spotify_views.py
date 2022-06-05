@@ -9,7 +9,7 @@ import os
 import sys
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
-import spotify_cred as cred 
+from decouple import config
 
 # this is a pointer to the module object instance itself.
 this = sys.modules[__name__]
@@ -315,9 +315,9 @@ def spotify_sign_in(request):
     # Step 1: initialize cache and authorization managers
     cache_path = os.path.join(CACHE_FOLDER, user.username)
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=cache_path)
-    auth_manager = spotipy.oauth2.SpotifyOAuth(client_id=cred.client_ID, 
-                                               client_secret= cred.client_SECRET, 
-                                               redirect_uri=cred.redirect_url, 
+    auth_manager = spotipy.oauth2.SpotifyOAuth(client_id=config('client_ID'), 
+                                               client_secret= config('client_SECRET'), 
+                                               redirect_uri=config('redirect_url'), 
                                                scope="streaming, user-modify-playback-state, user-read-playback-state, user-read-currently-playing, user-read-recently-played, user-library-read user-follow-read playlist-modify-private",
                                                cache_handler=cache_handler, 
                                                show_dialog=True)    
