@@ -67,46 +67,45 @@
     </div>
   </div>
 
+  <!-- next row in bootstrap grid broken into two sections -->
   <div class="row align-items-center">
-    <!-- next row in bootstrap grid broken into two sections -->
-    <div class="col-8">
-      <!-- left section has the audio player and its controls -->
-      <div id="player">
-      
-        <!-- Progress Bar -->
-        <div class="bottom-container">
-          <progress id="song-played-progress"></progress>
-        </div>
-  
-        <!-- Time information, current and duration -->
-        <div class="time-container">
-          <span class="current-time">
-            <span id='current-minutes'>0</span>:<span id="current-seconds">00</span>
-          </span>
+    
+    <!-- left section has the audio player and its controls -->
+    <div class="col-8 mb-3" id="player">
+    
+      <!-- Progress Bar -->
+      <div class="bottom-container">
+        <progress id="song-played-progress"></progress>
+      </div>
 
-          <span class="duration" id='id-duration' hidden>
-            <span id='duration-minutes'>0</span>:<span id='duration-seconds'>00</span>
-          </span>     
-        </div>
-  
-        <!-- Previous, Play/Pause, Next, Volume/Mute, Volume Slider -->
-        <div class="control-container text-center">
-          <div class="prev" id="prev-control"></div>
-          <div class="play-pause" id="play-control" hidden></div>
-          <div class="play-pause" id="pause-control" hidden></div>  
-          <div class="next" id="next-control"></div>
-          <div class="spotify-logo">
-            <p class='mb-0'>Streaming from</p>
-            <img class="nav-bar-img" src={% static 'img/Spotify_Logo_RGB_Green.png' %}>
-          </div>
-          
-          <div class="volume-container">
-            <div class="volume-mute" id="volume-button"></div>
-            <div class="volume-mute" id="mute-button" hidden></div>
-            <input type="range" class="volume-slider" id="volume_control" max="1" value="0.8" step="0.05"/>
-          </div>
+      <!-- Time information, current and duration -->
+      <div class="time-container">
+        <span class="current-time">
+          <span id='current-minutes'>0</span>:<span id="current-seconds">00</span>
+        </span>
 
+        <span class="duration" id='id-duration' hidden>
+          <span id='duration-minutes'>0</span>:<span id='duration-seconds'>00</span>
+        </span>     
+      </div>
+
+      <!-- Previous, Play/Pause, Next, Volume/Mute, Volume Slider -->
+      <div class="control-container text-center">
+        <div class="prev" id="prev-control"></div>
+        <div class="play-pause" id="play-control" hidden></div>
+        <div class="play-pause" id="pause-control" hidden></div>  
+        <div class="next" id="next-control"></div>
+        <div class="spotify-logo">
+          <p class='mb-0'>Streaming from</p>
+          <img class="nav-bar-img" src={% static 'img/Spotify_Logo_RGB_Green.png' %}>
         </div>
+        
+        <div class="volume-container">
+          <div class="volume-mute" id="volume-button"></div>
+          <div class="volume-mute" id="mute-button" hidden></div>
+          <input type="range" class="volume-slider" id="volume_control" max="1" value="0.8" step="0.05"/>
+        </div>
+
       </div>
     </div>
   

@@ -61,40 +61,39 @@
     </div>
   </div>
 
+  <!-- next row in bootstrap grid broken into two sections -->
   <div class="row align-items-center">
-    <!-- next row in bootstrap grid broken into two sections -->
-    <div class="col-8">
-      <!-- left section has the audio player and its controls -->
-      <div id="player">
-      
-        <!-- Progress Bar -->
-        <div class="bottom-container">
-          <progress id="song-played-progress"></progress>
-        </div>
-  
-        <!-- Time information, current, fadeout-time, and duration -->
-        <div class="time-container">
-          <span class="current-time">
-            <span class="amplitude-current-minutes" amplitude-main-current-minutes="true"></span>:<span class="amplitude-current-seconds" amplitude-main-current-seconds="true"></span>
-          </span>
-          <span class="duration" id='id-duration'>
-            <span id="duration-minutes">0</span>:<span id="duration-seconds">00</span>
-          </span>     
-        </div>
-  
-        <!-- Previous, Play/Pause, Next, Volume/Mute, Volume Slider -->
-        <div class="control-container text-center">
-          <div class="amplitude-prev" id="prev"></div>
-          <div class="amplitude-play-pause" amplitude-main-play-pause="true" id="play-pause"></div>
-            
-          <div class="amplitude-next" id="next"></div>
-          
-          <div class="volume-container">
-            <div class="amplitude-mute"></div>
-            <input type="range" class="amplitude-volume-slider" id="volume_control" step=".1"/>
-          </div>
 
+    <!-- left section has the audio player and its controls -->
+    <div class="col-8 my-3" id="player">
+      
+      <!-- Progress Bar -->
+      <div class="bottom-container">
+        <progress id="song-played-progress"></progress>
+      </div>
+
+      <!-- Time information, current, fadeout-time, and duration -->
+      <div class="time-container">
+        <span class="current-time">
+          <span class="amplitude-current-minutes" amplitude-main-current-minutes="true"></span>:<span class="amplitude-current-seconds" amplitude-main-current-seconds="true"></span>
+        </span>
+        <span class="duration" id='id-duration'>
+          <span id="duration-minutes">0</span>:<span id="duration-seconds">00</span>
+        </span>     
+      </div>
+
+      <!-- Previous, Play/Pause, Next, Volume/Mute, Volume Slider -->
+      <div class="control-container text-center">
+        <div class="amplitude-prev" id="prev"></div>
+        <div class="amplitude-play-pause" amplitude-main-play-pause="true" id="play-pause"></div>
+          
+        <div class="amplitude-next" id="next"></div>
+        
+        <div class="volume-container">
+          <div class="amplitude-mute"></div>
+          <input type="range" class="amplitude-volume-slider" id="volume_control" step=".1"/>
         </div>
+
       </div>
     </div>
   
