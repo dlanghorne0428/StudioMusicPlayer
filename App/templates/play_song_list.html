@@ -164,6 +164,8 @@
 
     const zeroPad = (num, places) => String(num).padStart(places, '0');
     
+    var limit; 
+    
     Amplitude.init({
       "bindings": {
         37: 'prev',         /* left arrow */
@@ -276,7 +278,7 @@
                   /* at lower than 10%, set volume to 0 */
                   new_volume = 0;
                   Amplitude.setVolume(new_volume);
-                  console.log("setting volume to", new_volume);
+                  //console.log("setting volume to", new_volume);
                   volume_control.value = new_volume; 
   
                   {% if playlist_info.category == 'Show' %}
@@ -291,7 +293,7 @@
                   return;
               }
               Amplitude.setVolume(new_volume);
-              console.log("setting volume to", new_volume);
+              //console.log("setting volume to", new_volume);
               volume_control.value = new_volume; 
             }
           }
@@ -312,7 +314,7 @@
           
         'song_change': function(){   
           /* song has changed, either backward or forward */
-          console.log("Song has been changed.");
+          //console.log("Song has been changed.");
           
           /* reset volume level and clear any highlighing */
           Amplitude.setVolume(startVolume);
@@ -352,10 +354,14 @@
     document.getElementById('song-played-progress').addEventListener('click', function( e ){
       var offset = this.getBoundingClientRect();
       var x = e.pageX - offset.left;
-    
-      Amplitude.setSongPlayedPercentage( ( parseFloat( x ) / parseFloat( this.offsetWidth) ) * 100 );
-      }
-    );
+      var percent_of_progress_bar = parseFloat( x ) / parseFloat( this.offsetWidth);
+      var desired_seek_in_sec = percent_of_progress_bar * limit;
+      var percent_of_song_duration = Math.round(desired_seek_in_sec / new_song_duration * 100.0)
+      
+      var buffered = Amplitude.getBuffered();
+      console.log(x, this.offsetWidth, percent_of_progress_bar, desired_seek_in_sec, percent_of_song_duration);
+      Amplitude.setSongPlayedPercentage(percent_of_song_duration);
+    });
   </script>
 
 {% endblock %}
