@@ -48,17 +48,15 @@
     
       <!-- Play/Pause, Mute button and volume slider, this is what does the work -->
       <div class="control-container">
-        <div class="spotify-logo">
-          <p class='mb-0'>Streaming from</p>
-          <img class="nav-bar-img" src={% static 'img/Spotify_Logo_RGB_Green.png' %}>
-        </div>
         <div class="play-pause" id="play-control" hidden></div>
         <div class="play-pause" id="pause-control"></div>  
     
-        <div class="volume-container">
-          <div class="volume-mute" id="volume-button"></div>
-          <div class="volume-mute" id="mute-button" hidden></div>
-          <input type="range" class="volume-slider" id="volume_control" max="1" value="0.8" step="0.05"/>
+        <div class="volume-mute" id="volume-button"></div>
+        <div class="volume-mute" id="mute-button" hidden></div>
+        <input type="range" class="volume-slider" id="volume_control" max="1" value="0.8" step="0.05"/>
+        <div class="spotify-logo">
+          <p class='mb-0'>Streaming from</p>
+          <img class="nav-bar-img" src={% static 'img/Spotify_Logo_RGB_Green.png' %}>
         </div>
       </div>
     </div>
