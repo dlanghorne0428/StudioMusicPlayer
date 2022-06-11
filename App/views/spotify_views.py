@@ -324,7 +324,7 @@ def spotify_sign_in(request):
     auth_manager = spotipy.oauth2.SpotifyOAuth(client_id=config('client_ID'), 
                                                client_secret= config('client_SECRET'), 
                                                redirect_uri=config('redirect_url'), 
-                                               scope="streaming, user-modify-playback-state, user-read-playback-state, user-read-currently-playing, user-read-recently-played, user-library-read user-follow-read playlist-modify-private",
+                                               scope="streaming, user-modify-playback-state, user-read-playback-state, user-read-currently-playing, user-read-recently-played, user-library-read user-read-email user-follow-read user-read-private playlist-modify-private",
                                                cache_handler=cache_handler, 
                                                show_dialog=True)    
     
