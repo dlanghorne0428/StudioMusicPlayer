@@ -8,7 +8,21 @@
     <div class="col-12">
       <!-- home page only has titles -->
       <h1 class="text-center">Spotify Access for <span class='text-danger'>{{spotify_user}}</span></h1>
-      <h3> {{track_list_description}} </h3>
+      <h3> 
+        {{track_list_description}} 
+        {% if playlist_id %}
+          <!-- link to add random song to current playlist-->
+          <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" 
+            data-bs-toggle="dropdown">Add Entire Playlist    
+          </button>
+          <!-- create a menu of dance types, with a wildcard on top -->  
+          <ul class="dropdown-menu">
+            {% for dt in dance_types %}
+              <li><a class="dropdown-item" href="{% url 'App:add_spotify_playlist' playlist_id forloop.counter0 %}">{{dt.1}}</a></li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </h3>
     </div>
   </div>
   

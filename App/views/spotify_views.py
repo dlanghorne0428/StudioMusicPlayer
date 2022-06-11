@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect
 from django.conf import settings
 
 from App.models import User
-from App.models.song import Song, SpotifyTrackInput
+from App.models.playlist import Playlist
+from App.models.song import Song, SpotifyTrackInput, DANCE_TYPE_CHOICES
 from App.forms import SpotifyTrackInputForm, SpotifySearchForm
 
 import os
@@ -226,6 +227,11 @@ class Spotify_Api():
         playlists = self.spotify.current_user_playlists(limit=16)
         return self.info_for_playlists(playlists)
     
+    def playlist_info(self, playlist_id):
+        '''This method returns the information for a single spotify playlist.'''
+        playlist = self.spotify.playlist(playlist_id)
+        return self.playlist_info_subset(playlist)
+
     def saved_tracks(self, offset):        
         '''This method returns a list of tracks liked on Spotify the current user.'''               
         tracks = self.spotify.current_user_saved_tracks(offset=offset, limit=16)
@@ -613,10 +619,12 @@ def spotify_playlist_tracks (request, playlist_id):
     return render(request, "spotify_track_list.html", {
         "spotify_user": this.spotify_api.current_username(),
         'track_list_description': "Spotify Playlist Contents",
-        "tracks": tracks['track_list'],
-        "first" : tracks['first'],
-        "last"  : tracks['last'],
-        "total" : tracks['total']
+        "tracks"                : tracks['track_list'],
+        "first"                 : tracks['first'],
+        "last"                  : tracks['last'],
+        "total"                 : tracks['total'],
+        "playlist_id"           : playlist_id,
+        "dance_types"           : DANCE_TYPE_CHOICES
         })      
 
 
@@ -726,3 +734,71 @@ def add_spotify_track(request, track_id):
     
         # return to list of songs
         return redirect('App:show_songs')   
+    
+    
+def add_spotify_playlist(request, spotify_playlist_id, dance_type_index):
+    '''This view adds all the tracks from a Spotify playlist into the database and then creates
+       a Playlist in the database with all of those tracks'''    
+    from App.views.song_crud import authorized
+        
+    # must be an administrator or teacher to add songs
+    if not authorized(request.user):
+        return render(request, 'permission_denied.html') 
+    
+    if this.spotify_api is None:
+        return render(request, 'not_signed_in_spotify.html')    
+    
+    spotify_playlist = this.spotify_api.playlist_info(spotify_playlist_id) 
+
+    # create an empty playlist and fill in data
+    new_playlist = Playlist()
+    new_playlist.owner = request.user
+    new_playlist.title = spotify_playlist['name']
+    new_playlist.description = DANCE_TYPE_CHOICES[dance_type_index][1] + " by Spotify user: " + spotify_playlist['owner']
+    new_playlist.streaming = True
+    new_playlist.save()
+    
+    # initalize variables for reading in tracks
+    offset = 0
+    total = 1
+    song_list = list()
+    
+    # while more tracks to read
+    while offset < total:
+        
+        # get the next set of tracks
+        tracks = this.spotify_api.playlist_tracks(spotify_playlist_id, offset=offset)
+        
+        # update variables for next iterations        
+        total = tracks['total']
+        offset = tracks['last']
+
+        # for each track obtained
+        for t in tracks['track_list']:
+            
+            # if track already in database, get its id
+            matching_song = Song.objects.filter(spotify_track_id = t['id'])
+            if matching_song.count() > 0:             
+                print("MATCH", t['id'], t['name'])
+                song_list.append(matching_song[0])
+            else:
+                # add track        
+                new_song = Song()
+            
+                # save the metadata, dance_type, and holiday/theme
+                new_song.spotify_track_id = t['id']
+                new_song.image_link = t['cover_art']
+                new_song.title = t['name']
+                new_song.artist = t['artist_name']
+                new_song.dance_type = DANCE_TYPE_CHOICES[dance_type_index][0]
+                new_song.save()
+                song_list.append(new_song)
+    
+    # add all the songs to the new playlist
+    for song in song_list:            
+        new_playlist.add_song(song)
+    
+    # show all the user's playlists    
+    return redirect('App:user_playlists')
+    
+    

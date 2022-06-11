@@ -44,4 +44,5 @@ urlpatterns = [
     path("spotify/album-tracks/<str:album_id>", views.spotify_album_tracks, name="spotify_album_tracks"),
     path("spotify/playlist-tracks/<str:playlist_id>", views.spotify_playlist_tracks, name="spotify_playlist_tracks"),
     path("spotify/import-track/<str:track_id>", views.add_spotify_track, name="add_spotify_track"),
+    path("spotify/import-playlist/<str:spotify_playlist_id>/<int:dance_type_index>", views.add_spotify_playlist, name="add_spotify_playlist"), 
 ]
