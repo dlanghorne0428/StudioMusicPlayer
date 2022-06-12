@@ -50,6 +50,11 @@ class Spotify_Api():
         new_track['name'] = spotify_track['name']
         new_track['explicit'] = spotify_track['explicit']
         new_track['artist_name'] = spotify_track['artists'][0]['name']
+        if 'available_markets' in spotify_track:
+            new_track['US_market'] = "US" in spotify_track['available_markets']
+        else:
+            new_track['US_market'] = True
+            
         if 'album' in spotify_track: 
             new_track['album_name'] = spotify_track['album']['name']
             if len(spotify_track['album']['images']) > 0:
@@ -190,6 +195,7 @@ class Spotify_Api():
         '''This method returns the display name of the Spotify user.'''
         # if na name is saved, call Spotify to get the name
         if self.user_display_name is None:
+            print('obtaining spotify user name')
             self.user_display_name = self.spotify.current_user()["display_name"]
         return self.user_display_name
     
@@ -276,12 +282,12 @@ class Spotify_Api():
         track = self.spotify.track(track_id)
         return self.track_info_subset(track)
     
-    def search(self, search_term, content_type, offset=0):
+    def search(self, search_term, content_type, offset=0, limit=16):
         '''This method searches spotify for items matching the given search term.
            The content_type can be 'album', 'artist', 'playlist', or 'track'.
            The offset parameter can be used to get additional pages of matching items.'''
         
-        results = self.spotify.search(q=search_term, limit=16, offset=offset, type=content_type, market='US')
+        results = self.spotify.search(q=search_term, limit=limit, offset=offset, type=content_type, market='US')
         print("spotify search returned")
         
         if content_type == 'artist':
@@ -521,6 +527,7 @@ def spotify_search_albums(request, search_term):
     if this.spotify_api is None:
         return render(request, 'not_signed_in_spotify.html')
     
+    print("looking for offset")
     # get the offset query parameter from the URL
     offset = request.GET.get('offset')
     if offset is None:
@@ -542,7 +549,8 @@ def spotify_search_artists(request, search_term):
     '''This view obtains spotify artists that match the search term'''
     if this.spotify_api is None:
         return render(request, 'not_signed_in_spotify.html')
-    
+      
+    print("looking for offset") 
     # get the offset query parameter from the URL    
     offset = request.GET.get('offset')
     if offset is None:
@@ -565,6 +573,7 @@ def spotify_search_playlists(request, search_term):
     if this.spotify_api is None:
         return render(request, 'not_signed_in_spotify.html')
 
+    print("looking for offset") 
     # get the offset query parameter from the URL     
     offset = request.GET.get('offset')
     if offset is None:
@@ -586,7 +595,8 @@ def spotify_search_tracks(request, search_term):
     '''This view obtains spotify tracks that match the search term'''
     if this.spotify_api is None:
         return render(request, 'not_signed_in_spotify.html')
-    
+   
+    print("looking for offset")  
     # get the offset query parameter from the URL         
     offset = request.GET.get('offset')
     if offset is None:
@@ -610,6 +620,7 @@ def spotify_playlist_tracks (request, playlist_id):
     if this.spotify_api is None:
         return render(request, 'not_signed_in_spotify.html')
     
+    print("looking for offset") 
     offset = request.GET.get('offset')
     if offset is None:
         offset = 0    
@@ -667,6 +678,7 @@ def spotify_artist_albums (request, artist_id):
     if this.spotify_api is None:
         return render(request, 'not_signed_in_spotify.html')
     
+    print("looking for offset") 
     offset = request.GET.get('offset')
     if offset is None:
         offset = 0
@@ -776,6 +788,13 @@ def add_spotify_playlist(request, spotify_playlist_id, dance_type_index):
         # for each track obtained
         for t in tracks['track_list']:
             
+            # if track not available in the US, search for alternate
+            if not t['US_market']:
+                print("Finding alternate track for:", t['name'], "by", t['artist_name'])
+                search_query = t['name'] + " artist:" + t['artist_name']
+                search_results = this.spotify_api.search(search_term=search_query, content_type="track", limit=1)
+                t = search_results['track_list'][0]                  
+            
             # if track already in database, get its id
             matching_song = Song.objects.filter(spotify_track_id = t['id'])
             if matching_song.count() > 0:             
@@ -801,4 +820,46 @@ def add_spotify_playlist(request, spotify_playlist_id, dance_type_index):
     # show all the user's playlists    
     return redirect('App:user_playlists')
     
+        
+def fix_non_US_spotify_tracks(request):
+    from App.views.song_crud import authorized
     
+    # must be an administrator or teacher to fix the database
+    if not authorized(request.user):
+        return render(request, 'permission_denied.html')     
+    
+    if this.spotify_api is None:
+        return render(request, 'not_signed_in_spotify.html') 
+    
+    # get all the spotify tracks from the Song database
+    spotify_tracks = Song.objects.exclude(spotify_track_id__isnull=True)
+    
+    # create a list of modified songs
+    modified_songs = list()
+    
+    for song in spotify_tracks:
+        # get the track information, including the available markets
+        track_info = this.spotify_api.track_info(song.spotify_track_id)
+        if not track_info['US_market']:
+            
+            print("Non-US Track: ", track_info['name'], "by", track_info['artist_name'])
+            # find alternate track in the US market
+            search_query = track_info['name'] + " artist:" + track_info['artist_name']
+            search_results = this.spotify_api.search(search_term=search_query, content_type="track", limit=1)
+            alternate_track_info = search_results['track_list'][0]            
+            
+            print("\t", alternate_track_info['id'])
+            # update the database with US information
+            song.spotify_track_id = alternate_track_info['id']
+            song.image_link = alternate_track_info['cover_art']
+            song.save()
+            modified_songs.append(song)
+    
+    # render the template
+    return render(request, 'show_songs.html', 
+                  {'filter': None,
+                   'songs': modified_songs,
+                   'playlists': None,
+                   'streaming': True,
+                   'page_title': 'Tracks Modified to US version'
+                  })

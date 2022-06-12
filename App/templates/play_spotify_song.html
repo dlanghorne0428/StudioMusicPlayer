@@ -98,6 +98,7 @@
     
     
     var duration, position;
+    var mismatch_detected = false;
     
     var progress_bar = document.getElementById('song-played-progress');
     var current_minutes = document.getElementById('current-minutes');
@@ -115,6 +116,7 @@
     var play_control = document.getElementById('play-control');
     var pause_control = document.getElementById('pause-control');
     var progress_timer;
+
     
     window.onSpotifyWebPlaybackSDKReady = () => {
     // You can now initialize Spotify.Player and use the SDK
@@ -191,6 +193,12 @@
             return;
           };
           
+          if (state.track_window.current_track.uri != spotify_uris[0]) {
+            if (!mismatch_detected) {
+              console.log("Expected:", spotify_uris[0], "but playing:", state.track_window.current_track.uri);
+              mismatch_detected = true;
+            };
+          };
               
           duration = state.duration;
           position = state.position;
