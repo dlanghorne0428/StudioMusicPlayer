@@ -39,7 +39,8 @@
     </thead>
     <tbody>
       <!-- div tag used to enable sticky positioning -->
-      <div>   
+      <div>
+        {% if filter %}
         <!-- the first row of the table is a filter -->
         <form class="mx-auto" id='song-filter-form' method="get">
           {% csrf_token %}
@@ -57,6 +58,7 @@
             </td>
           </tr>
         </form>
+        {% endif %}
       </div>
       <!-- the rest of the table has the list of songs, one song per row -->
       {% for song in songs %}
