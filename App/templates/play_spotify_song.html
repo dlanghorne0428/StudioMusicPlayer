@@ -48,16 +48,16 @@
     
       <!-- Play/Pause, Mute button and volume slider, this is what does the work -->
       <div class="control-container">
-        <div class="play-pause" id="play-control" hidden></div>
-        <div class="play-pause" id="pause-control"></div>  
-    
-        <div class="volume-mute" id="volume-button"></div>
-        <div class="volume-mute" id="mute-button" hidden></div>
-        <input type="range" class="volume-slider" id="volume_control" max="1" value="0.8" step="0.05"/>
         <div class="spotify-logo">
           <p class='mb-0'>Streaming from</p>
           <img class="nav-bar-img" src={% static 'img/Spotify_Logo_RGB_Green.png' %}>
         </div>
+        <div class="play-pause" id="play-control" hidden></div>
+        <div class="play-pause" id="pause-control" hidden></div>  
+    
+        <div class="volume-mute" id="volume-button"></div>
+        <div class="volume-mute" id="mute-button" hidden></div>
+        <input type="range" class="volume-slider" id="volume_control" max="1" value="0.8" step="0.05"/>
       </div>
     </div>
     
@@ -112,6 +112,7 @@
     var initial_load;
     var saved_volume = 0.8;
     var current_state = 'paused';
+    var start_debounce = 0;
     
     var play_control = document.getElementById('play-control');
     var pause_control = document.getElementById('pause-control');
@@ -164,8 +165,8 @@
         console.log('Ready with Device ID', device_id);
         my_device_id = device_id;
         initial_load = true;
-        play_control.removeAttribute('hidden');
-        pause_control.setAttribute('hidden', '');
+        play_control.click()
+        /*play_control.removeAttribute('hidden'); */
       });
   
       // Not Ready
@@ -203,10 +204,24 @@
           duration = state.duration;
           position = state.position;
         
-          if (state.paused && (current_state == 'playing')) {
-            console.log("Song has been paused");
-            pause_the_song();
-          };
+          if (current_state == 'starting') {
+            if (state.paused) {
+              console.log("Song starting - still paused");
+              start_debounce = 0;
+              pause_the_song();   /* show the play button */
+            } else {
+              start_debounce += 1;
+              console.log("Debouncing", start_debounce);
+              if (start_debounce > 1) {
+                console.log("Song is playing");
+                current_state = 'playing';
+                pause_control.removeAttribute('hidden'); /* show the pause button */
+              }
+            }
+          } else if (state.paused && (current_state == 'playing')) {
+              console.log("Song has been paused");
+              pause_the_song();
+          }; 
           update_progress_bar(position, duration);
             
         });
@@ -221,15 +236,15 @@
             offset: offset
           });
           initial_load = false;
+          current_state = 'starting';
           progress_timer = setInterval(getProgress, 1000);
         }
         else {
           player.resume();
+          play_control.setAttribute('hidden','');
+          pause_control.removeAttribute('hidden');
+          current_state = 'playing';
         }
-      
-        play_control.setAttribute('hidden','');
-        pause_control.removeAttribute('hidden');
-        current_state = 'playing';
       };
   
       pause_control.onclick = function() {
@@ -277,7 +292,7 @@
   
       player.connect().then(success => {
         if (success) {
-          console.log('The Web Playback SDK successfully connected to Spotify!');
+          console.log('The Web Playback SDK successfully connected to Spotify!')
         }
       })
     

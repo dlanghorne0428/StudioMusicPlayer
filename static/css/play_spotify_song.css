@@ -121,7 +121,7 @@ div.control-container {
 div.control-container div.play-pause {
     /* put play/pause button in center of container */
     float: left;
-    margin-left: 391px;  /* (856 - 74) / 2 */
+    margin-left: 215px;  /* (856 - 74) / 2 - 176 */
     display: inline-block;
     width: 74px;
     height: 74px;
@@ -217,12 +217,13 @@ input[type="range"]::-moz-range-thumb {
 }
 
 div.control-container .spotify-logo {
-    position: absolute;
+    float: left;
     background-color: black;
     color: #1D8954;   /* spotify green */
-    left: 160px;
     width: 160px;
-    padding: 0px 0px 4px 0px;
+    height: 74px;
+    margin-left: 16px;
+    /*padding: 0px 0px 4px 0px; */
 }
 
 div.song-meta-container {
