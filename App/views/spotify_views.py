@@ -695,7 +695,7 @@ def spotify_artist_albums (request, artist_id):
         })      
 
 
-def add_spotify_track(request, track_id):
+def add_spotify_track(request, track_id, replace_song_id=None):
     '''This view adds a Spotify track into the Studio song database'''    
     from App.views.song_crud import authorized
     
@@ -713,6 +713,11 @@ def add_spotify_track(request, track_id):
     track = this.spotify_api.track_info(track_id)
     image_link = track['cover_art']
     
+    if replace_song_id is not None:
+        replace_song = Song.objects.get(pk=replace_song_id)
+    else:
+        replace_song = None
+    
     if request.method == "GET":   
         track_input = SpotifyTrackInput(
             track_id = track['id'], 
@@ -720,7 +725,7 @@ def add_spotify_track(request, track_id):
             artist = track['artist_name'])
         
         form = SpotifyTrackInputForm(instance=track_input)
-        return render(request, 'add_song.html', {'form': form, 'warning': track['explicit'], 'cover_art': image_link})    
+        return render(request, 'add_song.html', {'form': form, 'warning': track['explicit'], 'cover_art': image_link, 'replace_song': replace_song} )    
     
     else:  # process data submitted from the form
         form = SpotifyTrackInputForm(request.POST)
@@ -729,21 +734,31 @@ def add_spotify_track(request, track_id):
         if not form.is_valid():
             return render(request, 'add_song.html', {'form':SpotifyTrackInputForm(), 'error': "Invalid data submitted."})  
         
-        song_instance = form.save(commit=False)  
+        action = request.POST.get("submit")
+
+        if action == "Replace":
+            replace_song.spotify_track_id = track['id']
+            replace_song.image_link = image_link
+            replace_song.explicit = False
+            replace_song.save()
         
-        # create a new Song object
-        new_song = Song()
+        else:  # create new song
+            song_instance = form.save(commit=False)  
+            
+            # create a new Song object
+            new_song = Song()
+            
+            # save the audio file, metadata, dance_type, and holiday/theme
+            new_song.spotify_track_id = song_instance.track_id
+            new_song.image_link = image_link
+            new_song.title = song_instance.title
+            new_song.artist = song_instance.artist
+            new_song.dance_type = song_instance.dance_type
+            new_song.holiday = song_instance.holiday
+            new_song.explicit = track['explicit']
+            new_song.save()
+            print(new_song)
         
-        # save the audio file, metadata, dance_type, and holiday/theme
-        new_song.spotify_track_id = song_instance.track_id
-        new_song.image_link = image_link
-        new_song.title = song_instance.title
-        new_song.artist = song_instance.artist
-        new_song.dance_type = song_instance.dance_type
-        new_song.holiday = song_instance.holiday
-        new_song.save()
-        print(new_song)
-    
         # return to list of songs
         return redirect('App:show_songs')   
     
@@ -821,6 +836,42 @@ def add_spotify_playlist(request, spotify_playlist_id, dance_type_index):
     return redirect('App:user_playlists')
     
         
+def spotify_find_clean_track(request, track_id, replace_song_id=None):
+    '''This view adds a Spotify track into the Studio song database'''    
+    from App.views.song_crud import authorized
+        
+    # must be an administrator or teacher to add songs
+    if not authorized(request.user):
+        return render(request, 'permission_denied.html')
+    
+    if this.spotify_api is None:
+        return render(request, 'not_signed_in_spotify.html')
+      
+    track = this.spotify_api.track_info(track_id)
+        
+    if not track['explicit']:
+        if replace_song_id is not None:
+            return redirect('App:show_songs')
+        else:
+            return redirect('App:add_spotify_track', track_id)  
+    
+    search_query = track['name'] + '+artist:' + track['artist_name']
+    search_results = this.spotify_api.search(search_query, content_type="track", limit=5)
+    for alt_track in search_results['track_list']:
+        print(alt_track)
+        if not alt_track['explicit'] and (alt_track['tempo'] == track['tempo']) and \
+              (alt_track['duration'] == track['duration']):
+            print("Found clean version:", alt_track['id'])
+            if replace_song_id is not None:
+                return redirect ('App:add_spotify_track', alt_track['id'], replace_song_id)
+            else:
+                return redirect ('App:add_spotify_track', alt_track['id'])               
+    else:
+        return render(request, 'add_song.html', {'form':SpotifyTrackInputForm(), 'error': "No clean version found."})  
+
+                  
+
+
 def fix_non_US_spotify_tracks(request):
     from App.views.song_crud import authorized
     

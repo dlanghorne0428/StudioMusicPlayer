@@ -14,7 +14,8 @@
     <!-- Page title and placeholder for errors -->
     <h2 class="text-center">Add Song</h2>
     {% if warning %}
-    <h4 class="text-center bg-danger text-white">Track is labeled explicit. Are you sure you want to add?</h4>
+      <h4 class="text-center bg-danger text-white">Track is labeled explicit. Are you sure you want to add?</h4>
+      <a class="btn btn-outline-primary" href="{% url 'App:spotify_find_clean_track' form.track_id.value %}">Find Clean Version</a>
     {% endif %}
     <h4 class="text-center">{{ error }}</h4>
 
@@ -24,7 +25,12 @@
       {{ form.as_p }}   <!-- form contents passed into the template from the model -->
       
       <!-- This button submits info to the view -->
-      <button class="btn btn-primary" type="submit">Create</button>
+      <button class="btn btn-primary" type="submit" name='submit', value='Create'>Create</button>
+      
+      <!-- This button submits alternate info to the view -->
+      {% if replace_song %}
+        <button class="btn btn-info" type="submit", name='submit', value='Replace'>Replace Explicit Song</button>
+      {% endif %}
       
       <!-- This link in the form of a button allows the user to go back to the list of songs -->
       <a class="btn btn-secondary" href="{% url 'App:show_songs' %}">Cancel</a>
