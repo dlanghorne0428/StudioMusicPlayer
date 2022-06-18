@@ -15,14 +15,13 @@
   <div class="row">
     <div class="col-12">
       <h2 class="text-center">Edit Playlist</h2>
+      <p>{{ error }}</p>
     </div>
   </div>
   
   <!-- use sticky to keep header from scrolling off the page -->
   <div id="header-form-sticky" class="row">
     <div class="col-12">
-      <p>{{ error }}</p>
-
       <!-- display the form --> 
       {% crispy form %}
     
