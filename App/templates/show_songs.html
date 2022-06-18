@@ -84,6 +84,9 @@
               </button>
               <ul class="dropdown-menu">
                 <li><a class="dropdown-item" href="{% url 'App:update_song' song.id %}">Edit</a></li>
+                {% if song.explicit %}
+                    <li><a class="dropdown-item" href="{% url 'App:spotify_find_clean_track' song.spotify_track_id song.id %}">Find Clean Version</a></li>
+                {% endif %}
                 <li><hr class="dropdown-divider"></li>
                 
                 <li class="dropdown-header">Add to Playlist</li>
