@@ -105,6 +105,9 @@ class Playlist(models.Model):
     def __str__(self):
         return self.title
     
+    class Meta:
+        ordering = ['title']
+    
     
 class SongInPlaylist(models.Model):
     '''This model is used for the mapping of songs to playlists. 
