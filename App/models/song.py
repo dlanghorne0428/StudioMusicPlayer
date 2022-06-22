@@ -183,7 +183,7 @@ class Song(models.Model):
     # these will be created from the audio_file
     title = models.CharField(max_length=200,default="Unknown")
     artist = models.CharField(max_length=200,default="Unknown")
-    image = models.ImageField(upload_to=create_valid_image_filename, null=True)
+    image = models.ImageField(upload_to=create_valid_image_filename, blank=True, null=True)
     image_link = models.CharField(max_length=200,blank=True, null=True) 
     explicit = models.BooleanField(default=False)
     
@@ -206,3 +206,6 @@ class Song(models.Model):
         
     def __str__(self):
         return self.title
+    
+    class Meta:
+        ordering = ['title']
