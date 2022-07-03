@@ -6,7 +6,7 @@ from django.views.generic import CreateView, TemplateView
 
 from App.forms import RandomPlaylistForm, TeacherSignUpForm
 from App.models import User
-from App.models.song import DANCE_TYPE_DEFAULT_PERCENTAGES, HOLIDAY_DEFAULT_USAGE
+from App.models.song import DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS, HOLIDAY_DEFAULT_USAGE
 
 
 def user_profile(request):
@@ -23,14 +23,19 @@ def user_preferences(request):
     # if user has preferences, use those, otherwise use defaults
     if user.preferences is None:
         preferences = {
-            'playlist_length'            : 10,
             'prevent_back_to_back_styles': True,
             'prevent_back_to_back_tempos': True,
-            'percentages'                : DANCE_TYPE_DEFAULT_PERCENTAGES,
+            'counts'                     : DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS,
+            'playlist_length'            : 25,
             'holiday_usage'              : HOLIDAY_DEFAULT_USAGE,
         }
     else:
         preferences = user.preferences
+        if 'counts' not in preferences:
+            preferences['counts'] = DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS
+            preferences['playlist_length'] = 25
+        if 'percentages' in preferences:
+            del preferences['percentages']
         
     if request.method == "GET":
         # build and render the random playlist form
@@ -61,11 +66,11 @@ def user_preferences(request):
             prevent_back_to_back_styles = form_data['prevent_back_to_back_styles']
             prevent_back_to_back_tempos = form_data['prevent_back_to_back_tempos']
     
-            # get percentages entered by the user from the form
-            starting_percentages = dict()
-            for key in DANCE_TYPE_DEFAULT_PERCENTAGES:
-                form_field = '%s_pct' % (key, )
-                starting_percentages[key] = form_data[form_field]
+            # get song counts entered by the user from the form
+            starting_counts = dict()
+            for key in DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS:
+                form_field = '%s_songs' % (key, )
+                starting_counts[key] = form_data[form_field]
             
             # get holiday usage data from the form    
             holiday_usage = dict()
@@ -77,7 +82,7 @@ def user_preferences(request):
             preferences['playlist_length'] = playlist_length
             preferences['prevent_back_to_back_styles'] = prevent_back_to_back_styles
             preferences['prevent_back_to_back_tempos'] = prevent_back_to_back_tempos
-            preferences['percentages'] = starting_percentages
+            preferences['counts'] = starting_counts
             preferences['holiday_usage'] = holiday_usage
             user.preferences = preferences
             user.save()

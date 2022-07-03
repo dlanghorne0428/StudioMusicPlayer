@@ -8,7 +8,7 @@ import random
 from datetime import time
 
 # imported our models
-from App.models.song import Song, DANCE_TYPE_CHOICES, DANCE_TYPE_DEFAULT_PERCENTAGES, DANCE_TYPE_TEMPOS, HOLIDAY_DEFAULT_USAGE
+from App.models.song import Song, DANCE_TYPE_CHOICES, DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS, DANCE_TYPE_TEMPOS, HOLIDAY_DEFAULT_USAGE
 from App.models.user import User
 from App.models.playlist import Playlist, SongInPlaylist
 from App.forms import PlaylistInfoForm, RandomPlaylistForm
@@ -164,12 +164,17 @@ def build_random_playlist(request, playlist_id):
         preferences = user.preferences
     else: # use system defaults as fallback
         preferences = {
-            'playlist_length'            : 10,
+            'playlist_length'            : 25,
             'prevent_back_to_back_styles': True,
             'prevent_back_to_back_tempos': True,
-            'percentages'                : DANCE_TYPE_DEFAULT_PERCENTAGES,
+            'counts'                     : DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS,
             'holiday_usage'              : HOLIDAY_DEFAULT_USAGE,
         }
+        
+    if 'counts' not in preferences:
+        preferences['counts'] = DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS,
+        preferences['playlist_length'] = 25,
+        del preferences['percentages']
     
     if request.method == "GET":
         # build and render the random playlist form
@@ -210,11 +215,11 @@ def build_random_playlist(request, playlist_id):
         prevent_back_to_back_styles = form_data['prevent_back_to_back_styles']
         prevent_back_to_back_tempos = form_data['prevent_back_to_back_tempos']
 
-        # get percentages entered by the user from the form
-        starting_percentages = dict()
-        for key in DANCE_TYPE_DEFAULT_PERCENTAGES:
-            form_field = '%s_pct' % (key, )
-            starting_percentages[key] = form_data[form_field]
+        # get song_counts entered by the user from the form
+        songs_remaining = dict()
+        for key in DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS:
+            form_field = '%s_songs' % (key, )
+            songs_remaining[key] = form_data[form_field]
             
         # get holiday usage data from the form and check if this is a holiday-focused playlist 
         focus_holiday = None
@@ -231,7 +236,7 @@ def build_random_playlist(request, playlist_id):
         preferences['playlist_length'] = playlist_length
         preferences['prevent_back_to_back_styles'] = prevent_back_to_back_styles
         preferences['prevent_back_to_back_tempos'] = prevent_back_to_back_tempos
-        preferences['percentages'] = starting_percentages
+        preferences['counts'] = songs_remaining
         preferences['holiday_usage'] = holiday_usage
         playlist.preferences = preferences
         playlist.save()
@@ -243,11 +248,6 @@ def build_random_playlist(request, playlist_id):
     
         # initialize the random number generator
         random.seed()
-
-        # calculate number of songs remaining for each style based on percentages and playlist length -- round up!
-        songs_remaining = dict()
-        for style in starting_percentages:
-            songs_remaining[style] = math.ceil(starting_percentages[style] * playlist_length / 100)
         
         # initialize control variables    
         last_song_style = None

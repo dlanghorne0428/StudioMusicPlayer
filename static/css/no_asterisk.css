@@ -4,7 +4,7 @@
 }
 
 /* style the error text */
-#percentage-error {
+#count-error {
     color: #ff0000;
     font-weight: bold;
     margin-bottom: 0;

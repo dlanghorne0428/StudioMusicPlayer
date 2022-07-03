@@ -27,27 +27,27 @@ DANCE_TYPE_CHOICES = [
     ("WCS", "West Coast Swing"),
     ]
 
-DANCE_TYPE_DEFAULT_PERCENTAGES = {
-    "Bac":  3,                  
-    "Bol":  5,        
-    "Cha": 10, 
-    "C2S":  2, 
-    "ECS": 10,
-    "Fox": 10,
-    "Hus":  3,
-    "Jiv":  2,
-    "Mam":  5,     
-    "Mer":  2,     
-    "NC2":  3,
-    "PD":   0,     # i have no paso songs yet
-    "Pea":  0,     # i have no peabody songs yet
-    "Q":    2,
-    "Rum": 10,    
-    "Sam":  3,
-    "Tan": 10,  
-    "VW":   5,
-    "Wal": 10,
-    "WCS":  5,
+DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS = {
+    "Bac":  1,                  
+    "Bol":  2,        
+    "Cha":  2, 
+    "C2S":  1, 
+    "ECS":  2,
+    "Fox":  2,
+    "Hus":  1,
+    "Jiv":  1,
+    "Mam":  1,     
+    "Mer":  1,     
+    "NC2":  1,
+    "PD":   0,     
+    "Pea":  0,     
+    "Q":    0,
+    "Rum":  2,    
+    "Sam":  1,
+    "Tan":  2,  
+    "VW":   2,
+    "Wal":  2,
+    "WCS":  1,
     }
 
 DANCE_TYPE_TEMPOS = {
