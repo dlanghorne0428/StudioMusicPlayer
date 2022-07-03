@@ -6,7 +6,7 @@ from django.forms import Form, ModelForm, CheckboxInput, NumberInput, Textarea
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Div, Field, HTML, Layout, Row, Submit
-from crispy_forms.bootstrap import AppendedText, FormActions
+from crispy_forms.bootstrap import FormActions
 
 from .models.song import Song, SongFileInput, SpotifyTrackInput, DANCE_TYPE_CHOICES, HOLIDAY_CHOICES, HOLIDAY_USE_OPTIONS, HOLIDAY_DEFAULT_USAGE #StreamingSongInput, 
 from .models.user import User
@@ -138,7 +138,7 @@ class PlaylistInfoForm(ModelForm):
         
         if self.submit_title is not None:
             self.helper.layout = Layout(
-                # first row has two columns: title and checkboxes
+                # first row has title only
                 Row(
                     Field('title', css_class='fs-3 px-0 text-center'),
                 ),
@@ -188,7 +188,7 @@ class RandomPlaylistForm(Form):
         super(RandomPlaylistForm, self).__init__(*args, **kwargs)
         
         self.fields['number_of_songs'] = forms.IntegerField(
-            label     = "Number of Songs",
+            label     = "Total Number of Songs",
             min_value = 1, 
             max_value = 100,
             initial   = self.prefs['playlist_length'],
@@ -210,19 +210,19 @@ class RandomPlaylistForm(Form):
         
         field_names = list()
         
-        # these fields allow the user to enter percentages for each dance style
+        # these fields allow the user to enter the nuber of songs for each dance style
         # add them to the form using a loop
         for dance_type_tuple in DANCE_TYPE_CHOICES: 
             
             # constuct field name based on dance type abbreviation (e.g. 'Cha')
-            field_name = '%s_pct' % (dance_type_tuple[0], )
+            field_name = '%s_songs' % (dance_type_tuple[0], )
             
             self.fields[field_name] = forms.IntegerField(
                 # field label is the readable name for this dance type
                 label = dance_type_tuple[1],
                 min_value = 0,
                 max_value = 100, 
-                initial = self.prefs['percentages'][dance_type_tuple[0]],
+                initial = self.prefs['counts'][dance_type_tuple[0]],
                 # right-justify the text in these input boxes
                 widget = NumberInput(attrs={'class': 'text-end'}),
                 required = True)  
@@ -254,7 +254,7 @@ class RandomPlaylistForm(Form):
             # first row has two columns
             Row(
                 # style the label with font weight bold and font size 5 
-                Column('number_of_songs', css_class="fw-bold fs-5 col-2 offset-4"),
+                Column('number_of_songs', css_class="fw-bold fs-5 col-3 offset-3"),
                 Column(
                     # add tooltips to these fields. Using Div applies tooltip to combination of label and checkbox 
                     Div('prevent_back_to_back_styles', 
@@ -272,12 +272,12 @@ class RandomPlaylistForm(Form):
                 # align the bottom of the two columns in this row
                 css_class='align-items-end' 
             ),
-            # second row has two column titles, one for percentages, the other for holidays
+            # second row has two column titles, one for songs per dance style, the other for holidays
             Row(
                 Column(
-                    HTML("<h4 class='text-center'>Select Percentages for each dance style</h4>"),
-                    HTML("<h6 class='text-center'>Values must add up to 100 percent</h6>"),
-                    # percentage data should take 9/12 of the window
+                    HTML("<h4 class='text-center'>Select Number of Songs for each dance style</h4>"),
+                    HTML("<h6 class='text-center'>Values must add up to the total.</h6>"),
+                    # song count data should take 9/12 of the window
                     css_class='col-9 text-center',
                 ),
                 Column(
@@ -288,42 +288,46 @@ class RandomPlaylistForm(Form):
                # align the bottom of the two columns in this row
                css_class='align-items-end' 
             ),
-            # next row has two columns, one for percentage data, the other for holiday selections
+            # next row has two columns, one for numeric inputs, the other for holiday selections
             Row(
                 Column(
-                    # first column is split into five sub-columns to set percentages for each dance type
+                    # first column is split into five sub-columns to set number of songs for each dance type
                     Row(
-                        Column(AppendedText(field_names[0], '%', active=True),
-                               AppendedText(field_names[1], '%', active=True),
-                               AppendedText(field_names[2], '%', active=True),
-                               AppendedText(field_names[3], '%', active=True), 
+                        Column(Field(field_names[0], active=True, css_class='text-center'),
+                               Field(field_names[1], active=True, css_class='text-center'),
+                               Field(field_names[2], active=True, css_class='text-center'),
+                               Field(field_names[3], active=True, css_class='text-center'), 
                                # each sub-column takes 2/12 of the enclosing column, first sub-column is offset 1/12
                                css_class="col-2 offset-1"),
-                        Column(AppendedText(field_names[4], '%', active=True),
-                               AppendedText(field_names[5], '%', active=True),
-                               AppendedText(field_names[6], '%', active=True),
-                               AppendedText(field_names[7], '%', active=True), css_class="col-2"),     
-                        Column(AppendedText(field_names[8], '%', active=True),
-                               AppendedText(field_names[9], '%', active=True),
-                               AppendedText(field_names[10], '%', active=True),
-                               AppendedText(field_names[11], '%', active=True), css_class="col-2"), 
-                        Column(AppendedText(field_names[12], '%', active=True),
-                               AppendedText(field_names[13], '%', active=True),
-                               AppendedText(field_names[14], '%', active=True),
-                               AppendedText(field_names[15], '%', active=True), css_class="col-2"),    
-                        Column(AppendedText(field_names[16], '%', active=True),
-                               AppendedText(field_names[17], '%', active=True),
-                               AppendedText(field_names[18], '%', active=True),
-                               AppendedText(field_names[19], '%', active=True), css_class="col-2"), 
+                        Column(Field(field_names[4], active=True, css_class='text-center'),
+                               Field(field_names[5], active=True, css_class='text-center'),
+                               Field(field_names[6], active=True, css_class='text-center'),
+                               Field(field_names[7], active=True, css_class='text-center'),
+                               css_class='col-2'),     
+                        Column(Field(field_names[8], active=True, css_class='text-center'),
+                               Field(field_names[9], active=True, css_class='text-center'),
+                               Field(field_names[10], active=True, css_class='text-center'),
+                               Field(field_names[11], active=True, css_class='text-center'), 
+                               css_class="col-2"), 
+                        Column(Field(field_names[12], active=True, css_class='text-center'),
+                               Field(field_names[13], active=True, css_class='text-center'),
+                               Field(field_names[14], active=True, css_class='text-center'),
+                               Field(field_names[15], active=True, css_class='text-center'), 
+                               css_class="col-2"),    
+                        Column(Field(field_names[16], active=True, css_class='text-center'),
+                               Field(field_names[17], active=True, css_class='text-center'),
+                               Field(field_names[18], active=True, css_class='text-center'),
+                               Field(field_names[19], active=True, css_class='text-center'), 
+                               css_class="col-2"), 
                         # put a dark border around the five subcolumns
                         css_class='pt-2 border border-dark',
                         # establish an ID for javascript to use
-                        css_id='enter-percentages'
+                        css_id='enter-songs-per-dance-style'
                     ),
                     # this row for an error message is centered under the five subcolumns
                     Row(
                         # establish an ID so Javascript can modify this error text
-                        HTML("<p hidden id='percentage-error'>Current total is <span id='percentage-total'></span> percent</p>"),
+                        HTML("<p hidden id='count-error'>Current total is <span id='count-total'></span></p>"),
                     ),
                     css_class='text-center'
                 ),
