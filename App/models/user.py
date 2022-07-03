@@ -1,6 +1,5 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from App.models.song import DANCE_TYPE_DEFAULT_PERCENTAGES
 
 
 class User(AbstractUser):
