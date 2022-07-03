@@ -139,9 +139,12 @@ def pick_random_song(playlist, dance_type, focus_holiday=None):
             if s.playlist_set.filter(id=playlist.id).count() == 0:
                 available_songs.append(s)
     
-    # pick a random song from the available list - all equal probability and add it to the playlist
-    random_song = available_songs[random.randrange(len(available_songs))]
-    playlist.add_song(random_song)
+    if len(available_songs) == 0:
+        print(dance_type + ": No more songs available")
+    else:
+        # pick a random song from the available list - all equal probability and add it to the playlist
+        random_song = available_songs[random.randrange(len(available_songs))]
+        playlist.add_song(random_song)
     
     # return indication that a requested holiday song was not selected
     return missed_a_holiday_song
@@ -172,8 +175,10 @@ def build_random_playlist(request, playlist_id):
         }
         
     if 'counts' not in preferences:
-        preferences['counts'] = DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS,
-        preferences['playlist_length'] = 25,
+        preferences['counts'] = dict()
+        for key in DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS:
+            preferences['counts'][key] = DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS[key]
+        preferences['playlist_length'] = 25
         del preferences['percentages']
     
     if request.method == "GET":
