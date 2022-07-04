@@ -12,6 +12,10 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 from decouple import config
 
+import logging
+logger = logging.getLogger("django")
+
+
 # this is a pointer to the module object instance itself.
 this = sys.modules[__name__]
 
@@ -44,6 +48,10 @@ class Spotify_Api():
     def track_info_subset (self, spotify_track, album_name=None, cover_art=None):
         '''This function saves the information about a Spotify track needed by our app'''    
         new_track = dict()
+        if spotify_track['id'] is None:
+            logger.warning("No track id for " + spotify_track['uri'])
+        else:
+            logger.debug("Getting track info subset for " + spotify_track['id'] + ' ' + spotify_track['name'])
         
         # populate main fields
         new_track['id'] = spotify_track['id']
@@ -89,8 +97,7 @@ class Spotify_Api():
                 track_list.append(self.track_info_subset(track['track']))
             else:
                 track_list.append(self.track_info_subset(track))
-        
-        print('track filtering completed')
+            logger.info("Track ID: " + track_list[-1]['id'] + " Name: " + track_list[-1]['name'])
                 
         return {'track_list': track_list,
                 'first': tracks['offset'] + 1,
@@ -99,8 +106,10 @@ class Spotify_Api():
     
     
     def album_info_subset (self, spotify_album):
-        '''This function saves the information about a Spotify album needed by our app'''
+        '''This function saves the information about a Spotify album needed by our app'''        
         new_album = dict()
+        logger.debug("Getting album info subset for " + spotify_album['id'] + ' ' + spotify_album['name'])
+        
         new_album['id'] = spotify_album['id']
         new_album['album_name'] = spotify_album['name']
         new_album['artist_name'] = spotify_album['artists'][0]['name']
@@ -120,8 +129,8 @@ class Spotify_Api():
                 album_list.append(self.album_info_subset(i['album']))
             else:
                 album_list.append(self.album_info_subset(i))
-                
-        print('album filtering completed')
+            logger.info("Album ID: " + album_list[-1]['id'] + " Name: " + album_list[-1]['album_name'])
+            
         
         return {'album_list': album_list, 
                 'first': albums['offset'] + 1, 
@@ -132,6 +141,8 @@ class Spotify_Api():
     def artist_info_subset (self, spotify_artist):
         '''This function saves the information about a Spotify artist needed by our app'''
         new_artist = dict()
+        logger.debug("Getting artist info subset for " + spotify_artist['id'] + ' ' + spotify_artist['name'])
+
         new_artist['id'] = spotify_artist['id']
         new_artist['artist_name'] = spotify_artist['name']
         if len(spotify_artist['images']) > 0:
@@ -147,8 +158,7 @@ class Spotify_Api():
         artist_list = list()
         for i in artists['items']:
             artist_list.append(self.artist_info_subset(i))
-        
-        print('Artist filtering completed')
+            logger.info("Artist ID: " + artist_list[-1]['id'] + " Name: " + artist_list[-1]['artist_name'])
         
         if 'offset' in artists: 
             return {'artist_list': artist_list,
@@ -165,6 +175,8 @@ class Spotify_Api():
     def playlist_info_subset (self, spotify_playlist):
         '''This function saves the information about a Spotify artist needed by our app'''
         new_playlist = dict()
+        logger.debug("Getting playlist info subset for " + spotify_playlist['id'] + ' ' + spotify_playlist['name'])
+        
         new_playlist['id'] = spotify_playlist['id']
         new_playlist['name'] = spotify_playlist['name']
         new_playlist['owner'] = spotify_playlist['owner']['display_name']   
@@ -183,7 +195,7 @@ class Spotify_Api():
         for i in playlists['items']:
             list_of_playlists.append(self.playlist_info_subset(i)) 
             
-        print ('playlist filtering complete')
+        logger.info ('playlist filtering complete')
         
         return {'list_of_playlists': list_of_playlists,
                 'first': playlists['offset'] + 1,
@@ -195,36 +207,42 @@ class Spotify_Api():
         '''This method returns the display name of the Spotify user.'''
         # if na name is saved, call Spotify to get the name
         if self.user_display_name is None:
-            print('obtaining spotify user name')
+            logger.info('obtaining spotify user name')
             self.user_display_name = self.spotify.current_user()["display_name"]
         return self.user_display_name
     
     def recently_played_tracks(self, limit=16):
         '''This method returns the last 16 unique tracks played by the current user.'''
-        items = self.spotify.current_user_recently_played(limit=25)['items']
+        logger.info("Getting list of recently played tracks")
+        items = self.spotify.current_user_recently_played(limit=limit)['items']
         unique_tracks = list()
         for item in items:
             # check if this item is already in the list
             for t in unique_tracks:
                 if item['track']['id'] == t['id']:
+                    logger.info(t['name'] + " is a duplicate track")
                     break;
             else:  # this item is not in the track list
                 new_track = self.track_info_subset(item['track'])
+                logger.info(new_track['name'] + ": " + new_track['id'])
                 unique_tracks.append(new_track)
             # stop when track limit is readhed
             if len(unique_tracks) >= limit:
+                logger.debug("Reached track limit of " + str(limit))
                 break
             
         return unique_tracks
 
     def album_collection(self, offset=0):
         '''This method returns a list of albums saved in the current user's spotify library.'''
+        logger.info("retreiving saved albums starting from offset " + str(offset))
         albums = self.spotify.current_user_saved_albums(offset=offset, limit=16)
         return self.album_list_info(albums)
     
     def artists_followed(self):
         '''This method returns a list of the first 16 artists follwed by the current user.
-           Note: the spotify API doesn't provide an offset or total fields for this oepration.'''        
+           Note: the spotify API doesn't provide an offset or total fields for this oepration.'''      
+        logger.info("retreiving list of artists followed")
         artists = self.spotify.current_user_followed_artists(limit=16)['artists']
         return self.artist_list_info(artists)    
 
@@ -235,28 +253,34 @@ class Spotify_Api():
     
     def playlist_info(self, playlist_id):
         '''This method returns the information for a single spotify playlist.'''
+        logger.info("retreiving info for playlist " + playlist_id)
         playlist = self.spotify.playlist(playlist_id)
         return self.playlist_info_subset(playlist)
 
     def saved_tracks(self, offset):        
-        '''This method returns a list of tracks liked on Spotify the current user.'''               
+        '''This method returns a list of tracks liked on Spotify the current user.'''  
+        logger.info("retreiving saved tracks starting from offset " + str(offset))
         tracks = self.spotify.current_user_saved_tracks(offset=offset, limit=16)
         return self.track_list_info(tracks)
 
     def artist_albums(self, artist_id, offset=0):
         '''This method returns a list of up to 16 albums by a given artist.
            The offset parameter is used to get a different set of albums.''' 
+        logger.info("retreiving albums for artist " + artist_id + " starting from offset " + str(offset))
         albums = self.spotify.artist_albums(artist_id, limit=16, offset=offset)
         return self.album_list_info(albums)
     
     def album_tracks(self, album_id):
         '''This method returns a list of all tracks on a given album.'''
         album = self.spotify.album(album_id)  # get the album
+        logger.info("retreiving tracks for album " + album['name']) 
         tracks = album['tracks']['items']     # get the tracks from that album
         track_list = list()
         for track in tracks:
             # pass in the album name and cover art, as that info is not stored with each track
             track_list.append(self.track_info_subset(track, album['name'], album['images'][0]['url']))
+            logger.info("Track ID: " + track_list[-1]['id'] + " Name: " + track_list[-1]['name'])
+            
         return {'track_list': track_list,
                 'first': album['tracks']['offset'] + 1,
                 'last' : album['tracks']['offset'] + len(album['tracks']['items']),
@@ -265,20 +289,25 @@ class Spotify_Api():
 
     def artist_tracks(self, artist_id):
         '''This method returns a list of the top 10 tracks for a given artist.'''
+        logger.info("retreiving top 10 tracks for artist " + artist_id)
         tracks = self.spotify.artist_top_tracks(artist_id)['tracks']
         track_list = list()
         for track in tracks:
             track_list.append(self.track_info_subset(track))
+            logger.info("Track ID: " + track_list[-1]['id'] + " Name: " + track_list[-1]['name'])
+            
         return track_list     
     
     def playlist_tracks(self, playlist_id, offset):
         '''This method returns a list of up to 16 tracks from a given playlist.
-           The offset parameter is used to get a different set of tracks.'''         
+           The offset parameter is used to get a different set of tracks.'''  
+        logger.info("retreiving tracks for playlist " + playlist_id + " starting from offset " + str(offset))
         tracks = self.spotify.playlist_tracks(playlist_id, offset=offset, limit=16)
         return self.track_list_info(tracks)   
     
     def track_info(self, track_id):
         '''This method returns the information for a single spotify track.'''
+        logger.info("retreiving track info for " + track_id)
         track = self.spotify.track(track_id)
         return self.track_info_subset(track)
     
@@ -286,9 +315,9 @@ class Spotify_Api():
         '''This method searches spotify for items matching the given search term.
            The content_type can be 'album', 'artist', 'playlist', or 'track'.
            The offset parameter can be used to get additional pages of matching items.'''
-        
+        logger.info("Searching Spotify " + str(content_type) + " for " + search_term)
         results = self.spotify.search(q=search_term, limit=limit, offset=offset, type=content_type, market='US')
-        print("spotify search returned")
+        logger.debug("spotify search returned")
         
         if content_type == 'artist':
             return self.artist_list_info(results['artists'])
@@ -311,10 +340,12 @@ def spotify_token(user):
     '''This routine returns the user's spotify token for use by the audio player.
        If the user does not have a token, this function returns None.'''
     if this.spotify_api is None:
+        logger.warning("Can't find spotify API object")
         return None
     if user == this.spotify_api.user:    
         return this.spotify_api.cache_handler.get_cached_token()
     else:
+        logger.warning("No Spotify token for " + user.username)
         return None    
 
 #################################################################
@@ -334,28 +365,27 @@ def spotify_sign_in(request):
                                                cache_handler=cache_handler, 
                                                show_dialog=True)    
     
-    #print("auth manager created")
+    logger.debug("auth manager created")
     if request.GET.get("code"):
         # Step 3. Being redirected from Spotify auth page
         auth_manager.get_access_token(request.GET.get("code"))
-        print("code obtained")
+        logger.debug("code obtained")
         return redirect('App:spotify_sign_in')
 
     if not auth_manager.validate_token(cache_handler.get_cached_token()):
         # Step 2. Display sign in link when no token
-        #print("requesting authorization")
+        logger.info("requesting Spotify authorization for " + user.username)
         auth_url = auth_manager.get_authorize_url()
         return redirect(auth_url)    
 
     # Step 4. Signed in, display list of user's recently played tracks
     this.spotify_api = Spotify_Api(auth_manager, cache_handler, user)
-    #print("API initialized")
+    logger.debug(user.username + " authorized. Spotify API initialized")
     if not user.has_spotify_token:
         user.has_spotify_token = True
-        #print("saving token")
+        logger.debug("saving Spotify token")
         user.save()
     
-    #print("obtaining liked songs")
     tracks = this.spotify_api.saved_tracks(offset=0)
     
     return render(request, "spotify_track_list.html", {
@@ -371,6 +401,7 @@ def spotify_sign_in(request):
 def spotify_sign_out(request):
     '''This view signs a user out of Spotify'''
     user = request.user
+    logger.info(user.username + " signing out of Spotify")
     
     if this.spotify_api is not None:
         if user == this.spotify_api.user:
@@ -382,8 +413,9 @@ def spotify_sign_out(request):
     try:
         # Remove the CACHE file with the token so that a new user can authorize.
         os.remove(cache_path)
+        logger.debug("Removed spotify token at " + cache_path)
     except OSError as e:
-        print ("Error: %s - %s." % (e.filename, e.strerror))
+        logger.warning("Error: %s - %s." % (e.filename, e.strerror))
     
     if user.has_spotify_token:
         # clear the flag indicating that the user has a token
@@ -396,6 +428,7 @@ def spotify_sign_out(request):
 def spotify_recently_played(request):
     '''This view displays a list of user's recently played tracks'''
     if this.spotify_api is None:
+        logger.warning("Spotify API not initialized")
         return render(request, 'not_signed_in_spotify.html')
     
     return render(request, "spotify_track_list.html", {
@@ -411,6 +444,7 @@ def spotify_recently_played(request):
 def spotify_followed_artists(request):
     '''This view displays the Spotify artists followed by the user'''
     if this.spotify_api is None:
+        logger.warning("Spotify API not initialized")
         return render(request, 'not_signed_in_spotify.html')
     
     artists = this.spotify_api.artists_followed()
@@ -428,6 +462,7 @@ def spotify_followed_artists(request):
 def spotify_liked_songs(request):
     '''This view displays the Spotify songs liked by the user'''
     if this.spotify_api is None:
+        logger.warning("Spotify API not initialized")
         return render(request, 'not_signed_in_spotify.html')
     
     offset = request.GET.get('offset')
@@ -449,6 +484,7 @@ def spotify_liked_songs(request):
 def spotify_saved_albums(request):
     '''This view displays the Spotify albums saved by the user'''
     if this.spotify_api is None:
+        logger.warning("Spotify API not initialized")
         return render(request, 'not_signed_in_spotify.html')
     
     offset = request.GET.get('offset')
@@ -470,6 +506,7 @@ def spotify_saved_albums(request):
 def spotify_saved_playlists(request):
     '''This view displays the Spotify albums saved by the user'''
     if this.spotify_api is None:
+        logger.warning("Spotify API not initialized")
         return render(request, 'not_signed_in_spotify.html')
     
     playlists = this.spotify_api.playlist_collection()
@@ -487,6 +524,7 @@ def spotify_saved_playlists(request):
 def spotify_search(request):
     '''This view allows the user to search for Spotify content'''
     if this.spotify_api is None:
+        logger.warning("Spotify API not initialized")
         return render(request, 'not_signed_in_spotify.html')
     
     if request.method == "GET":
@@ -525,9 +563,10 @@ def spotify_search(request):
 def spotify_search_albums(request, search_term):
     '''This view obtains spotify albums that match the search term'''
     if this.spotify_api is None:
+        logger.warning("Spotify API not initialized")
         return render(request, 'not_signed_in_spotify.html')
     
-    print("looking for offset")
+    logger.debug("looking for offset from URL")
     # get the offset query parameter from the URL
     offset = request.GET.get('offset')
     if offset is None:
@@ -548,9 +587,10 @@ def spotify_search_albums(request, search_term):
 def spotify_search_artists(request, search_term):
     '''This view obtains spotify artists that match the search term'''
     if this.spotify_api is None:
+        logger.warning("Spotify API not initialized")
         return render(request, 'not_signed_in_spotify.html')
       
-    print("looking for offset") 
+    logger.debug("looking for offset from URL") 
     # get the offset query parameter from the URL    
     offset = request.GET.get('offset')
     if offset is None:
@@ -571,9 +611,10 @@ def spotify_search_artists(request, search_term):
 def spotify_search_playlists(request, search_term):
     '''This view obtains spotify playlists that match the search term'''
     if this.spotify_api is None:
+        logger.warning("Spotify API not initialized")
         return render(request, 'not_signed_in_spotify.html')
 
-    print("looking for offset") 
+    logger.debug("looking for offset from URL") 
     # get the offset query parameter from the URL     
     offset = request.GET.get('offset')
     if offset is None:
@@ -594,9 +635,10 @@ def spotify_search_playlists(request, search_term):
 def spotify_search_tracks(request, search_term):
     '''This view obtains spotify tracks that match the search term'''
     if this.spotify_api is None:
+        logger.warning("Spotify API not initialized")
         return render(request, 'not_signed_in_spotify.html')
    
-    print("looking for offset")  
+    logger.debug("looking for offset from URL")  
     # get the offset query parameter from the URL         
     offset = request.GET.get('offset')
     if offset is None:
@@ -618,9 +660,10 @@ def spotify_search_tracks(request, search_term):
 def spotify_playlist_tracks (request, playlist_id):
     '''This view displays a list of tracks on a specific Spotify album'''
     if this.spotify_api is None:
+        logger.warning("Spotify API not initialized")
         return render(request, 'not_signed_in_spotify.html')
     
-    print("looking for offset") 
+    logger.debug("looking for offset from URL") 
     offset = request.GET.get('offset')
     if offset is None:
         offset = 0    
@@ -642,6 +685,7 @@ def spotify_playlist_tracks (request, playlist_id):
 def spotify_album_tracks (request, album_id):
     '''This view displays a list of tracks on a specific Spotify album'''
     if this.spotify_api is None:
+        logger.warning("Spotify API not initialized")
         return render(request, 'not_signed_in_spotify.html')
     
     tracks = this.spotify_api.album_tracks(album_id)
@@ -659,6 +703,7 @@ def spotify_album_tracks (request, album_id):
 def spotify_artist_tracks (request, artist_id):
     '''This view displays a list of tracks on a specific Spotify album'''
     if this.spotify_api is None:
+        logger.warning("Spotify API not initialized")
         return render(request, 'not_signed_in_spotify.html')
     
     track_list = this.spotify_api.artist_tracks(artist_id)
@@ -676,9 +721,10 @@ def spotify_artist_tracks (request, artist_id):
 def spotify_artist_albums (request, artist_id):
     '''This view displays the albums by a specific Spotify artist'''
     if this.spotify_api is None:
+        logger.warning("Spotify API not initialized")
         return render(request, 'not_signed_in_spotify.html')
     
-    print("looking for offset") 
+    logger.debug("looking for offset from URL") 
     offset = request.GET.get('offset')
     if offset is None:
         offset = 0
@@ -701,13 +747,16 @@ def add_spotify_track(request, track_id, replace_song_id=None):
     
     matching_song = Song.objects.filter(spotify_track_id = track_id)
     if matching_song.count() > 0:
+        logger.warning("Spotify track " + track_id + " already exists - " + str(matching_song[0]))
         return redirect('App:show_songs', matching_song[0].id)
     
     # must be an administrator or teacher to add songs
     if not authorized(request.user):
+        logger.warning(request.user.username + " not authorized to add Spotify tracks")
         return render(request, 'permission_denied.html')
     
     if this.spotify_api is None:
+        logger.warning("Spotify API not initialized")
         return render(request, 'not_signed_in_spotify.html')
     
     track = this.spotify_api.track_info(track_id)
@@ -715,8 +764,10 @@ def add_spotify_track(request, track_id, replace_song_id=None):
     
     if replace_song_id is not None:
         replace_song = Song.objects.get(pk=replace_song_id)
+        logger.info("Replacing Spotify explicit track " + replace_song.spotify_track_id +  ": " + replace_song.title)
     else:
         replace_song = None
+        logger.info("Preparing to add Spotify track " + track_id)
     
     if request.method == "GET":   
         track_input = SpotifyTrackInput(
@@ -732,7 +783,12 @@ def add_spotify_track(request, track_id, replace_song_id=None):
     
         # if form data invalid, display an error on the form
         if not form.is_valid():
-            return render(request, 'add_song.html', {'form':SpotifyTrackInputForm(), 'error': "Invalid data submitted."})  
+            my_error = "Invalid data submitted"
+            logger.warning(my_error)
+            return render(request, 'add_song.html', {'form':SpotifyTrackInputForm(), 'error': my_error})  
+        else:
+            form_data = form.cleaned_data
+            logger.info(form_data)
         
         action = request.POST.get("submit")
 
@@ -740,6 +796,7 @@ def add_spotify_track(request, track_id, replace_song_id=None):
             replace_song.spotify_track_id = track['id']
             replace_song.image_link = image_link
             replace_song.explicit = False
+            logger.debug("Replaced song - new track id is " + track['id'])
             replace_song.save()
         
         else:  # create new song
@@ -757,7 +814,7 @@ def add_spotify_track(request, track_id, replace_song_id=None):
             new_song.holiday = song_instance.holiday
             new_song.explicit = track['explicit']
             new_song.save()
-            print(new_song)
+            logger.debug(str(new_song))
         
         # return to list of songs
         return redirect('App:show_songs')   
@@ -770,9 +827,11 @@ def add_spotify_playlist(request, spotify_playlist_id, dance_type_index):
         
     # must be an administrator or teacher to add songs
     if not authorized(request.user):
+        logger.warning(request.user.username + " not authorized to import Spotify playlists")
         return render(request, 'permission_denied.html') 
     
     if this.spotify_api is None:
+        logger.warning("Spotify API not initialized")
         return render(request, 'not_signed_in_spotify.html')    
     
     spotify_playlist = this.spotify_api.playlist_info(spotify_playlist_id) 
@@ -783,6 +842,7 @@ def add_spotify_playlist(request, spotify_playlist_id, dance_type_index):
     new_playlist.title = spotify_playlist['name']
     new_playlist.description = DANCE_TYPE_CHOICES[dance_type_index][1] + " by Spotify user: " + spotify_playlist['owner']
     new_playlist.streaming = True
+    logger.info("Importing spotify_playlist " + spotify_playlist['name'] + " by Spotify user: " + spotify_playlist['owner'] + " as " + DANCE_TYPE_CHOICES[dance_type_index][1])
     new_playlist.save()
     
     # initalize variables for reading in tracks
@@ -808,12 +868,16 @@ def add_spotify_playlist(request, spotify_playlist_id, dance_type_index):
                 print("Finding alternate track for:", t['name'], "by", t['artist_name'])
                 search_query = t['name'] + " artist:" + t['artist_name']
                 search_results = this.spotify_api.search(search_term=search_query, content_type="track", limit=1)
-                t = search_results['track_list'][0]                  
+                try:
+                    t = search_results['track_list'][0]   
+                except:
+                    logger.warning("Could not find US track for " + t['name'])
+                    continue
             
             # if track already in database, get its id
             matching_song = Song.objects.filter(spotify_track_id = t['id'])
             if matching_song.count() > 0:             
-                print("MATCH", t['id'], t['name'])
+                logger.info("Found US matching track for " + t['name'] + ": " + t['id']) 
                 song_list.append(matching_song[0])
             else:
                 # add track        
@@ -840,11 +904,13 @@ def spotify_find_clean_track(request, track_id, replace_song_id=None):
     '''This view adds a Spotify track into the Studio song database'''    
     from App.views.song_crud import authorized
         
-    # must be an administrator or teacher to add songs
+    # must be an administrator or teacher 
     if not authorized(request.user):
+        logger.warning(request.user.username + " not authorized to replace Spotify tracks")
         return render(request, 'permission_denied.html')
     
     if this.spotify_api is None:
+        logger.warning("Spotify API not initialized")
         return render(request, 'not_signed_in_spotify.html')
       
     track = this.spotify_api.track_info(track_id)
@@ -855,13 +921,14 @@ def spotify_find_clean_track(request, track_id, replace_song_id=None):
         else:
             return redirect('App:add_spotify_track', track_id)  
     
+    logger.info("Searching for clean version of " + track['name'] + ' by ' + track['artist_name'])
     search_query = track['name'] + '+artist:' + track['artist_name']
     search_results = this.spotify_api.search(search_query, content_type="track", limit=5)
     for alt_track in search_results['track_list']:
-        print(alt_track)
+        logger.debug(str(alt_track))
         if not alt_track['explicit'] and (alt_track['tempo'] == track['tempo']) and \
               (alt_track['duration'] == track['duration']):
-            print("Found clean version:", alt_track['id'])
+            logger.info("Found clean version: " + alt_track['id'])
             if replace_song_id is not None:
                 return redirect ('App:add_spotify_track', alt_track['id'], replace_song_id)
             else:
@@ -870,8 +937,6 @@ def spotify_find_clean_track(request, track_id, replace_song_id=None):
         return render(request, 'add_song.html', {'form':SpotifyTrackInputForm(), 'error': "No clean version found."})  
 
                   
-
-
 def fix_non_US_spotify_tracks(request):
     from App.views.song_crud import authorized
     

@@ -3,6 +3,8 @@ from django.conf import settings
 from django.utils.text import slugify
 
 import os
+import logging
+logger = logging.getLogger("django")
 
 # imported our models
 from App.models.song import Song
@@ -32,6 +34,7 @@ def add_song(request):
     
     # must be an administrator or teacher to add songs
     if not authorized(request.user):
+        logger.warning(request.user.username + " not authorized to add songs")
         return render(request, 'permission_denied.html')
     
     if request.method == "GET":   # display empty form
@@ -42,17 +45,26 @@ def add_song(request):
         
         # if form data invalid, display an error on the form
         if not form.is_valid():
-            return render(request, 'add_song.html', {'form':SongInputForm(), 'error': "Invalid data submitted."})
+            my_error = "Invalid data submitted."
+            logger.warning(my_error)
+            return render(request, 'add_song.html', {'form': form, 'error': my_error})
         
         # save the song instance into the database and get the path to the audio file uploaded by the form
-        song_instance = form.save()  
+        song_instance = form.save() 
+        logger.info("Saving " + str(form.cleaned_data))
         audio_file_path = song_instance.audio_file.path
     
         # process file with mutagen and determine file type
         metadata = mutagen.File(audio_file_path)
-        print(metadata.mime)
+        if metadata is None:
+            my_error = "Invalid file type."
+            logger.warning(my_error)
+            return render(request, 'add_song.html', {'form': form, 'error': my_error}) 
+        else:
+            logger.debug(str(metadata.mime))
         
         if ("audio/mp4" in metadata.mime):
+            logger.debug("MP4 metadata")
             mp4_data = MP4(audio_file_path)
             info = mp4_data.info
             tags = mp4_data.tags
@@ -62,11 +74,13 @@ def add_song(request):
             title = tags.get("\xa9nam")[0]
             duration = info.length # seconds.
             if tags.get("covr") is None:
+                logger.info("No cover art in file")
                 pict = None
             else:
                 pict = tags.get("covr")[0]
             
         elif ("audio/mp3" in metadata.mime):
+            logger.debug("MP3 metadata")
             id3_data = EasyID3(audio_file_path)
             
             # get the artist, title, duration and picture from MP3 tags
@@ -77,12 +91,15 @@ def add_song(request):
             tags = ID3(audio_file_path)
             apic_list = tags.getall("APIC")
             if len(apic_list) == 0:
+                logger.info("No cover art in file")
                 pict = None
             else:
                 pict = apic_list[0].data 
                 
         else:  # if some other file type, return an error. 
-            return render(request, 'add_song.html', {'form':SongInputForm(), 'error': "Invalid data submitted."})
+            my_error = "Unknown audio file type."
+            logger.warning(my_error)
+            return render(request, 'add_song.html', {'form': form, 'error': my_error})
         
         # create a new Song object
         new_song = Song()
@@ -95,36 +112,38 @@ def add_song(request):
         new_song.holiday = song_instance.holiday
         
         # determine name for the image file based on the name of the audio file
-        print(new_song.audio_file.url)
         basename = os.path.basename(new_song.audio_file.url)
         filename, ext = os.path.splitext(basename)
         new_basename = filename + '.jpg'
         relative_pathname = 'img/' + new_basename
-        print(relative_pathname)
+        logger.info("Image file is " + relative_pathname)
         
         if pict is None:
             # download cover art and save into "img" subfolder under MEDIA_ROOT
             folder = os.path.join(settings.MEDIA_ROOT, 'img')
+            logger.info("Attempting to download cover art")
             finder = CoverFinder({'art-dest': folder, 
                                   'art-dest-filename': new_basename,
                                   })
             finder.scan_file(audio_file_path)
             # if cover art not found online, use default image
             if len(finder.files_skipped) > 0 or len(finder.files_failed) > 0:
+                logger.warning("Could not download cover art for " + new_basename)
                 relative_pathname = None
             
         else:
             # extract cover art from file and save in an "img" subfolder under MEDIA_ROOT
             im = Image.open(BytesIO(pict))
-            print('Picture size : ' + str(im.size))
-            print('Format:' + im.format)
+            logger.debug('Picture size : ' + str(im.size))
+            logger.debug('Format:' + im.format)
             # assume JPEG cover art
             if im.format == "JPEG":
                 path = os.path.join(settings.MEDIA_ROOT, relative_pathname)
                 im.save(path)
             else:
-                print (im.format)
-                return render(request, 'add_song.html', {'form':SongInputForm(), 'error': "Cover art was not JPEG."})                
+                my_error = "Cover art was not JPEG."
+                logger.warning (my_error + " Format is " + im.format)
+                return render(request, 'add_song.html', {'form': form, 'error': my_error})                
 
         # save the path to the image file and save the Song object
         new_song.image = relative_pathname
@@ -133,6 +152,7 @@ def add_song(request):
         # if bad metadata, redirect to update_song, allowing user to edit
         if new_song.title.lower() == "unknown title" or \
            new_song.artist.lower() in ("unknown artist", "soundtrack"):
+            logger.warning("Unknown title or artist - redirecting to edit page")
             return redirect('App:update_song', new_song.id)
         else:
             # return to list of songs
@@ -146,6 +166,7 @@ def update_song(request, song_id):
     
     # must be an admin user or teacher to edit songs
     if not (request.user.is_superuser or request.user.is_teacher):
+        logger.warning(request.user.username + " not authorized to update songs")
         return render(request, 'permission_denied.html')   
     
     # get the specific song object from the database
@@ -154,11 +175,19 @@ def update_song(request, song_id):
     if request.method == "GET":
         # display form with current data
         form = SongEditForm(instance=song)
+        log_msg = "Updating "
+        log_msg += "title: " + song.title + ' '
+        log_msg += "artist: " + song.artist + ' '
+        log_msg += "image: " + song.image.url + ' '
+        log_msg += "dance_type: " + song.dance_type + ' '
+        log_msg += "holiday: " + song.holiday
+        logger.info(log_msg)
         return render(request, 'update_song.html', {'form':form})
     else:
         # obtain information from the submitted form
         form = SongEditForm(request.POST, request.FILES, instance=song)
         if form.is_valid():
+            logger.info(form.cleaned_data)
             # save the updated info and return to song list
             form.save() 
             return redirect('App:show_songs')
@@ -173,10 +202,12 @@ def delete_song(request, song_id):
     
     # must be an admin user to delete songs
     if not request.user.is_superuser:
+        logger.warning(request.user.username + " not authorized to delete songs")
         return render(request, 'permission_denied.html')   
     
     # find the specific song object
     song = get_object_or_404(Song, pk=song_id) 
+    logger.info("Deleting " +  str(song))
     
     # find the playlists that use this song
     playlists = SongInPlaylist.objects.filter(song=song)
@@ -184,21 +215,23 @@ def delete_song(request, song_id):
     # delete that song from the playlist
     for p in playlists:
         p.playlist.delete_song(song)
+        logger.info("Removing song from " + p.playlist.title)
         
     # delete the audio and image files related to this Song
     if song.image is not None:
         if song.image == "":
             pass
         elif os.path.isfile(song.image.path):
+            logger.info("Deleting image file :" + song.image.path)
             os.remove(song.image.path)
             
     if song.audio_file is not None:
         if song.audio_file == "":
             pass
         elif os.path.isfile(song.audio_file.path):
+            logger.info("Deleting music file :" + song.audio_file.path)
             os.remove(song.audio_file.path)    
     
     # remove Song from database and redirect to song list. 
-    print("Deleting " +  str(song))
     song.delete()    
     return redirect('App:show_songs')

@@ -8,17 +8,21 @@ from App.models.song import Song
 from App.models.playlist import Playlist, SongInPlaylist
 from App.views.spotify_views import spotify_token 
 
-# Create your views here
+import logging
+logger = logging.getLogger("django")
+
 
 def play_song_list(request, playlist_id, start_index=0):
     ''' Play the selected playlist.'''
     
     # only admin users or teachers can play songs
     if not (request.user.is_superuser or request.user.is_teacher):
+        logger.warning("User not authorized to play song lists")
         return render(request, 'permission_denied.html')  
     
     # get the requested playlist or show "not found" page
     playlist = get_object_or_404(Playlist, pk=playlist_id)
+    logger.info("Preparing " + playlist.get_category_display() + " playlist: " + playlist.title)
     
     # obtain list of songs in this playlist
     song_list = playlist.songs.all().order_by('songinplaylist__order')
@@ -33,16 +37,19 @@ def play_song_list(request, playlist_id, start_index=0):
     for song in song_list:
         song_in_playlist = SongInPlaylist.objects.get(song=song, playlist=playlist)
         if song_in_playlist.feature:
+            logger.info(song_in_playlist.song.title + " is a feature song")
             is_feature_list.append(True)
         else:
             is_feature_list.append(False)
     
     # convert max_duration to seconds for javascript player
     if playlist.category == 'Norm':
+        logger.info("No time limit on songs")
         max_song_duration_in_sec = None
     else:
         max_song_duration_in_sec = playlist.max_song_duration.minute * 60 + \
                                    playlist.max_song_duration.second
+        logger.info("Song time limit is " + str(max_song_duration_in_sec))
     
     # pass the path to the default cover art for any songs that don't have art 
     default_url = settings.STATIC_URL + "img/default.png"
@@ -51,6 +58,7 @@ def play_song_list(request, playlist_id, start_index=0):
         
         token_dict = spotify_token(request.user)
         if token_dict is None:
+            logger.warning("Cannot stream playlist, user not signed into spotify")
             return render(request, 'not_signed_in_spotify.html')
         
         spotify_uris = list()
@@ -60,6 +68,7 @@ def play_song_list(request, playlist_id, start_index=0):
                 
             
         # render the template
+        logger.info("Streaming spotify playlist " + playlist.title)
         return render(request, "play_list_spotify_songs.html", {
             'playlist_info': playlist, 
             'song_list': song_list, 
@@ -72,6 +81,7 @@ def play_song_list(request, playlist_id, start_index=0):
         })          
     else:
         # render the template
+        logger.info("Streaming local playlist " + playlist.title)
         return render(request, "play_song_list.html", {
             'playlist_info': playlist, 
             'song_list':song_list, 

@@ -8,10 +8,14 @@ from App.forms import RandomPlaylistForm, TeacherSignUpForm
 from App.models import User
 from App.models.song import DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS, HOLIDAY_DEFAULT_USAGE
 
+import logging
+logger = logging.getLogger("django")
+
 
 def user_profile(request):
     '''This view redirects to the list of playlists for the current user.'''
     user = request.user
+    logger.info(user.username +  " logged in.")
     return redirect('App:home')
 
       
@@ -22,6 +26,7 @@ def user_preferences(request):
     
     # if user has preferences, use those, otherwise use defaults
     if user.preferences is None:
+        logger.info("Using default preferences for " + user.username)
         preferences = {
             'prevent_back_to_back_styles': True,
             'prevent_back_to_back_tempos': True,
@@ -32,6 +37,7 @@ def user_preferences(request):
     else:
         preferences = user.preferences
         if 'counts' not in preferences:
+            logger.warning("Adding default count fields to " + user.username + " preferences")
             preferences['counts'] = DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS
             preferences['playlist_length'] = 25
         if 'percentages' in preferences:
@@ -54,9 +60,10 @@ def user_preferences(request):
         form = RandomPlaylistForm(request.POST,prefs=preferences)
         if form.is_valid():
             form_data = form.cleaned_data
+            logger.info("Random playlist form data: " + str(form_data))
         else:
             # TODO: handle this error 
-            print('invalid');
+            logger.warning("Random playlist form returned invalid data")
         
         # determine if the inputs should be saved as user's new default preferences
         if form_data['save_preferences']:        
@@ -86,6 +93,7 @@ def user_preferences(request):
             preferences['holiday_usage'] = holiday_usage
             user.preferences = preferences
             user.save()
+            logger.info("Saved new playlist preferences for " + user.username)
             
             # TODO: need to indicate data was saved somehow     
             return redirect('App:user_playlists') 
@@ -117,6 +125,7 @@ class TeacherSignUpView(CreateView):
     def form_valid(self, form):
         # save the user object returned by the form
         user = form.save()
+        logger.info("New teacher account created for " + user.username)
         
         # login the user that just signed up
         login(self.request, user)
