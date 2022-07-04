@@ -14,6 +14,9 @@ from App.models.playlist import Playlist, SongInPlaylist
 from App.forms import PlaylistInfoForm, RandomPlaylistForm
 
 
+import logging
+logger = logging.getLogger("django")
+
 #########################################################
 # Paylist CRUD, add, update, and delete Paylist objects #
 #########################################################
@@ -22,6 +25,7 @@ def create_playlist(request, random=None):
     ''' allows the superuser or teacher to create a new playlist. '''
     
     if not (request.user.is_superuser or request.user.is_teacher):
+        logger.warning(request.user.username + " not authorized to create playlists")
         return render(request, 'permission_denied.html')
     
     # create new playlist
@@ -48,6 +52,7 @@ def create_playlist(request, random=None):
         # use a default title based on number of playlists currently owned by this user
         playlist_count = Playlist.objects.filter(owner=user).count()
         new_playlist.title = user.username + separator + str(playlist_count + 1)
+        logger.info('Preparing to ' + page_title + ": " + new_playlist.title)
             
         # empty description
         new_playlist.description = ""
@@ -62,7 +67,8 @@ def create_playlist(request, random=None):
     else:  # POST
         # obtain information from the submitted form
         form = PlaylistInfoForm(request.POST, instance=new_playlist, submit_title=submit_title) 
-        if form.is_valid():                
+        if form.is_valid():
+            logger.info(form.cleaned_data)
             form.save() 
             
             # check for special value indicated no time limit
@@ -118,7 +124,7 @@ def pick_random_song(playlist, dance_type, focus_holiday=None):
                 warn_msg = "No %s songs" % (focus_holiday, )
             else:
                 warn_msg = "No %s songs for %s" % (dance_type, focus_holiday)
-                print(warn_msg)                            
+                logger.warning(warn_msg)                            
             missed_a_holiday_song = True
         else:
             missed_a_holiday_song = False
@@ -130,21 +136,21 @@ def pick_random_song(playlist, dance_type, focus_holiday=None):
             if s.holiday: 
                 if playlist.preferences is None:
                     if HOLIDAY_DEFAULT_USAGE[s.holiday] == "Ex":
-                        print("Excluding song: " + s.get_holiday_display())
+                        logger.debug("Excluding song: " + s.get_holiday_display())
                         continue
                 elif playlist.preferences['holiday_usage'][s.holiday] == "Ex":
-                    print("Excluding song: " + s.get_holiday_display())
+                    logger.debug("Excluding song: " + s.get_holiday_display())
                     continue
             # prevent songs from taking two spots in the same playlist
             if s.playlist_set.filter(id=playlist.id).count() == 0:
                 available_songs.append(s)
     
     if len(available_songs) == 0:
-        print(dance_type + ": No more songs available")
+        logger.warning(dance_type + ": No more songs available")
     else:
         # pick a random song from the available list - all equal probability and add it to the playlist
         random_song = available_songs[random.randrange(len(available_songs))]
-        playlist.add_song(random_song)
+        logger.info("Added " + str(random_song) + " to playlist " + str(playlist))
     
     # return indication that a requested holiday song was not selected
     return missed_a_holiday_song
@@ -319,6 +325,7 @@ def add_to_playlist(request, playlist_id, song_id):
     
     # add the song to the end of the playlist
     playlist.add_song(song)
+    logger.info("Added " + str(song) + " to playlist " + str(playlist))
     
     # redirect to edit playlist page, showing new song at end of list
     return redirect('App:edit_playlist', playlist.id)
@@ -343,14 +350,17 @@ def delete_playlist(request, playlist_id):
     ''' allows the superuser to edit an existing playlist. '''
     
     if not (request.user.is_superuser or request.user.is_teacher):
+        logger.warning(request.user.username + " not authorized to delete playlists")
         return render(request, 'permission_denied.html')
     else:        
         # get the specific playlist object from the database
         playlist = get_object_or_404(Playlist, pk=playlist_id)
         
         if not (request.user.is_superuser or playlist.owner == request.user):
-            return render(request, 'permission_denied.html')           
+            logger.warning(request.user.username + " not authorized to delete playlist " + str(playlist))
+            return render(request, 'permission_denied.html')   
         
+        logger.info("Deleting playlist " + str(playlist))
         playlist.delete()
                     
         # return to list of all playlists        
@@ -361,12 +371,14 @@ def edit_playlist(request, playlist_id):
     ''' allows the superuser to edit an existing playlist. '''
     
     if not (request.user.is_superuser or request.user.is_teacher):
+        logger.warning(request.user.username + " not authorized to edit playlists")
         return render(request, 'permission_denied.html')
           
     # get the specific playlist object from the database
     playlist = get_object_or_404(Playlist, pk=playlist_id)
     
     if not (request.user.is_superuser or playlist.owner == request.user):
+        logger.warning(request.user.username + " not authorized to edit playlist " + str(playlist))
         return render(request, 'permission_denied.html')    
     
     # obtain list of songs in this playlist and its length
@@ -385,14 +397,14 @@ def edit_playlist(request, playlist_id):
                 index = 0
             else:
                 # get the index, convert to integer
-                print('index is: ' + index_str)
+                logger.info('Editing Playlist - index is: ' + index_str)
                 index = int(index_str)
                 
             # get the song in the playlist and the requested info
             selected = SongInPlaylist.objects.get(playlist=playlist_id, order=index)
-            print(selected.song)
+            logger.info("Editing Playlist - song is: " + str(selected.song))
             
-            print('command is: ' + command)       
+            logger.info('Playlist edit command is: ' + command)       
                 
             if command == 'delsong':
                 playlist.delete_song(selected.song)
@@ -425,7 +437,7 @@ def edit_playlist(request, playlist_id):
             elif command == 'dragsong': 
                 # get the new index (dragged position) and convert to integer
                 new_index_str = request.GET.get('newIndex')
-                print('new index is: ' + new_index_str)
+                logger.info('Dragging: new index is: ' + new_index_str)
                 new_index = int(new_index_str)     
                 # call method in playlist model to rearrange song order
                 playlist.move_song(selected.song, index, new_index)  
@@ -440,12 +452,14 @@ def edit_playlist(request, playlist_id):
             'songs': songs_in_playlist,
             'dance_types': DANCE_TYPE_CHOICES,
             'form': form,
+            'error': None,
         })
 
     else: # POST
         # obtain information from the submitted form
         form = PlaylistInfoForm(request.POST, instance=playlist, submit_title=None)
         if form.is_valid():
+            logger.info(form.cleaned_data)
             form.save()
             
             # ensure the max song duration is appropriate for the playlist category
@@ -454,26 +468,30 @@ def edit_playlist(request, playlist_id):
                 form.save()
                 
                 if playlist.category != 'Norm':
+                    my_error = playlist.get_category_display() + " playlists must have a song time limit."
+                    logger.warning(my_error)
                     # ask the user to set a time limit
                     return render(request, 'edit_playlist.html', {
                         'playlist': playlist,
                         'songs': songs_in_playlist,
                         'dance_types': DANCE_TYPE_CHOICES,
                         'form': form,
-                        'error': playlist.get_category_display() + " playlists must have a song time limit.", 
+                        'error': my_error, 
                     })
                            
             # redirect to show playlists
             return redirect('App:user_playlists')
         
         else: 
+            my_error = "Invalid data submitted."
+            logger.warning(my_error)
             # display error on form
             return render(request, 'edit_playlist.html', {
             'playlist': playlist,
             'songs': songs_in_playlist,
             'dance_types': DANCE_TYPE_CHOICES,
             'form': form,
-            'error': "Invalid data submitted."
+            'error': my_error
         })
                
             

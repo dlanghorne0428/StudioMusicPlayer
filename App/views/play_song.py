@@ -5,13 +5,16 @@ from django.conf import settings
 from App.models.song import Song
 from App.views.spotify_views import spotify_token 
 
-# Create your views here
+import logging
+logger = logging.getLogger("django")
+
 
 def play_song(request, song_id):
     ''' Play the selected song.'''
     
     # only admin users or teachers can play songs
     if not (request.user.is_superuser or request.user.is_teacher):
+        logger.warning("User not authorized to play songs")
         return render(request, 'permission_denied.html')  
     
     # get the requested song or show "not found" page
@@ -24,10 +27,12 @@ def play_song(request, song_id):
         
         token_dict = spotify_token(request.user)
         if token_dict is None:
+            logger.warning("Cannot stream song, user not signed into spotify")
             return render(request, 'not_signed_in_spotify.html')
         
         spotify_uris = list()
         spotify_uris.append(song.spotify_uri())
+        logger.info("Streaming spotify song " + song.title)
                 
         return render(request, "play_spotify_song.html", 
                   {'spotify_uris': spotify_uris,
@@ -38,6 +43,7 @@ def play_song(request, song_id):
                    'dance_type': song.get_dance_type_display}
                   )    
     else:
+        logger.info("playing local song " + song.title)
         # render the template
         return render(request, "play_song.html", 
                       {'song':song, 
