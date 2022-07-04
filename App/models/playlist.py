@@ -42,7 +42,7 @@ class Playlist(models.Model):
     max_song_duration = models.TimeField(null=True, blank=True)
     
     # this field stores the preferences used when to generate this playlist
-    preferences = models.JSONField(null=True)    
+    preferences = models.JSONField(null=True, blank=True)    
     
     def add_song(self, song, index=None):
         ''' add a song to the end of a playlist unless index is specified'''

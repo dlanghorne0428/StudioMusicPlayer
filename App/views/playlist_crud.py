@@ -150,6 +150,7 @@ def pick_random_song(playlist, dance_type, focus_holiday=None):
     else:
         # pick a random song from the available list - all equal probability and add it to the playlist
         random_song = available_songs[random.randrange(len(available_songs))]
+        playlist.add_song(random_song)
         logger.info("Added " + str(random_song) + " to playlist " + str(playlist))
     
     # return indication that a requested holiday song was not selected
@@ -413,8 +414,12 @@ def edit_playlist(request, playlist_id):
                 # find the dance style of the selected song
                 dance_style = selected.song.dance_type
                 
-                # now find the songs in the database of this dance style
-                candidate_songs = Song.objects.filter(dance_type=dance_style)
+                # first find either the streaming songs or local songs iin the database for this dance style
+                if playlist.streaming:
+                    candidate_songs = Song.objects.exclude(spotify_track_id__isnull=True).filter(dance_type=dance_style)
+                else:
+                    candidate_songs = Song.objects.filter(spotify_track_id__isnull=True).filter(dance_type=dance_style)                 
+
                 available_songs = list()    
                 
                 for s in candidate_songs:
