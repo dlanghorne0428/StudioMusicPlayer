@@ -70,22 +70,32 @@ def add_song(request):
             tags = mp4_data.tags
 
             # get the artist, title, duration and picture from MP4 tags
-            artist = tags.get("\xa9ART")[0]
-            title = tags.get("\xa9nam")[0]
-            duration = info.length # seconds.
-            if tags.get("covr") is None:
-                logger.info("No cover art in file")
+            if tags is None:
+                artist = 'Unknown Artist'
+                title = 'Unknown Title'
                 pict = None
             else:
-                pict = tags.get("covr")[0]
+                artist = tags.get("\xa9ART")[0]
+                title = tags.get("\xa9nam")[0]
+                if tags.get("covr") is None:
+                    logger.info("No cover art in file")
+                    pict = None
+                else:
+                    pict = tags.get("covr")[0]
             
         elif ("audio/mp3" in metadata.mime):
             logger.debug("MP3 metadata")
             id3_data = EasyID3(audio_file_path)
             
             # get the artist, title, duration and picture from MP3 tags
-            artist = id3_data["artist"][0]
-            title = id3_data["title"][0]
+            if 'artist' in id3_data:
+                artist = id3_data["artist"][0]
+            else:
+                artist = 'Unknown Artist'
+            if 'title' in id3_data:
+                title = id3_data["title"][0]
+            else:
+                title = 'Unknown Title'
             info = metadata.info
             duration =  info.length #seconds
             tags = ID3(audio_file_path)
@@ -146,7 +156,12 @@ def add_song(request):
                 return render(request, 'add_song.html', {'form': form, 'error': my_error})                
 
         # save the path to the image file and save the Song object
-        new_song.image = relative_pathname
+        if relative_pathname is None:
+            new_song.image = None
+        elif len(relative_pathname) > 0:
+            new_song.image = relative_pathname
+        else:
+            new_song.image = None
         new_song.save()
         
         # if bad metadata, redirect to update_song, allowing user to edit
@@ -178,7 +193,11 @@ def update_song(request, song_id):
         log_msg = "Updating "
         log_msg += "title: " + song.title + ' '
         log_msg += "artist: " + song.artist + ' '
-        log_msg += "image: " + song.image.url + ' '
+        #if song.image.url is None:
+            #log_msg += "image: None "
+        #else:
+            #print("Image: " + str(song.image))
+            #log_msg += "image: " + song.image.url + ' '
         log_msg += "dance_type: " + song.dance_type + ' '
         log_msg += "holiday: " + song.holiday
         logger.info(log_msg)
