@@ -22,6 +22,7 @@ urlpatterns = [
     path("playlists/create/<int:random>", views.create_playlist, name="create_playlist"), 
     path("playlists/build-random/<int:playlist_id>", views.build_random_playlist, name="build_random_playlist"),
     path("playlists/delete/<int:playlist_id>", views.delete_playlist, name="delete_playlist"),
+    path("playlists/shuffle/<int:playlist_id>", views.shuffle_playlist, name="shuffle_playlist"),
     path("playlists/edit/<int:playlist_id>", views.edit_playlist, name="edit_playlist"),
     path("playlists/edit/<int:playlist_id>/addrandomsong/<str:dance_type>", views.add_random_song_to_playlist, name="add_random_song_to_playlist"),
     path("playlists/edit/<int:playlist_id>/addsong/<int:song_id>", views.add_to_playlist, name="add_to_playlist"),

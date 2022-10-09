@@ -30,13 +30,19 @@
   
   <!-- next row has buttons, use sticky to keep this from scrolling off the page -->
   <div id='play-and-clear-sticky' class="row">
-    <div class="col-6">
+    <div class="col-5">
       <!-- link to play this current playlist-->
       <div class="text-end mt-2">
         <a class="btn btn-primary btn-sm" href="{% url 'App:play_song_list' playlist.id %}">Play from start</a>
       </div>
     </div>
-    <div class="col-6">
+    <div class="col-2">
+      <!-- link to play this current playlist-->
+      <div class="text-center mt-2">
+        <a class="btn btn-info btn-sm" href="{% url 'App:shuffle_playlist' playlist.id %}">Shuffle</a>
+      </div>
+    </div>
+    <div class="col-5">
       <!-- link to regenerate this current playlist-->
       <div class="text-start mt-2">
         <a class="btn btn-warning btn-sm" href="{% url 'App:build_random_playlist' playlist.id %}">Clear and Regenerate</a>
