@@ -3,16 +3,21 @@ body {
     margin: 0 24px;
 }
 
+.page-content {
+    font-family: "Tahoma", "Verdana", "Segoe", sans-serif;
+}
+
 /****** Song info  *****/
 .dance-type {
     margin: 1rem;
     font-size: 72px;
     color: Yellow;
+    letter-spacing: 1.0px;
 }
 
 .song-title {
     margin: 1rem;
-    font-size: 48px;
+    font-size: 54px;
     color: White;
     padding-top: 1.0rem;
     padding-bottom: 1.0rem;
@@ -20,7 +25,7 @@ body {
 
 .song-artist {
     margin: 1rem;
-    font-size: 32px;
+    font-size: 40px;
     color: White;
     padding-top: 1rem;
 }

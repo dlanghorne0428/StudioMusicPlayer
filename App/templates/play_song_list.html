@@ -26,7 +26,7 @@
     </div>
     <div class="col-4">
       <!-- up next on right side, 4 out of 12 columns -->
-      <h2 class="text-warning">Up Next</h2>
+      <h2 class="up-next-title text-warning">Up Next</h2>
     </div>
   </div>
   
@@ -50,11 +50,11 @@
       {% for i in playlist_indices %}
         <div class="song-meta-container" id="index-{{i}}">
           {% if playlist_info.category == 'Show' %}
-            <span class="song-dance-type">Heat {{forloop.counter}}</span>
-            <span class="song-name" data-amplitude-song-info="dance_type" data-amplitude-song-index="{{ i }}"></span>
+            <span class="song-container-primary">Heat {{forloop.counter}}</span>
+            <span class="song-container-secondary" data-amplitude-song-info="dance_type" data-amplitude-song-index="{{ i }}"></span>
           {% else %}
-            <span class="song-dance-type" data-amplitude-song-info="dance_type" data-amplitude-song-index="{{ i }}"></span>
-            <span class="song-name" data-amplitude-song-info="name" data-amplitude-song-index="{{ i }}"></span>
+            <span class="song-container-primary" data-amplitude-song-info="dance_type" data-amplitude-song-index="{{ i }}"></span>
+            <span class="song-container-secondary" data-amplitude-song-info="name" data-amplitude-song-index="{{ i }}"></span>
           {% endif %}
         </div>
       {% endfor %}
@@ -205,7 +205,7 @@
         'initialized': function(){
           /* when playlist starts, show the next four songs in 'up next' list */
           console.log("Player has been initialized.");
-          for (let i = {{ start_index }} + 1; i <= {{ start_index }} + 4; i++ ) {
+          for (let i = {{ start_index }} + 1; i <= {{ start_index }} + 3; i++ ) {
             showSongInUpNext(i);
           };
           updateHeatNumber({{ start_index }});
@@ -302,8 +302,8 @@
           /* show the song that was playing in the 'up next' list */
           showSongInUpNext(current_index + 1);
           
-          /* only show 4 songs in up next, so hide the one after that */
-          hideSongInUpNext(current_index + 5);
+          /* only show 3 songs in up next, so hide the one after that */
+          hideSongInUpNext(current_index + 4);
           
           /* update the current heat number */
           updateHeatNumber(current_index);
@@ -327,7 +327,7 @@
           hideSongInUpNext(current_index);
             
           /* show the 4th future song in the list, if there is one */
-          showSongInUpNext(current_index+ 4);
+          showSongInUpNext(current_index + 3);
           
           /* update the current heat number */
           updateHeatNumber(current_index);

@@ -193,11 +193,6 @@ def update_song(request, song_id):
         log_msg = "Updating "
         log_msg += "title: " + song.title + ' '
         log_msg += "artist: " + song.artist + ' '
-        #if song.image.url is None:
-            #log_msg += "image: None "
-        #else:
-            #print("Image: " + str(song.image))
-            #log_msg += "image: " + song.image.url + ' '
         log_msg += "dance_type: " + song.dance_type + ' '
         log_msg += "holiday: " + song.holiday
         logger.info(log_msg)
