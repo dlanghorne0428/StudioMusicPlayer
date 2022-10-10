@@ -13,7 +13,7 @@ DANCE_TYPE_CHOICES = [
     ("Fox", "Foxtrot"),
     ("Hus", "Hustle"),
     ("Jiv", "Jive"),
-    ("Mam", "Mambo/Salsa"),
+    ("Mam", "Mambo / Salsa"),
     ("Mer", "Merengue"),
     ("NC2", "Night Club 2-Step"),
     ("PD",  "Paso Doble"),
