@@ -54,3 +54,28 @@ def show_songs(request, song_id = None):
                    'streaming': streaming,
                    'page_title': page_title
                   })
+
+
+def show_songs_no_cover_art(request):
+    if not request.user.is_authenticated:
+        logger.warning("User is not authenticated - redirect to login page")
+        return redirect('login')    
+    
+    playlists = None
+    streaming = False
+    page_title = "Songs without Cover Art"
+    songs = Song.objects.filter(spotify_track_id__isnull=True)
+    no_art_songs = list()
+    for s in songs:
+        if not s.image:
+            no_art_songs.append(s)
+    
+    # render the template
+    return render(request, 'show_songs.html', 
+                  {'songs': no_art_songs,
+                   'playlists': playlists,
+                   'streaming': streaming,
+                   'showing_no_art': True,
+                   'page_title': page_title
+                  })
+     
