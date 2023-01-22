@@ -10,6 +10,7 @@ urlpatterns = [
     path("home/", views.home, name="home"),
     path("exit/", views.exit, name="exit"),
     path("songs/", views.show_songs, name="show_songs"),
+    path("songs/no-art", views.show_songs_no_cover_art, name="show_songs_no_cover_art"),
     path("songs/<int:song_id>", views.show_songs, name="show_songs"),
     path("addSong/", views.add_song, name="add_song"),
     path("accounts/profile/", views.user_profile, name='user_profile'),
