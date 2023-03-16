@@ -9,7 +9,7 @@ from App.models.user import User
 import logging
 logger = logging.getLogger("django")
 
-def show_playlists(user, owner_only=False):
+def get_playlist_data(user, owner_only=False):
     
     # assume there are no playlists
     playlists = None
@@ -54,17 +54,41 @@ def all_playlists(request):
         logger.warning("User is not authenticated - redirect to login page")
         return redirect('login')
     else:
-        playlist_data = show_playlists(request.user)
+        error_text = ""
+        if request.method == "POST":
+            start_index = int(request.POST.get("start_song"))
+            playlist_id = int(request.POST.get("playlist_id"))
+            playlist = Playlist.objects.get(pk=playlist_id)
+            playlist_length = playlist.number_of_songs()
+            if start_index - 1 < playlist_length:    
+                return redirect("App:play_song_list", playlist_id, start_index - 1)
+            else:
+                error_text = "ERROR: Only " + str(playlist_length) + " songs in " + playlist.title       
+
+        playlist_data = get_playlist_data(request.user, owner_only=False)
+        playlist_data['error'] = error_text
         # render the template
-        return render(request, 'show_playlists.html', playlist_data)      
+        return render(request, 'show_playlists.html', playlist_data)     
         
 
 def user_playlists(request):
-    ''' shows all the Playlists in the database. '''
+    ''' shows all the Playlists in the database owned by the current user. '''
     if not request.user.is_authenticated:
         logger.warning("User is not authenticated - redirect to login page")
         return redirect('login')
     else:
-        playlist_data = show_playlists(request.user, owner_only=True)
+        error_text = ""
+        if request.method == "POST":
+            start_index = int(request.POST.get("start_song"))
+            playlist_id = int(request.POST.get("playlist_id"))
+            playlist = Playlist.objects.get(pk=playlist_id)
+            playlist_length = playlist.number_of_songs()
+            if start_index - 1 < playlist_length:    
+                return redirect("App:play_song_list", playlist_id, start_index - 1)
+            else:
+                error_text = "ERROR: Only " + str(playlist_length) + " songs in " + playlist.title       
+
+        playlist_data = get_playlist_data(request.user, owner_only=True)
+        playlist_data['error'] = error_text
         # render the template
-        return render(request, 'show_playlists.html', playlist_data)   
+        return render(request, 'show_playlists.html', playlist_data)      
