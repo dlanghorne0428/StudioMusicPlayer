@@ -41,9 +41,9 @@ def play_song_list(request, playlist_id, start_index=0):
             is_feature_list.append(True)
         else:
             is_feature_list.append(False)
-    
+          
     # convert max_duration to seconds for javascript player
-    if playlist.category == 'Norm':
+    if playlist.category == 'Norm' or playlist.category == 'Solos':
         logger.info("No time limit on songs")
         max_song_duration_in_sec = None
     else:

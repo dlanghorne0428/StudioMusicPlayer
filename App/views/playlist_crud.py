@@ -472,7 +472,7 @@ def edit_playlist(request, playlist_id):
                 playlist.max_song_duration = None
                 form.save()
                 
-                if playlist.category != 'Norm':
+                if playlist.category == 'Party' or playlist.category == 'Show':
                     my_error = playlist.get_category_display() + " playlists must have a song time limit."
                     logger.warning(my_error)
                     # ask the user to set a time limit
@@ -483,6 +483,12 @@ def edit_playlist(request, playlist_id):
                         'form': form,
                         'error': my_error, 
                     })
+                
+            elif playlist.category == 'Norm' or playlist.category == 'Solos':
+                my_error = "Correcting " + playlist.get_category_display() + " playlists to not have a song time limit"
+                logger.warning(my_error)                
+                playlist.max_song_duration = None
+                form.save()                
                            
             # redirect to show playlists
             return redirect('App:user_playlists')
