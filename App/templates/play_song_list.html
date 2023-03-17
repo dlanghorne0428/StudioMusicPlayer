@@ -20,6 +20,11 @@
           <span>- </span>
           <span data-amplitude-song-info="dance_type"></span>
         </h1>
+      {% elif playlist_info.category == 'Solos' %}
+        <h1 class="dance-type-smaller text-center">
+          <span>Solo </span>
+          <span id="id-heat-number">?</span>
+        </h1>      
       {% else %}
         <h1 class="dance-type text-center"><span data-amplitude-song-info="dance_type"></span></h1>
       {% endif %}
@@ -52,6 +57,9 @@
           {% if playlist_info.category == 'Show' %}
             <span class="song-container-primary">Heat {{forloop.counter}}</span>
             <span class="song-container-secondary" data-amplitude-song-info="dance_type" data-amplitude-song-index="{{ i }}"></span>
+          {% elif playlist_info.category == 'Solos' %}
+            <span class="song-container-primary">Solo {{forloop.counter}}</span>
+            <span class="song-container-secondary" data-amplitude-song-info="name" data-amplitude-song-index="{{ i }}"></span>
           {% else %}
             <span class="song-container-primary" data-amplitude-song-info="dance_type" data-amplitude-song-index="{{ i }}"></span>
             <span class="song-container-secondary" data-amplitude-song-info="name" data-amplitude-song-index="{{ i }}"></span>
@@ -96,14 +104,14 @@
   
     <div class="col-4">
       <!-- right section has info about the current playlist and link back to all playlists page -->
-      <p class="text-info my-1"><span>Playlist: </span>
+      <p class="text-info my-1"><span> {{ playlist_info.get_category_display }} Playlist: </span>
          <span data-amplitude-playlist-info="title" data-amplitude-playlist="the_list"></span>
          <span><a href="{% url 'App:edit_playlist' playlist_info.id %}">Edit</a></span>
       </p>
-      {% if playlist_info.category != 'Norm' %}
+      {% if playlist_info.category == 'Party' or playlist_info.category == 'Show' %}
         <p class="text-info my-2" id="timelimit">Song time limit: {{ playlist_info.max_song_duration|time:"i:s" }}</p>
       {% endif %}
-      {% if playlist_info.category == 'Show' %}
+      {% if playlist_info.category == 'Show' or playlist_info.category == 'Solos' %}
         <p class="text-info my-1">Pause before playing next track</p>
       {% else %}
          <p class="text-info my-1">Next track played automatically</p>
@@ -225,7 +233,7 @@
           
           if (played > 1) {
           
-            {% if playlist_info.category != 'Norm' %} 
+            {% if playlist_info.category == 'Party' or playlist_info.category == 'Show' %} 
               if ( is_feature ) {
                 /* hide the time limit paragraph, and play entire song except for last second */ 
                 time_limit_para.setAttribute('hidden','');
@@ -278,7 +286,7 @@
                   //console.log("setting volume to", new_volume);
                   volume_control.value = new_volume; 
   
-                  {% if playlist_info.category == 'Show' %}
+                  {% if playlist_info.category == 'Show' or playlist_info.category == 'Solos' %}
                     /* playlist not auto-continue, so pause after fading complete */
                     Amplitude.pause();
                   {% else %}
@@ -317,7 +325,7 @@
           Amplitude.setVolume(startVolume);
           console.log("setting volume to ", startVolume);
           volume_control.value = startVolume; 
-          {% if playlist_info.category != 'Norm' %}
+          {% if playlist_info.category == 'Party' or playlist_info.category == 'Show' %}
             time_limit_para.style.backgroundColor = 'transparent';    
           {% endif %}
 
@@ -334,7 +342,7 @@
         }
       },
       
-      {% if playlist_info.category == 'Show' %}
+      {% if playlist_info.category == 'Show' or playlist_info.category == 'Solos' %}
         "continue_next": false,
       {% else %}
       /* once entire song played and playlist set to play next song automatically */

@@ -8,6 +8,7 @@ CATEGORY_CHOICES = [
     ("Norm", "Normal"),     # no time limit per song, play next
     ("Party", "Party"),     # time limit per song, play next
     ("Show", "Showcase"),   # time limit per song, pause before next
+    ("Solos", "Solos"),      # no time limit per song, pause before next
     ]
 
 
