@@ -55,7 +55,7 @@
           <td>{{ playlist.get_category_display}}</td>
           
           <!-- if max song duration is set, display in minutes:seconds format -->
-          {% if playlist.category != 'Norm' and playlist.max_song_duration %}
+          {% if playlist.category == 'Party' or playlist.category == 'Show' and playlist.max_song_duration %}
             <td>{{ playlist.max_song_duration|time:"i:s" }}</td>
           {% else %}
             <td>None</td>
