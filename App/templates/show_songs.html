@@ -16,7 +16,7 @@
     </div>
     
     <!-- link to create a song from an audio file -->
-    {% if not streaming %}
+    {% if not streaming and not index %}
       <div class="text-center my-2">
         <a class="btn btn-primary" href="{% url 'App:add_song' %}">Add Song From File</a>
         {% if showing_no_art %}
@@ -25,10 +25,10 @@
           <a class="btn btn-primary" href="{% url 'App:show_songs_no_cover_art' %}">Show Songs without Cover Art</a>
         {% endif %}
       </div>
-    </div>
-  {% endif %}
+    {% endif %}
+  </div>
   
-   <!-- next row in bootstrap grid is a table, with dark borders --> 
+  <!-- next row in bootstrap grid is a table, with dark borders --> 
   <div class="col-12 border border-dark">
   <table class="table table-bordered table-sm">
     <!-- column headers have a dark background -->
@@ -38,8 +38,12 @@
         <th class="text-center"style="width:33%">Title</th>
         <th class="text-center"style="width:25%">Artist</th>
         <th class="text-center"style="width:15%">Dance</th>
-        <th class="text-center"style="width:15%">Holiday</th>
-        <th class="text-center"style="width:12%">Action</th>
+        {% if not index %}
+          <th class="text-center"style="width:15%">Holiday</th>
+          <th class="text-center"style="width:12%">Action</th>
+        {% else %}
+          <th class="text-center"style="width:27%">Action</th>
+        {% endif %}
       </tr>
     </thead>
     <tbody>
@@ -55,7 +59,9 @@
             <td id='title-filter' class="text-center">{{ filter.form.title }}</td>
             <td id='artist-filter' class="text-center">{{ filter.form.artist }}</td>
             <td id='dance-type-filter' class="text-center">{{ filter.form.dance_type }}</td>
-            <td id='holiday-filter' class="text-center">{{ filter.form.holiday }}</td>
+            {% if not index %}
+              <td id='holiday-filter' class="text-center">{{ filter.form.holiday }}</td>
+            {% endif %}
             <!-- the last button is used to submit filter data -->
             <!-- name attribute cannot be submit, so javascript submit function will work -->
             <td class="text-center">
@@ -76,41 +82,49 @@
         <td class="text-center">{{ song.artist }}</td>
         <!-- display the "readable" string for the dance type and holiday -->
         <td class="text-center">{{ song.get_dance_type_display }}</td>
-        <td class="text-center">{{ song.get_holiday_display }}</td>
+        {% if not index %}
+          <td class="text-center">{{ song.get_holiday_display }}</td>
+        {% endif %}
         
         <!-- final column has the action buttons -->
         <td class="text-center">
           {% if user.is_superuser or user.is_teacher %}
             <!-- only admin users or teachers can play or edit songs -->
             <a class="btn btn-primary btn-sm" href="{% url 'App:play_song' song.id %}">Play</a>
-            <span class="dropdown">
-              <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button" 
-                      data-bs-toggle="dropdown">&hellip;       
-              </button>
-              <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="{% url 'App:update_song' song.id %}">Edit</a></li>
-                {% if song.explicit %}
-                    <li><a class="dropdown-item" href="{% url 'App:spotify_find_clean_track' song.spotify_track_id song.id %}">Find Clean Version</a></li>
-                {% endif %}
-                <li><hr class="dropdown-divider"></li>
-                
-                <li class="dropdown-header">Add to Playlist</li>
-                {% for p in playlists %}
-                  <li><a class="dropdown-item" 
-                         href="{% url 'App:add_to_playlist' p.id song.id %}">{{p.title}}</a>
-                  </li>
-                {% endfor %}
-                
-                {% if user.is_superuser %}
-                  <!-- only admin users can edit or delete a song -->
-                  <!-- force the user to confirm before deleting a song -->
+            
+            {% if index %}
+                <a class="btn btn-secondary btn-sm" href="{% url 'App:update_song' song.id %}">Edit</a>
+                <a class="btn btn-warning btn-sm" href="{% url 'App:replace_song' playlists.0.id index song.dance_type song.id %}">Select</a>
+            {% else %}
+              <span class="dropdown">
+                <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button" 
+                        data-bs-toggle="dropdown">&hellip;       
+                </button>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="{% url 'App:update_song' song.id %}">Edit</a></li>
+                  {% if song.explicit %}
+                      <li><a class="dropdown-item" href="{% url 'App:spotify_find_clean_track' song.spotify_track_id song.id %}">Find Clean Version</a></li>
+                  {% endif %}
                   <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item" href="{% url 'App:delete_song' song.id %}"
-                         onclick="return confirm('Deleting: {{song.title}}\n Are you sure?')">Delete</a>
-                  </li>
-              {% endif %}
-              </ul>
-            </span>
+                  
+                  <li class="dropdown-header">Add to Playlist</li>
+                  {% for p in playlists %}
+                    <li><a class="dropdown-item" 
+                           href="{% url 'App:add_to_playlist' p.id song.id %}">{{p.title}}</a>
+                    </li>
+                  {% endfor %}
+                  
+                  {% if user.is_superuser %}
+                    <!-- only admin users can edit or delete a song -->
+                    <!-- force the user to confirm before deleting a song -->
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{% url 'App:delete_song' song.id %}"
+                           onclick="return confirm('Deleting: {{song.title}}\n Are you sure?')">Delete</a>
+                    </li>
+                {% endif %}
+                </ul>
+              </span>
+            {% endif %}
           {% endif %}
         </td>
       </tr>

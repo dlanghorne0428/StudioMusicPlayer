@@ -99,11 +99,17 @@
             <li><a class="dropdown-item" 
                    href="{% url 'App:play_song_list' playlist.id forloop.counter0 %}">Play from here</a>
             </li>
-            <!-- allow the user to replace a song with another of the same dance style --> 
+            
+            <!-- allow the user to replace a song with another random song of the same dance style --> 
             <li><a class="dropdown-item" 
-                   href="?{% param_replace cmd="replace-song" index=forloop.counter0 %}">Replace</a>
+                   href="?{% param_replace cmd="replace-random" index=forloop.counter0 %}">Replace-Random</a>
             </li>
-     
+            
+            <!-- allow the user to select a replacement song --> 
+            <li><a class="dropdown-item" 
+                   href="?{% param_replace cmd="replace-select" index=forloop.counter0 %}">Replace-Select</a>
+            </li>     
+            
             <!-- allow the user delete a song and move all other songs up one slot -->
             <!-- force the user to confirm before deleting a song --> 
             <li><a class="dropdown-item" 

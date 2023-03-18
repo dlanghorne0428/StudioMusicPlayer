@@ -108,6 +108,13 @@ class Playlist(models.Model):
                 prev_index.save()
             selected.order = new_index
             selected.save()    
+            
+        
+    def replace_song(self, index, new_song):
+        # get the selected index in the playlist
+        target = SongInPlaylist.objects.get(playlist=self, order=index)
+        target.song = new_song
+        target.save()
         
 
     def __str__(self):

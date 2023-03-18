@@ -56,6 +56,35 @@ def show_songs(request, song_id = None):
                   })
 
 
+def replace_song(request, playlist_id, index, dance_type, song_id=None):
+    
+    if not request.user.is_authenticated:
+        logger.warning("User is not authenticated - redirect to login page")
+        return redirect('login')
+    
+    playlists = Playlist.objects.filter(pk=playlist_id)
+    
+    if song_id is None:
+        songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=True).order_by('title')) 
+        page_title = "Playlist " + playlists[0].title + ": Select new song for item " + str(index + 1)
+        streaming = False
+    
+        # render the template
+        return render(request, 'show_songs.html', {
+            'filter': songs,
+            'songs': songs.qs,
+            'playlists': playlists,
+            'streaming': streaming,
+            'index': index,
+            'page_title': page_title
+            })    
+    
+    else:
+        new_song = Song.objects.get(pk=song_id)
+        playlists[0].replace_song(index, new_song)
+        return redirect ("App:edit_playlist", playlists[0].id)
+
+
 def show_songs_no_cover_art(request):
     if not request.user.is_authenticated:
         logger.warning("User is not authenticated - redirect to login page")

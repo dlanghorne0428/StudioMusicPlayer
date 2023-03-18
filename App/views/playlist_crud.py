@@ -410,7 +410,7 @@ def edit_playlist(request, playlist_id):
             if command == 'delsong':
                 playlist.delete_song(selected.song)
                     
-            elif command == "replace-song":
+            elif command == "replace-random":
                 # find the dance style of the selected song
                 dance_style = selected.song.dance_type
                 
@@ -434,6 +434,13 @@ def edit_playlist(request, playlist_id):
                 selected.delete()
                 playlist.add_song(random_song, index)                
                 
+            elif command == 'replace-select':
+                # find the dance style of the selected song
+                dance_style = selected.song.dance_type  
+                print("Replacing " + str(selected.song))
+                # redirect to select a song
+                return redirect('App:replace_song', playlist_id, index, dance_style)  
+            
             elif command == 'feature':
                 # toggle the feature field
                 selected.feature = not(selected.feature)
