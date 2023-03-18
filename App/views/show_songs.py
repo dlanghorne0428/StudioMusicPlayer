@@ -65,7 +65,11 @@ def replace_song(request, playlist_id, index, dance_type, song_id=None):
     playlists = Playlist.objects.filter(pk=playlist_id)
     
     if song_id is None:
-        songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=True).order_by('title')) 
+        if dance_type == "gen":
+            songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=True).order_by('title')) 
+        else:
+            songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=True, dance_type=dance_type).order_by('title')) 
+            
         page_title = "Playlist " + playlists[0].title + ": Select new song for item " + str(index + 1)
         streaming = False
     
@@ -75,13 +79,13 @@ def replace_song(request, playlist_id, index, dance_type, song_id=None):
             'songs': songs.qs,
             'playlists': playlists,
             'streaming': streaming,
-            'index': index,
+            'index': index + 1,
             'page_title': page_title
             })    
     
     else:
         new_song = Song.objects.get(pk=song_id)
-        playlists[0].replace_song(index, new_song)
+        playlists[0].replace_song(index - 1, new_song)
         return redirect ("App:edit_playlist", playlists[0].id)
 
 

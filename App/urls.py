@@ -23,6 +23,7 @@ urlpatterns = [
     path("user-playlists", views.user_playlists, name="user_playlists"),
     path("playlists/create/", views.create_playlist, name="create_playlist"), 
     path("playlists/create/<int:random>", views.create_playlist, name="create_playlist"), 
+    path("playlists/create-from-json", views.create_playlist_from_json, name="create_playlist_from_json"),
     path("playlists/build-random/<int:playlist_id>", views.build_random_playlist, name="build_random_playlist"),
     path("playlists/delete/<int:playlist_id>", views.delete_playlist, name="delete_playlist"),
     path("playlists/edit/<int:playlist_id>", views.edit_playlist, name="edit_playlist"),
