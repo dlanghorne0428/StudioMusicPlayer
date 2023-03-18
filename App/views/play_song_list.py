@@ -34,8 +34,10 @@ def play_song_list(request, playlist_id, start_index=0):
     
     # build a list that indicates if a song is featured in this playlist    
     is_feature_list = list()
-    for song in song_list:
-        song_in_playlist = SongInPlaylist.objects.get(song=song, playlist=playlist)
+    #for song in song_list:
+    for i in range(len(song_list)):
+        #song_in_playlist = SongInPlaylist.objects.get(song=song, playlist=playlist)
+        song_in_playlist = SongInPlaylist.objects.get(playlist=playlist, order=i)
         if song_in_playlist.feature:
             logger.info(song_in_playlist.song.title + " is a feature song")
             is_feature_list.append(True)
