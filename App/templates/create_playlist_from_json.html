@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+<div class="row">
+
+
+  <div class="col-12">  
+
+    <!-- Page title and placeholder for errors -->
+    <h2 class="text-center">{{page_title}}</h2>
+    <h4 class="text-center">{{ error }}</h4>
+
+    <!-- form for the user to provide information about the new song -->
+    <form class="text-center" enctype="multipart/form-data" method="POST">
+      {% csrf_token %}  <!-- required by django -->
+      {{ form.as_p }}   <!-- form contents passed into the template from the model -->
+      
+      <!-- This button submits info to the view -->
+      <button class="btn btn-primary" type="submit">Enter</button>
+      
+      <!-- This link in the form of a button allows the user to go back to the list of playlists -->
+      <a class="btn btn-secondary" href="{% url 'App:all_playlists' %}">Cancel</a>
+      
+    </form>
+    <br />
+  </div
+  
+</div>
+
+{% endblock %}

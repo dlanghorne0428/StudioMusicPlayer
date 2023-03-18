@@ -214,21 +214,22 @@ class RandomPlaylistForm(Form):
         # add them to the form using a loop
         for dance_type_tuple in DANCE_TYPE_CHOICES: 
             
-            # constuct field name based on dance type abbreviation (e.g. 'Cha')
-            field_name = '%s_songs' % (dance_type_tuple[0], )
+            if dance_type_type[0] != "gen":
+                # constuct field name based on dance type abbreviation (e.g. 'Cha')
+                field_name = '%s_songs' % (dance_type_tuple[0], )
+                
+                self.fields[field_name] = forms.IntegerField(
+                    # field label is the readable name for this dance type
+                    label = dance_type_tuple[1],
+                    min_value = 0,
+                    max_value = 100, 
+                    initial = self.prefs['counts'][dance_type_tuple[0]],
+                    # right-justify the text in these input boxes
+                    widget = NumberInput(attrs={'class': 'text-end'}),
+                    required = True)  
             
-            self.fields[field_name] = forms.IntegerField(
-                # field label is the readable name for this dance type
-                label = dance_type_tuple[1],
-                min_value = 0,
-                max_value = 100, 
-                initial = self.prefs['counts'][dance_type_tuple[0]],
-                # right-justify the text in these input boxes
-                widget = NumberInput(attrs={'class': 'text-end'}),
-                required = True)  
-            
-            # build a list of field names for use in column layout
-            field_names.append(field_name)
+                # build a list of field names for use in column layout
+                field_names.append(field_name)
         
         # these fields allow the user to enter preferences for each holiday
         # add them to the form using a loop            
@@ -359,6 +360,15 @@ class RandomPlaylistForm(Form):
             )
         )    
     
+
+class PlaylistUploadForm(forms.Form):
+    ''' form to enter information for a playlist '''
+    title = forms.CharField(
+        label = "Playlist Title",
+        max_length = 50,     # ensure the field is wide enough to show the title
+        required = True)
+    file = forms.FileField()
+
         
 # based on example at: https://github.com/sibtc/django-multiple-user-types-example        
 class TeacherSignUpForm(UserCreationForm):

@@ -3,7 +3,9 @@ from django.conf import settings
 from django.core.paginator import Paginator
 
 import os
+import json
 import math
+from base64 import b64encode
 import random
 from datetime import time
 
@@ -11,7 +13,7 @@ from datetime import time
 from App.models.song import Song, DANCE_TYPE_CHOICES, DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS, DANCE_TYPE_TEMPOS, HOLIDAY_DEFAULT_USAGE
 from App.models.user import User
 from App.models.playlist import Playlist, SongInPlaylist
-from App.forms import PlaylistInfoForm, RandomPlaylistForm
+from App.forms import PlaylistInfoForm, RandomPlaylistForm, PlaylistUploadForm
 
 
 import logging
@@ -88,9 +90,67 @@ def create_playlist(request, random=None):
                                     'page_title': page_title, 
                                     'form':PlaylistInfoForm(), 
                                     'error': "Invalid data submitted."})            
+
+def create_playlist_from_json(request, json_filename="../../../Desktop/spring_showcase.json"):
+    
+    if not (request.user.is_superuser or request.user.is_teacher):
+        logger.warning(request.user.username + " not authorized to create playlists")
+        return render(request, 'permission_denied.html')
+    
+    if request.method == "POST":
+        form = PlaylistUploadForm(request.POST, request.FILES)
+        
+        if form.is_valid():
+            uploaded_file = request.FILES['file']
+
+            json_data = ''
+            for line in uploaded_file:
+                json_data = json_data + line.decode()  # "str_text" will be of `str` type
+        
+            # create new playlist
+            new_playlist = Playlist()
+            # set playlist owner to current user
+            user = request.user
+            new_playlist.owner = user 
+            new_playlist.title = form.cleaned_data['title'] 
+            new_playlist.category = 'Show'
+            new_playlist.max_song_duration = time(minute=1, second=15)
+            new_playlist.streaming = False   # for now     
+            new_playlist.save()
+            
+            #with open(json_filename, "r") as read_file:
+            print("Converting JSON encoded data into Python dictionary")
+            developer = json.loads(json_data) #json.load(read_file)    
+            
+            for h in developer['heats']:
+                if h['dance_style'] in ['Mambo', 'Salsa']:
+                    the_style = DANCE_TYPE_CHOICES[8][0]               
+                else:
+                    for d in DANCE_TYPE_CHOICES:
+                        if h['dance_style'] == d[1]:
+                            the_style = d[0]
+                            break
+                
+                placeholder_song = Song.objects.get(title="{Placeholder}", dance_type=the_style)
+                new_playlist.add_song(placeholder_song, h['heat']-1)            
+                
+                if 'feature' in h:
+                    current_song = SongInPlaylist.objects.get(playlist=new_playlist, order=h['heat']-1)
+                    current_song.feature = True
+                    current_song.save()
+            
+            return redirect("App:edit_playlist", new_playlist.id)
+        else:
+            error = "Form data not valid"
+            return render(request, "create_playlist_from_json.html", {'page_title': page_title, 'form': form, 'error': error})            
+        
+    else:  #GET
+        form = PlaylistUploadForm()
+        page_title = 'Specify title and select JSON file for new playlist'
+        return render(request, "create_playlist_from_json.html", {'page_title': page_title, 'form': form})
     
 
-def pick_random_song(playlist, dance_type, focus_holiday=None):
+def pick_random_song(playlist, dance_type=None, index=None, focus_holiday=None):
     '''pick a random song of this dance type and add it to the playlist.
       if focus_holiday is set, limit the choices to holiday songs of that type, if any.'''
     # initialize return variable
@@ -150,7 +210,7 @@ def pick_random_song(playlist, dance_type, focus_holiday=None):
     else:
         # pick a random song from the available list - all equal probability and add it to the playlist
         random_song = available_songs[random.randrange(len(available_songs))]
-        playlist.add_song(random_song)
+        playlist.add_song(random_song, index)
         logger.info("Added " + str(random_song) + " to playlist " + str(playlist))
     
     # return indication that a requested holiday song was not selected

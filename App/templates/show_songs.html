@@ -25,6 +25,10 @@
           <a class="btn btn-primary" href="{% url 'App:show_songs_no_cover_art' %}">Show Songs without Cover Art</a>
         {% endif %}
       </div>
+    {% elif index %}
+      <div class="text-center my-2">
+        <a class="btn btn-secondary" href="{% url 'App:edit_playlist' playlists.0.id %}">Cancel Replacement</a>  
+      </div>
     {% endif %}
   </div>
   
