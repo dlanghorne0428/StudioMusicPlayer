@@ -290,10 +290,12 @@
                   {% if playlist_info.category == 'Show' or playlist_info.category == 'Solos' %}
                     /* playlist not auto-continue, so pause after fading complete */
                     Amplitude.pause();
-                    /* find hidden link to next song and generate a click event */
-                    var next_index_id = 'skip-link-' + String(index + 1)
-                    var hidden_link = document.getElementById(next_index_id)
-                    hidden_link.click()
+                    if (index + 1 < {{ playlist_indices|length }}) {
+                      /* find hidden link to next song and generate a click event */
+                      var next_index_id = 'skip-link-' + String(index + 1)
+                      var hidden_link = document.getElementById(next_index_id)
+                      hidden_link.click()
+                    }
                   {% else %}
                     /* delay two additional seconds then play next */
                     if (played - 3 > {{ max_song_duration_in_sec }}) {
