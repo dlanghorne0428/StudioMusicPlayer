@@ -50,8 +50,9 @@ def add_song(request):
             return render(request, 'add_song.html', {'form': form, 'error': my_error})
         
         # save the song instance into the database and get the path to the audio file uploaded by the form
+        content_type = request.FILES['audio_file'].content_type
         song_instance = form.save() 
-        logger.info("Saving " + str(form.cleaned_data))
+        logger.debug("Saving " + str(form.cleaned_data))
         audio_file_path = song_instance.audio_file.path
     
         # process file with mutagen and determine file type
@@ -62,6 +63,9 @@ def add_song(request):
             return render(request, 'add_song.html', {'form': form, 'error': my_error}) 
         else:
             logger.debug(str(metadata.mime))
+            artist = 'Unknown Artist'
+            title = 'Unknown Title'
+            pict = None
         
         if ("audio/mp4" in metadata.mime):
             logger.debug("MP4 metadata")
@@ -70,16 +74,11 @@ def add_song(request):
             tags = mp4_data.tags
 
             # get the artist, title, duration and picture from MP4 tags
-            if tags is None:
-                artist = 'Unknown Artist'
-                title = 'Unknown Title'
-                pict = None
-            else:
+            if tags is not None:
                 artist = tags.get("\xa9ART")[0]
                 title = tags.get("\xa9nam")[0]
                 if tags.get("covr") is None:
                     logger.info("No cover art in file")
-                    pict = None
                 else:
                     pict = tags.get("covr")[0]
             
@@ -90,24 +89,61 @@ def add_song(request):
             # get the artist, title, duration and picture from MP3 tags
             if 'artist' in id3_data:
                 artist = id3_data["artist"][0]
-            else:
-                artist = 'Unknown Artist'
+
             if 'title' in id3_data:
                 title = id3_data["title"][0]
-            else:
-                title = 'Unknown Title'
+
             info = metadata.info
             duration =  info.length #seconds
             tags = ID3(audio_file_path)
             apic_list = tags.getall("APIC")
             if len(apic_list) == 0:
                 logger.info("No cover art in file")
-                pict = None
             else:
                 pict = apic_list[0].data 
                 
+        elif content_type == 'audio/x-wav':
+            logger.debug("WAV metadata " + str(metadata))
+        
+            # get the artist, title, duration from ID3 tags, WAV files have no cover art
+            if 'TPE1' in metadata:
+                artist_frame = metadata['TPE1']
+                artist = artist_frame.text[0]
+
+            if 'TIT2' in metadata:
+                title_frame = metadata['TIT2']
+                title = title_frame.text[0]
+            
+            logger.debug(artist +  ' ' + str(title))   
+        
+        elif content_type == 'video/ogg' or content_type == 'audio/ogg':
+            logger.debug("OGG metadata " + str(metadata))
+            if 'artist' in metadata:
+                artist = metadata['artist'][0]
+
+            if 'title' in metadata:
+                title = metadata['title'][0]
+                
+            logger.debug(artist +  ' ' + str(title))  
+        
+        elif content_type == 'audio/flac':
+            my_error = "Debugging FLAC audio"
+            logger.debug("FLAC metadata " + str(metadata))
+            
+            if 'artist' in metadata:
+                artist = metadata['artist'][0]
+
+            if 'title' in metadata:
+                title = metadata['title'][0]            
+            flac_data = mutagen.flac.FLAC(audio_file_path)
+
+            pict = flac_data.pictures[0].data
+
+            logger.debug(artist +  ' ' + str(title))            
+            
         else:  # if some other file type, return an error. 
-            my_error = "Unknown audio file type."
+            my_error = "Unknown audio file type " + str(content_type)
+            logger.info("Unknown audio " + str(metadata))
             logger.warning(my_error)
             return render(request, 'add_song.html', {'form': form, 'error': my_error})
         
@@ -126,7 +162,7 @@ def add_song(request):
         filename, ext = os.path.splitext(basename)
         new_basename = filename + '.jpg'
         relative_pathname = 'img/' + new_basename
-        logger.info("Image file is " + relative_pathname)
+        logger.debug("Image file is " + relative_pathname)
         
         if pict is None:
             # download cover art and save into "img" subfolder under MEDIA_ROOT
