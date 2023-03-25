@@ -105,9 +105,9 @@
   
     <div class="col-4">
       <!-- right section has info about the current playlist and link back to all playlists page -->
-      <p class="text-info my-1"><span> {{ playlist_info.get_category_display }} Playlist: </span>
+      <p class="text-info my-1"><span> {{ playlist_info.get_category_display }} Mode: </span>
          <span data-amplitude-playlist-info="title" data-amplitude-playlist="the_list"></span>
-         <span><a href="{% url 'App:edit_playlist' playlist_info.id %}">Edit</a></span>
+         <span><a href="{% url 'App:edit_playlist' playlist_info.id %}">Edit Playlist</a></span>
       </p>
       {% if playlist_info.category == 'Party' or playlist_info.category == 'Show' %}
         <p class="text-info my-2" id="timelimit">Song time limit: {{ playlist_info.max_song_duration|time:"i:s" }}</p>
@@ -117,7 +117,7 @@
       {% else %}
          <p class="text-info my-1">Next track played automatically</p>
       {% endif %}
-      <p class="text-center my-2"><a href="{% url 'App:all_playlists' %}">Back to All Playlists</a></p>
+      <p class="text-center my-2"><a href="{% url 'App:user_playlists' %}">Back to Your Playlists</a></p>
     </div>
   </div>
 
@@ -152,6 +152,15 @@
     function updateHeatNumber(index) {
         var current_heat_readable = String(index + 1);
         heat_number_elem.innerHTML = current_heat_readable;
+    };
+    
+    function skipToSong(index) {
+      if (index < {{ playlist_indices|length }}) {
+        /* find hidden link to next song and generate a click event */
+        var next_index_id = 'skip-link-' + String(index)
+        var hidden_link = document.getElementById(next_index_id)
+        hidden_link.click()
+      }
     };
   
     const startVolume = 80 /* percent */
@@ -222,7 +231,6 @@
         
         'timeupdate': function(){
         
-          /* is this song a feature? */
           index = Amplitude.getActiveIndex();
           var is_feature = is_feature_list[index];
           var fading_limit;
@@ -235,6 +243,7 @@
           if (played > 1) {
           
             {% if playlist_info.category == 'Party' or playlist_info.category == 'Show' %} 
+              /* is this song a feature? */
               if ( is_feature ) {
                 /* hide the time limit paragraph, and play entire song except for last second */ 
                 time_limit_para.setAttribute('hidden','');
@@ -270,6 +279,11 @@
             progress_bar.setAttribute("value", pct_played);
             
             if (played > fading_limit) {
+            
+              if ( is_feature ) {
+                skipToSong(index + 1);
+              }
+              
               /* highlight the time limit text when time has expired */
               time_limit_para.style.backgroundColor = 'red';
                   
@@ -290,12 +304,7 @@
                   {% if playlist_info.category == 'Show' or playlist_info.category == 'Solos' %}
                     /* playlist not auto-continue, so pause after fading complete */
                     Amplitude.pause();
-                    if (index + 1 < {{ playlist_indices|length }}) {
-                      /* find hidden link to next song and generate a click event */
-                      var next_index_id = 'skip-link-' + String(index + 1)
-                      var hidden_link = document.getElementById(next_index_id)
-                      hidden_link.click()
-                    }
+                    skipToSong(index + 1);
                   {% else %}
                     /* delay two additional seconds then play next */
                     if (played - 3 > {{ max_song_duration_in_sec }}) {
