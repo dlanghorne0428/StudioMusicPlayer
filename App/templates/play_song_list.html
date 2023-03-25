@@ -53,6 +53,7 @@
     <div class="col-4 up-next-list">
       <!-- upcoming songs in right section, show dance_type and title only -->
       {% for i in playlist_indices %}
+        <a hidden id="skip-link-{{i}}" href="{% url 'App:play_song_list' playlist_info.id i %}">Skip Here</a>
         <div class="song-meta-container" id="index-{{i}}">
           {% if playlist_info.category == 'Show' %}
             <span class="song-container-primary">Heat {{forloop.counter}}</span>
@@ -289,6 +290,10 @@
                   {% if playlist_info.category == 'Show' or playlist_info.category == 'Solos' %}
                     /* playlist not auto-continue, so pause after fading complete */
                     Amplitude.pause();
+                    /* find hidden link to next song and generate a click event */
+                    var next_index_id = 'skip-link-' + String(index + 1)
+                    var hidden_link = document.getElementById(next_index_id)
+                    hidden_link.click()
                   {% else %}
                     /* delay two additional seconds then play next */
                     if (played - 3 > {{ max_song_duration_in_sec }}) {
