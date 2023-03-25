@@ -2,7 +2,8 @@ from django.db import models
 from django.utils.text import get_valid_filename, slugify
 
 import os
-
+import logging
+logger = logging.getLogger("django")
 
 DANCE_TYPE_CHOICES = [
     ("Bac", "Bachata"),
@@ -102,9 +103,10 @@ def good_filename(filename):
     '''slugify replaces whitespace with a dash and removes everything but alphanumerics,
        underscores and dashes.
        get_valid_filename finds an available filename to avoid duplicates.'''
-    print(filename)
+    logger.debug("Initial filename is " + filename)
     temp_filename = get_valid_filename(filename)
-    print(temp_filename)
+    if temp_filename != filename:
+        logger.debug("Good filename is " + temp_filename)
     filename, ext = os.path.splitext(temp_filename)
     filename = slugify(filename)
     if ext:
