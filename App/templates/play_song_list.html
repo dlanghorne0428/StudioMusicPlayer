@@ -93,9 +93,9 @@
 
       <!-- Previous, Play/Pause, Next, Volume/Mute, Volume Slider -->
       <div class="control-container text-center">
-        <div class="amplitude-prev" id="prev"></div>
+        <div class="smp-prev" id="smp_reverse"></div>
         <div class="amplitude-play-pause" amplitude-main-play-pause="true" id="play-pause"></div>
-        <div class="amplitude-next" id="next"></div>
+        <div class="smp-next" id="smp_forward"></div>
         
         <div class="amplitude-mute"></div>
         <input type="range" class="amplitude-volume-slider" id="volume_control" step="1"/>
@@ -155,7 +155,7 @@
     };
     
     function skipToSong(index) {
-      if (index < {{ playlist_indices|length }}) {
+      if (index < {{ playlist_indices|length }} && index > -1) {
         /* find hidden link to next song and generate a click event */
         var next_index_id = 'skip-link-' + String(index)
         var hidden_link = document.getElementById(next_index_id)
@@ -183,8 +183,6 @@
     
     Amplitude.init({
       "bindings": {
-        37: 'prev',         /* left arrow */
-        39: 'next',         /* right arrow */
         32: 'play_pause'    /* spacebar */
       },
       
@@ -370,6 +368,26 @@
     window.onkeydown = function(e) {
         return !(e.keyCode == 32);
     };
+
+    /* handles a click on the reverse button */
+    document.getElementById('smp_reverse').addEventListener('click', function( e ){
+      var index = Amplitude.getActiveIndex();
+      if (Amplitude.getPlayerState() == "playing") {
+        Amplitude.skipTo(0, index);
+      } else {
+        skipToSong(index - 1);
+      }
+    });
+
+    /* handles a click on the forward button */
+    document.getElementById('smp_forward').addEventListener('click', function( e ){
+      var index = Amplitude.getActiveIndex();
+      if (Amplitude.getPlayerState() == "playing") {
+        Amplitude.next();
+      } else {
+        skipToSong(index + 1);
+      }
+    });
 
     /* Handles a click on the song played progress bar.*/
     document.getElementById('song-played-progress').addEventListener('click', function( e ){

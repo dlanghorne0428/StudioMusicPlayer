@@ -139,7 +139,7 @@ div.control-container {
 }
 
 /****** Previous/Next  *****/
-div.control-container div.amplitude-prev {
+div.control-container div.smp-prev {
     width: 74px;
     height: 74px;
     cursor: pointer;
@@ -150,7 +150,7 @@ div.control-container div.amplitude-prev {
     background-size: cover; 
 }
 
-div.control-container div.amplitude-next {
+div.control-container div.smp-next {
     width: 74px;
     height: 74px;
     cursor: pointer;
