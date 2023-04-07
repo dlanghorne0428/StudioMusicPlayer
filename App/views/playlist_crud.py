@@ -201,6 +201,9 @@ def pick_random_song(playlist, dance_type=None, index=None, focus_holiday=None):
                 elif playlist.preferences['holiday_usage'][s.holiday] == "Ex":
                     logger.debug("Excluding song: " + s.get_holiday_display())
                     continue
+            # don't allow placeholder songs
+            if s.title.startswith("{Place"):
+                continue
             # prevent songs from taking two spots in the same playlist
             if s.playlist_set.filter(id=playlist.id).count() == 0:
                 available_songs.append(s)
@@ -290,8 +293,11 @@ def build_random_playlist(request, playlist_id):
         # get song_counts entered by the user from the form
         songs_remaining = dict()
         for key in DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS:
-            form_field = '%s_songs' % (key, )
-            songs_remaining[key] = form_data[form_field]
+            if key == "gen":
+                songs_remaining[key] = 0
+            else:
+                form_field = '%s_songs' % (key, )
+                songs_remaining[key] = form_data[form_field]
             
         # get holiday usage data from the form and check if this is a holiday-focused playlist 
         focus_holiday = None
