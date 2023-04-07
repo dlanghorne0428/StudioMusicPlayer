@@ -19,12 +19,7 @@
           <span id="id-heat-number">?</span>
           <span>- </span>
           <span data-amplitude-song-info="dance_type"></span>
-        </h1>
-      {% elif playlist_info.category == 'Solos' %}
-        <h1 class="dance-type-smaller text-center">
-          <span>Solo </span>
-          <span id="id-heat-number">?</span>
-        </h1>      
+        </h1>   
       {% else %}
         <h1 class="dance-type text-center"><span data-amplitude-song-info="dance_type"></span></h1>
       {% endif %}
@@ -58,9 +53,6 @@
           {% if playlist_info.category == 'Show' %}
             <span class="song-container-primary">Heat {{forloop.counter}}</span>
             <span class="song-container-secondary" data-amplitude-song-info="dance_type" data-amplitude-song-index="{{ i }}"></span>
-          {% elif playlist_info.category == 'Solos' %}
-            <span class="song-container-primary">Solo {{forloop.counter}}</span>
-            <span class="song-container-secondary" data-amplitude-song-info="name" data-amplitude-song-index="{{ i }}"></span>
           {% else %}
             <span class="song-container-primary" data-amplitude-song-info="dance_type" data-amplitude-song-index="{{ i }}"></span>
             <span class="song-container-secondary" data-amplitude-song-info="name" data-amplitude-song-index="{{ i }}"></span>
@@ -112,7 +104,7 @@
       {% if playlist_info.category == 'Party' or playlist_info.category == 'Show' %}
         <p class="text-info my-2" id="timelimit">Song time limit: {{ playlist_info.max_song_duration|time:"i:s" }}</p>
       {% endif %}
-      {% if playlist_info.category == 'Show' or playlist_info.category == 'Solos' %}
+      {% if playlist_info.category == 'Show' %}
         <p class="text-info my-1">Pause before playing next track</p>
       {% else %}
          <p class="text-info my-1">Next track played automatically</p>
@@ -299,7 +291,7 @@
                   //console.log("setting volume to", new_volume);
                   volume_control.value = new_volume; 
   
-                  {% if playlist_info.category == 'Show' or playlist_info.category == 'Solos' %}
+                  {% if playlist_info.category == 'Show' %}
                     /* playlist not auto-continue, so pause after fading complete */
                     Amplitude.pause();
                     skipToSong(index + 1);
@@ -356,7 +348,7 @@
         }
       },
       
-      {% if playlist_info.category == 'Show' or playlist_info.category == 'Solos' %}
+      {% if playlist_info.category == 'Show' %}
         "continue_next": false,
       {% else %}
       /* once entire song played and playlist set to play next song automatically */

@@ -21,11 +21,6 @@
             <span>- </span>
             <span>{{song.get_dance_type_display}}</span>
           </h1>
-        {% elif playlist_info.category == 'Solos' %}
-          <h1 class="dance-type-smaller text-center" id="{{forloop.counter0}}-dance-type-index">
-            <span>Solo </span>
-            <span id="id-heat-number">{{forloop.counter}}</span>
-          </h1>
         {% else %}
           <h1 class="dance-type text-center" id="{{forloop.counter0}}-dance-type-index">{{song.get_dance_type_display}}</h1>
         {% endif %}
@@ -126,7 +121,7 @@
         <p class="text-info my-2" id="timelimit">Song time limit: {{ playlist_info.max_song_duration|time:"i:s" }}</p>
         <p class="text-info my-2" id="feature-text" hidden>Featured song</p>
       {% endif %}
-      {% if playlist_info.category == 'Show' or playlist_info.category == 'Solos' %} 
+      {% if playlist_info.category == 'Show' %} 
         <p class="text-info my-1">Pause before playing next track</p>
       {% else %}
         <p class="text-info my-1">Next track played automatically</p>
@@ -488,7 +483,7 @@
             volume_control.value = saved_volume;
         });
           if (saved_volume == 0) {
-          {% if playlist_info.category == 'Show' or playlist_info.category == 'Solos' %}  
+          {% if playlist_info.category == 'Show' %}  
             pause_the_song(between_songs=true)
           {% else %}
             play_next_song()
