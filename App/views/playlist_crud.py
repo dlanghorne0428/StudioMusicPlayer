@@ -551,7 +551,7 @@ def edit_playlist(request, playlist_id):
                         'error': my_error, 
                     })
                 
-            elif playlist.category == 'Norm' or playlist.category == 'Solos':
+            elif playlist.category == 'Norm':
                 my_error = "Correcting " + playlist.get_category_display() + " playlists to not have a song time limit"
                 logger.warning(my_error)                
                 playlist.max_song_duration = None
