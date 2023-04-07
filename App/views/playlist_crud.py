@@ -290,8 +290,11 @@ def build_random_playlist(request, playlist_id):
         # get song_counts entered by the user from the form
         songs_remaining = dict()
         for key in DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS:
-            form_field = '%s_songs' % (key, )
-            songs_remaining[key] = form_data[form_field]
+            if key == "gen":
+                songs_remaining[key] = 0
+            else:
+                form_field = '%s_songs' % (key, )
+                songs_remaining[key] = form_data[form_field]
             
         # get holiday usage data from the form and check if this is a holiday-focused playlist 
         focus_holiday = None
