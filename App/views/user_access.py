@@ -79,18 +79,12 @@ def user_preferences(request):
                 form_field = '%s_songs' % (key, )
                 starting_counts[key] = form_data[form_field]
             
-            # get holiday usage data from the form    
-            holiday_usage = dict()
-            for key in HOLIDAY_DEFAULT_USAGE:
-                form_field = "%s_use" % (key, )
-                holiday_usage[key] = form_data[form_field]
-            
             # update the preferences dictionary
             preferences['playlist_length'] = playlist_length
             preferences['prevent_back_to_back_styles'] = prevent_back_to_back_styles
             preferences['prevent_back_to_back_tempos'] = prevent_back_to_back_tempos
             preferences['counts'] = starting_counts
-            preferences['holiday_usage'] = holiday_usage
+            preferences['holiday_usage'] = HOLIDAY_DEFAULT_USAGE
             user.preferences = preferences
             user.save()
             logger.info("Saved new playlist preferences for " + user.username)

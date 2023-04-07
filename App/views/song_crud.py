@@ -51,6 +51,7 @@ def add_song(request):
         
         # save the song instance into the database and get the path to the audio file uploaded by the form
         content_type = request.FILES['audio_file'].content_type
+        form.holiday = ""
         song_instance = form.save() 
         logger.debug("Saving " + str(form.cleaned_data))
         audio_file_path = song_instance.audio_file.path
@@ -150,12 +151,11 @@ def add_song(request):
         # create a new Song object
         new_song = Song()
         
-        # save the audio file, metadata, dance_type, and holiday/theme
+        # save the audio file, metadata, and dance_type
         new_song.audio_file = song_instance.audio_file
         new_song.title = title
         new_song.artist = artist
         new_song.dance_type = song_instance.dance_type
-        new_song.holiday = song_instance.holiday
         
         # determine name for the image file based on the name of the audio file
         basename = os.path.basename(new_song.audio_file.url)
@@ -230,7 +230,6 @@ def update_song(request, song_id):
         log_msg += "title: " + song.title + ' '
         log_msg += "artist: " + song.artist + ' '
         log_msg += "dance_type: " + song.dance_type + ' '
-        log_msg += "holiday: " + song.holiday
         logger.info(log_msg)
         return render(request, 'update_song.html', {'form':form})
     else:
