@@ -69,7 +69,7 @@
               <!-- form for the user to enter the starting song number -->
               <form class="text-center" enctype="multipart/form-data" method="POST">
                 {% csrf_token %}
-                <input id="id_start_song" name="start_song" type="number" size='3' min='1' value="1" />
+                <input id="id_start_song" name="start_song" type="number" maxlength='3' min='1' value="1" class="text-center"/>
                 <input type="hidden" id="playlist_id" name="playlist_id" value={{ playlist.id }}>
                 <button class="btn btn-primary btn-sm" type="submit">Play</button>
               </form>
@@ -81,7 +81,7 @@
             
             <!-- superusers and owners can edit or delete -->
             {% if user.is_superuser or user == playlist.owner %}
-              <a class="btn btn-info btn-sm" href="{% url 'App:edit_playlist' playlist.id %}">Edit</a>
+              <a class="btn btn-warning btn-sm" href="{% url 'App:edit_playlist' playlist.id %}">Edit</a>
               <a class="btn btn-danger btn-sm" 
                   onclick="return confirm('Deleting: {{playlist.title}}\n Are you sure?')" 
                   href="{% url 'App:delete_playlist' playlist.id %}">Delete</a>
