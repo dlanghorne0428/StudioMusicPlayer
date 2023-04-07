@@ -150,11 +150,8 @@ def create_playlist_from_json(request, json_filename="../../../Desktop/spring_sh
         return render(request, "create_playlist_from_json.html", {'page_title': page_title, 'form': form})
     
 
-def pick_random_song(playlist, dance_type=None, index=None, focus_holiday=None):
-    '''pick a random song of this dance type and add it to the playlist.
-      if focus_holiday is set, limit the choices to holiday songs of that type, if any.'''
-    # initialize return variable
-    missed_a_holiday_song = None
+def pick_random_song(playlist, dance_type=None, index=None):
+    '''pick a random song of this dance type and add it to the playlist.'''
     
     # first find either the streaming songs or local songs iin the database 
     if playlist.streaming:
@@ -168,57 +165,25 @@ def pick_random_song(playlist, dance_type=None, index=None, focus_holiday=None):
     
     # create a list for songs that match     
     available_songs = list()
-    
-    # if there is a focus holiday
-    if focus_holiday:
-        # apply another filter for only holiday songs
-        holiday_candidates = candidate_songs.filter(holiday=focus_holiday)
-        # add the holiday songs to the available songs list
-        for s in holiday_candidates:
-            # prevent songs that are already in this playlist
-            if s.playlist_set.filter(id=playlist.id).count() == 0:
-                available_songs.append(s)
-        # if no holiday songs of this type, set missed flag to inform calling routine
-        if len(available_songs) == 0:
-            if dance_type is None:
-                warn_msg = "No %s songs" % (focus_holiday, )
-            else:
-                warn_msg = "No %s songs for %s" % (dance_type, focus_holiday)
-                logger.warning(warn_msg)                            
-            missed_a_holiday_song = True
-        else:
-            missed_a_holiday_song = False
      
-    # if we didn't add any holiday songs, consider all candidate songs            
-    if len(available_songs) == 0:
-        for s in candidate_songs:
-            # don't allow songs from holidays that are excluded
-            if s.holiday: 
-                if playlist.preferences is None:
-                    if HOLIDAY_DEFAULT_USAGE[s.holiday] == "Ex":
-                        logger.debug("Excluding song: " + s.get_holiday_display())
-                        continue
-                elif playlist.preferences['holiday_usage'][s.holiday] == "Ex":
-                    logger.debug("Excluding song: " + s.get_holiday_display())
-                    continue
-            # don't allow placeholder songs
-            if s.title.startswith("{Place"):
-                continue
-            # prevent songs from taking two spots in the same playlist
-            if s.playlist_set.filter(id=playlist.id).count() == 0:
-                available_songs.append(s)
+    for s in candidate_songs:
+        # don't allow placeholder songs
+        if s.title.startswith("{Place"):
+            continue
+        # prevent songs from taking two spots in the same playlist
+        if s.playlist_set.filter(id=playlist.id).count() == 0:
+            available_songs.append(s)
     
     if len(available_songs) == 0:
         logger.warning(dance_type + ": No more songs available")
+        return False
     else:
         # pick a random song from the available list - all equal probability and add it to the playlist
         random_song = available_songs[random.randrange(len(available_songs))]
         playlist.add_song(random_song, index)
         logger.info("Added " + str(random_song) + " to playlist " + str(playlist))
+        return True
     
-    # return indication that a requested holiday song was not selected
-    return missed_a_holiday_song
-
 
 def build_random_playlist(request, playlist_id):
     ''' generates a random list of songs and adds them to the playlist '''
@@ -299,23 +264,12 @@ def build_random_playlist(request, playlist_id):
                 form_field = '%s_songs' % (key, )
                 songs_remaining[key] = form_data[form_field]
             
-        # get holiday usage data from the form and check if this is a holiday-focused playlist 
-        focus_holiday = None
-        focus_ratio = None
-        holiday_usage = dict()
-        for key in HOLIDAY_DEFAULT_USAGE:
-            form_field = "%s_use" % (key, )
-            holiday_usage[key] = form_data[form_field]  
-            if holiday_usage[key].startswith("Ev"):
-                focus_holiday = key
-                focus_ratio = int(holiday_usage[key][-1])
-            
         # save the form inputs into the playlist            
         preferences['playlist_length'] = playlist_length
         preferences['prevent_back_to_back_styles'] = prevent_back_to_back_styles
         preferences['prevent_back_to_back_tempos'] = prevent_back_to_back_tempos
         preferences['counts'] = songs_remaining
-        preferences['holiday_usage'] = holiday_usage
+        preferences['holiday_usage'] = HOLIDAY_DEFAULT_USAGE
         playlist.preferences = preferences
         playlist.save()
         
@@ -329,7 +283,6 @@ def build_random_playlist(request, playlist_id):
         
         # initialize control variables    
         last_song_style = None
-        missed_a_holiday_song = False
         
         # loop until the correct number of songs have been picked
         for index in range(playlist_length):
@@ -363,16 +316,9 @@ def build_random_playlist(request, playlist_id):
                 # random choices will pick a style based on the weighted probability 
                 random_choice = random.choices(population, relative_weights)
                 
-            # save the dance style selected
+            # save the dance style selected and pick a random song of that style
             dance_style = random_choice[0]
-            
-            # if it is time for a holiday song, pass the holiday into the random song picker
-            if focus_holiday and (index % focus_ratio == 0 or missed_a_holiday_song):
-                missed_a_holiday_song = pick_random_song(playlist, dance_style, focus_holiday)
-            else:  
-                # pick any song of the required dance style
-                missed_a_holiday_song == False
-                pick_random_song(playlist, dance_style)
+            pick_random_song(playlist, dance_style)
             
             # decrement the number of remaining songs for that style and remember which style was chosen for next iteration
             songs_remaining[dance_style] -= 1
@@ -489,7 +435,6 @@ def edit_playlist(request, playlist_id):
                 available_songs = list()    
                 
                 for s in candidate_songs:
-                    # TODO: consider holiday usage, when replacing a song
                     # prevent songs from taking two spots in the same playlist
                     if s.playlist_set.filter(id=playlist.id).count() == 0:
                         available_songs.append(s)  
