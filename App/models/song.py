@@ -133,19 +133,12 @@ def create_valid_image_filename(instance, filename):
 
 
 class SongFileInput(models.Model):
-    '''This model is for uploading audio files. It consists of the filename,
-      dance type, and holiday (if any) '''
+    '''This model is for uploading audio files. It consists of the filename and dance type.'''
     audio_file = models.FileField(upload_to=create_valid_filename)
     dance_type = models.CharField(
         max_length = 10,
         choices = DANCE_TYPE_CHOICES,
         default = 'Cha'
-        )
-    holiday = models.CharField(
-        max_length = 5,
-        choices = HOLIDAY_CHOICES,
-        blank = True,
-        default = ""
         )
     
     def __str__(self):
@@ -153,8 +146,7 @@ class SongFileInput(models.Model):
     
     
 class SpotifyTrackInput(models.Model):
-    '''This model is for uploading spotify preview auido. It consists of the track URI,
-      dance type, and holiday (if any) '''
+    '''This model is for uploading spotify preview auido. It consists of the track URI and dance type. '''
     track_id = models.CharField(max_length=100)
     title = models.CharField(max_length=200,default="Unknown")
     artist = models.CharField(max_length=200,default="Unknown")   
@@ -164,13 +156,7 @@ class SpotifyTrackInput(models.Model):
         choices = DANCE_TYPE_CHOICES,
         default = 'Cha'
         )
-    holiday = models.CharField(
-        max_length = 5,
-        choices = HOLIDAY_CHOICES,
-        blank = True,
-        default = ""
-        )
-    
+
     def __str__(self):
         return self.track_id + ": " + self.dance_type 
     
@@ -203,6 +189,7 @@ class Song(models.Model):
         max_length = 5,
         choices = HOLIDAY_CHOICES,
         blank = True,
+        null = True,
         default = ""
         )
     

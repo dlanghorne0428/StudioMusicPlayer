@@ -17,16 +17,16 @@ class SongFileInputForm(ModelForm):
     '''form for uploading new music from a file.'''
     class Meta:
         model = SongFileInput
-        # allow user to specify file, dance_type, and select holiday if any
-        fields = ['audio_file', 'dance_type', 'holiday']
+        # allow user to specify file and dance_type
+        fields = ['audio_file', 'dance_type']
 
         
 class SpotifyTrackInputForm(ModelForm):
     '''form for uploading new music from a file.'''
     class Meta:
         model = SpotifyTrackInput
-        # allow user to specify file, dance_type, and select holiday if any
-        fields = ['track_id', 'title', 'artist', 'dance_type', 'holiday']
+        # allow user to specify track, title, artist, and dance
+        fields = ['track_id', 'title', 'artist', 'dance_type']
 
 
 class SpotifySearchForm(Form):
@@ -74,7 +74,6 @@ class SongEditForm(ModelForm):
             'artist', 
             'image',
             'dance_type', 
-            'holiday',
             FormActions(
                 # submit button and cancel link in the form of a button
                 Submit('save', 'Save changes'),
@@ -87,7 +86,7 @@ class SongEditForm(ModelForm):
     class Meta:
         # obtain data from these fields of the song model
         model = Song
-        fields = ['title', 'artist', 'image', 'dance_type', 'holiday']
+        fields = ['title', 'artist', 'image', 'dance_type']
         
         
 class PlaylistInfoForm(ModelForm):
@@ -231,20 +230,6 @@ class RandomPlaylistForm(Form):
                 # build a list of field names for use in column layout
                 field_names.append(field_name)
         
-        # these fields allow the user to enter preferences for each holiday
-        # add them to the form using a loop            
-        for holiday_tuple in HOLIDAY_CHOICES:
-            
-            field_name = "%s_use" % (holiday_tuple[0], )
-            
-            self.fields[field_name] = forms.ChoiceField(
-                label = holiday_tuple[1],
-                choices = HOLIDAY_USE_OPTIONS,
-                initial = self.prefs['holiday_usage'][holiday_tuple[0]],
-                required = True
-                )  
-            
-            field_names.append(field_name)
     
         # see django-crispy-forms example
         self.helper = FormHelper()
@@ -273,23 +258,16 @@ class RandomPlaylistForm(Form):
                 # align the bottom of the two columns in this row
                 css_class='align-items-end' 
             ),
-            # second row has two column titles, one for songs per dance style, the other for holidays
+            # second row has one column with two titles
             Row(
                 Column(
                     HTML("<h4 class='text-center'>Select Number of Songs for each dance style</h4>"),
                     HTML("<h6 class='text-center'>Values must add up to the total.</h6>"),
                     # song count data should take 9/12 of the window
-                    css_class='col-9 text-center',
-                ),
-                Column(
-                    HTML("<h5 class='text-center'>Include Holiday-Themed Songs?</h5>"),
-                    # holidays only need 3/12 of the windoe
-                    css_class='col-3 text-center',
-               ),
-               # align the bottom of the two columns in this row
-               css_class='align-items-end' 
+                    css_class='col-12 text-center',
+                ), 
             ),
-            # next row has two columns, one for numeric inputs, the other for holiday selections
+            # next row has columns for numeric inputs
             Row(
                 Column(
                     # first column is split into five sub-columns to set number of songs for each dance type
@@ -321,7 +299,7 @@ class RandomPlaylistForm(Form):
                                Field(field_names[19], active=True, css_class='text-center'), 
                                css_class="col-2"), 
                         # put a dark border around the five subcolumns
-                        css_class='pt-2 border border-dark',
+                        css_class='col-12 pt-2 border border-dark',
                         # establish an ID for javascript to use
                         css_id='enter-songs-per-dance-style'
                     ),
@@ -331,18 +309,6 @@ class RandomPlaylistForm(Form):
                         HTML("<p hidden id='count-error'>Current total is <span id='count-total'></span></p>"),
                     ),
                     css_class='text-center'
-                ),
-                Column(   
-                    # second column determines if holiday songs will be used
-                    Row(
-                        field_names[20], field_names[21], field_names[22], field_names[23],
-                        # put a border around these elements
-                        css_class='pt-2 border border-danger',
-                        # establish an ID for javascript to use
-                        css_id='enter-holidays'
-                        ),
-                    # this column takes 3/12 of the window and data is centered within that allocaation
-                    css_class='col-3 text-center'
                 ),
             ),
             # this row has a save checkbox, it is centered in the entire window and has a top margin

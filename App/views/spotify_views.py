@@ -805,13 +805,12 @@ def add_spotify_track(request, track_id, replace_song_id=None):
             # create a new Song object
             new_song = Song()
             
-            # save the audio file, metadata, dance_type, and holiday/theme
+            # save the audio file, metadata, and dance_type
             new_song.spotify_track_id = song_instance.track_id
             new_song.image_link = image_link
             new_song.title = song_instance.title
             new_song.artist = song_instance.artist
             new_song.dance_type = song_instance.dance_type
-            new_song.holiday = song_instance.holiday
             new_song.explicit = track['explicit']
             new_song.save()
             logger.debug(str(new_song))
@@ -883,7 +882,7 @@ def add_spotify_playlist(request, spotify_playlist_id, dance_type_index):
                 # add track        
                 new_song = Song()
             
-                # save the metadata, dance_type, and holiday/theme
+                # save the metadata, and dance_type
                 new_song.spotify_track_id = t['id']
                 new_song.image_link = t['cover_art']
                 new_song.title = t['name']
