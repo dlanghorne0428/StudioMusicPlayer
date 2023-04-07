@@ -201,6 +201,9 @@ def pick_random_song(playlist, dance_type=None, index=None, focus_holiday=None):
                 elif playlist.preferences['holiday_usage'][s.holiday] == "Ex":
                     logger.debug("Excluding song: " + s.get_holiday_display())
                     continue
+            # don't allow placeholder songs
+            if s.title.startswith("{Place"):
+                continue
             # prevent songs from taking two spots in the same playlist
             if s.playlist_set.filter(id=playlist.id).count() == 0:
                 available_songs.append(s)
