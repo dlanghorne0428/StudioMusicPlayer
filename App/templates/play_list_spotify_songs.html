@@ -58,9 +58,6 @@
           {% if playlist_info.category == 'Show' %}
             <span class="upcoming-dance-primary text-center">Heat {{forloop.counter}}</span>
             <span class="upcoming-dance-secondary text-center">{{song.get_dance_type_display}}</span>
-          {% elif playlist_info.category == 'Show' %}
-            <span class="upcoming-dance-primary text-center">Solo {{forloop.counter}}</span>
-            <span class="upcoming-dance-secondary text-center">{{song.title}}</span>
           {% else %}
             <span class="upcoming-dance-primary text-center">{{song.get_dance_type_display}}</span>
             <span class="upcoming-dance-secondary text-center">{{song.title}}</span>
@@ -220,6 +217,16 @@
     // this variable used in seek function of progress bar 
     var limit_in_msec; 
     
+    // set background color based on playlist category     
+    {% if playlist_info.category == 'Norm' %} 
+      document.getElementById("the_body").style.backgroundColor = "maroon";
+      document.getElementById("sticky-credits").style.backgroundColor = "maroon";
+    {% elif playlist_info.category == "Show" %}
+      document.getElementById("the_body").style.backgroundColor = "DarkSlateGrey";
+      document.getElementById("sticky-credits").style.backgroundColor = "DarkSlateGrey";
+    {% endif %}
+    
+    
     window.onSpotifyWebPlaybackSDKReady = () => {
     // You can now initialize Spotify.Player and use the SDK
     
@@ -271,7 +278,7 @@
     
         const zeroPad = (num, places) => String(num).padStart(places, '0');
     
-        {% if playlist_info.category != 'Party' or 'playlist_info.category == 'Show'  %} 
+        {% if playlist_info.category == 'Party' or playlist_info.category == 'Show'  %} 
         
           if (is_feature_list[current_index]) {
             limit = duration_seconds - 1;

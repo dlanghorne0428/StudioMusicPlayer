@@ -173,6 +173,14 @@
     
     var limit; 
     
+    {% if playlist_info.category == 'Norm' %} 
+      document.getElementById("the_body").style.backgroundColor = "maroon";
+      document.getElementById("sticky-credits").style.backgroundColor = "maroon";
+    {% elif playlist_info.category == "Show" %}
+      document.getElementById("the_body").style.backgroundColor = "DarkSlateGrey";
+      document.getElementById("sticky-credits").style.backgroundColor = "DarkSlateGrey";
+    {% endif %}
+    
     Amplitude.init({
       "bindings": {
         32: 'play_pause'    /* spacebar */
