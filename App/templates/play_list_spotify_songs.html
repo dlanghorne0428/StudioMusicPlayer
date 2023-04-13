@@ -54,6 +54,7 @@
     <div class="col-4 up-next-list">
       <!-- upcoming songs in right section, show dance_type and title only --> 
       {% for song in song_list %}
+        <a hidden id="skip-link-{{forloop.counter0}}" href="{% url 'App:play_song_list' playlist_info.id forloop.counter0 %}">Skip Here</a>
         <div class="song-meta-container" id="{{forloop.counter0}}-upcoming-song-index" >
           {% if playlist_info.category == 'Show' %}
             <span class="upcoming-dance-primary text-center">Heat {{forloop.counter}}</span>
@@ -110,9 +111,9 @@
   
     <div class="col-4">
       <!-- right section has info about the current playlist and link back to all playlists page -->
-      <p class="text-info my-1"><span>Playlist: </span>
+      <p class="text-info my-1"><span>{{ playlist_info.get_category_display }} Mode: </span>
          <span data-amplitude-playlist-info="title" data-amplitude-playlist="the_list"></span>
-         <span><a href="{% url 'App:edit_playlist' playlist_info.id %}">Edit</a></span>
+         <span><a href="{% url 'App:edit_playlist' playlist_info.id %}">Edit Playlist</a></span>
       </p>
       {% if playlist_info.category == 'Party' or playlist_info.category == 'Show' %}
         <p class="text-info my-2" id="timelimit">Song time limit: {{ playlist_info.max_song_duration|time:"i:s" }}</p>
@@ -123,7 +124,7 @@
       {% else %}
         <p class="text-info my-1">Next track played automatically</p>
       {% endif %}
-      <p class="text-center my-2"><a href="{% url 'App:all_playlists' %}">Back to All Playlists</a></p>
+      <p class="text-center my-2"><a href="{% url 'App:user_playlists' %}">Back to Your Playlists</a></p>
     </div>
   </div>
 
@@ -190,6 +191,15 @@
           document.getElementById(the_id_name).style.display = "none";
       }
     }
+    
+    function skipToSong(index) {
+      if (index < {{ song_list|length  }} && index > -1) {
+        /* find hidden link to next song and generate a click event */
+        var next_index_id = 'skip-link-' + String(index)
+        var hidden_link = document.getElementById(next_index_id)
+        hidden_link.click()
+      }
+    };
     
     const time_limit_para = document.getElementById("timelimit");
     const feature_text_para = document.getElementById("feature-text");
@@ -309,6 +319,11 @@
 
           
           if (Math.round(position / 1000) > fading_limit) {
+          
+            if (is_feature_list[current_index]) {
+              skipToSong(current_index + 1);
+            }
+            
             /* highlight the time limit text when time has expired */
             time_limit_para.style.backgroundColor = 'red';
             /* console.log(position, fading_limit); */
@@ -423,6 +438,10 @@
               showUpNextElements(current_index);
             };
             
+            {% if playlist_info.category == 'Party' or playlist_info.category == 'Show' %}
+              time_limit_para.style.backgroundColor = 'transparent';    
+            {% endif %}
+            
             /* reset volume in case previous song faded or user adjusted */
             saved_volume = 0.8;
             player.setVolume(saved_volume).then(() => {
@@ -461,18 +480,24 @@
         pause_the_song();
       };
       
-      next_button.onclick = function() {
-        if (current_index + 1 < spotify_uris.length) 
-          play_next_song();
+      next_button.onclick = function() {    
+        if (current_index + 1 < spotify_uris.length)
+          if (current_state == 'playing')
+            play_next_song();
+          else 
+            skipToSong(current_index + 1);
         else 
           console.log("on last song, next is disabled");
       };
       
       prev_button.onclick = function() {
-        if (current_index > 0) 
-          play_previous_song();
-        else 
-          console.log("on first song, prev is disabled");
+        if (current_state == 'playing') {
+          player.seek(0).then(() => {
+          console.log("Changed to", 0);
+          });
+        } else {
+          skipToSong(current_index -1);
+        }
       };
       
       function fade_volume() {
@@ -492,6 +517,7 @@
           if (saved_volume == 0) {
           {% if playlist_info.category == 'Show' %}  
             pause_the_song(between_songs=true)
+            skipToSong(current_index + 1);
           {% else %}
             play_next_song()
           {% endif %} 
