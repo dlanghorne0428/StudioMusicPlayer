@@ -150,7 +150,7 @@ class PlaylistInfoForm(ModelForm):
                 # submit and cancel buttons are included, button text comes from submit_title
                 FormActions(
                     Submit('submit', self.submit_title),
-                    HTML("""<a href="{% url 'App:all_playlists' %}" class="btn btn-secondary">Cancel</a>"""),
+                    HTML("""<a href="{% url 'App:user_playlists' %}" class="btn btn-secondary">Cancel</a>"""),
                     css_class="my-2"
                 )                
             )   

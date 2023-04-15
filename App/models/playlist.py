@@ -35,7 +35,7 @@ class Playlist(models.Model):
     category = models.CharField(
         max_length = 10,
         choices = CATEGORY_CHOICES, 
-        default = 'Norm'
+        default = 'Party'
     )
 
     # for Party or Showcase playlist, the time limit
