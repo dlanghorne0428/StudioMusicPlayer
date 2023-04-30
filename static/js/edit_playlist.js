@@ -47,13 +47,35 @@ playlist_songs.addEventListener('mousedown', mySelectFunction);
 // get hidden element for drawing a song note during drag-and-drop
 const songNoteIcon = document.getElementById('song-note-icon');
 
+const maxIndexValue = document.getElementById('max-index-id').innerHTML;
+const startIndexValue = document.getElementById('start-index-id').innerHTML;
+
+var startingRow;
+
+if (startIndexValue > 0) {
+    scroll(0, 80 + startIndexValue * 40);
+    row_id_string = 'table-row-' + startIndexValue;
+    console.log(row_id_string);
+    startingRow = document.getElementById(row_id_string);
+    startingRow.style.backgroundColor = 'lightgreen';
+}
+
 // variables for table indices
 var songIndex;
 var newSongIndex;
+var latestIndex = 0;
 
 // variables for HTML elements 
 var selectedElement;
 var currentElement;
+var latestRow;
+var previousRow;
+var nextRow;
+
+var timerRunning = false;
+var scrollInProgress = false;
+var scrollDirection = "None";
+var myTimer;
 
 
 // find the song order in the playlist, based on the table row element
@@ -86,12 +108,83 @@ function quitDrag() {
     
     //reset the top border of the previously selected element to normal style
     currentElement.style.borderTop = "1px solid";
+    
+    // clear the timer, if running
+    timerRunning = false;
+    scrollInProgress = false;
 };
+
+
+function scrollUp() {
+
+    previousRow = latestRow.previousElementSibling;
+    latestIndex = latestIndex - 1; //table_index(previousRow)
+    newSongIndex = latestIndex;
+    adjustBorder(previousRow);
+    latestRow = previousRow;
+    console.log("Table Header at Index", latestIndex);
+    
+    var currentY = scrollY;
+    if (latestIndex > 0) {
+        if (!scrollInProgress) {
+            scroll(0, currentY - 120);
+        } else {
+            scroll(0, currentY - 40.5);
+        }
+        timerRunning = true;
+        myTimer = setTimeout(timerExpired, 750);  // milliseconds
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
+function scrollDown() {
+    nextRow = latestRow.nextElementSibling;
+    latestIndex = latestIndex + 1; 
+    newSongIndex = latestIndex;
+    adjustBorder(nextRow);
+    latestRow = nextRow;
+    console.log("Table Footer at Index", latestIndex);
+    
+    var currentY = scrollY;
+    if (latestIndex < maxIndexValue) {
+        if (!scrollInProgress) {
+            scroll(0, currentY + 120);
+        } else {
+            scroll(0, currentY + 40.5);
+        }
+    
+        timerRunning = true;
+        myTimer = setTimeout(timerExpired, 750);  // milliseconds
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
+function timerExpired() {
+    timerRunning = false;
+    
+    if (scrollDirection == 'up') {
+        if (!scrollUp()) {
+            newSongIndex = songIndex;   // reset so no changes happen
+            quitDrag();
+        }
+    } else if (scrollDirection == 'down') {
+        if (!scrollDown()) {
+            newSongIndex = songIndex;   // reset so no changes happen
+            quitDrag();
+        }
+    }
+}
 
 
 // handle mouse move event
 function moveAt(event) {
-    var latestIndex;
+
     // move the icon so it is centered under the mouse pointer
     songNoteIcon.style.left = event.pageX - songNoteIcon.offsetWidth / 2 + 'px';
     songNoteIcon.style.top = event.pageY - songNoteIcon.offsetHeight / 2 + 'px';
@@ -101,16 +194,15 @@ function moveAt(event) {
     var elemBelow = document.elementFromPoint(event.clientX, event.clientY);
     
     // if the element is not table data, quit dragging and prevent any changes
-    if (elemBelow.tagName != "TD") {
-        console.log(elemBelow.tagName);
-        // TODO: also need to handle the bottom of the table.
-        newSongIndex = songIndex;   // reset so no changes happen
-        quitDrag();
-    } else {
+    if ( elemBelow.tagName == 'TD') {
         // traverse the parent element until you get to the table row and find the song index
         do {
             elemBelow = elemBelow.parentElement;
         } while (elemBelow.tagName != "TR");
+        
+        scrollInProgress = false;
+        scrollDirection = 'none';
+        latestRow = elemBelow;
         latestIndex = table_index(elemBelow);
     
         // if the index has changed, update the newSongIndex and update the border
@@ -118,10 +210,36 @@ function moveAt(event) {
             newSongIndex = latestIndex;
             adjustBorder(elemBelow);
             console.log("Moving:", songNoteIcon.style.left, songNoteIcon.style.top,  "Index: ", newSongIndex);
+        };
+        
+        // unhide the icon to keep dragging
+        songNoteIcon.hidden = false;
+        
+    }  else if (elemBelow.tagName == "TH") {
+        if (!scrollInProgress) {
+            if (scrollUp()) {
+                scrollInProgress = true;
+                scrollDirection = 'up';
+            } else {
+                newSongIndex = songIndex;   // reset so no changes happen
+                quitDrag();
+            }
         }
-
-    // unhide the icon to keep dragging
-    songNoteIcon.hidden = false;
+    } else if (elemBelow.id == "sticky-credits-col" || elemBelow.tagName =='P') {
+        if (!scrollInProgress) {
+            if (scrollDown()) {
+                scrollInProgress = true;
+                scrollDirection = 'down';
+            } else {
+                newSongIndex = songIndex;   // reset so no changes happen
+                quitDrag();
+            }
+        }
+    }
+    else {
+        console.log(elemBelow.tagName, elemBelow.id);
+        newSongIndex = songIndex;   // reset so no changes happen
+        quitDrag();
     }
 };
 
@@ -142,6 +260,11 @@ function mySelectFunction(event) {
         selectedElement = selectedElement.parentElement;
     } while (selectedElement.tagName != "TR");
     console.log('Down coordinates: ', event.pageX, event.pageY);
+    
+    // clear highlighting from startingRow (if it is set)
+    if (startIndexValue > 0) {
+        startingRow.style.backgroundColor = 'transparent';
+    }
     
     // highlight selected element and find the song index in the playlist
     selectedElement.style.backgroundColor = 'lightGray';
