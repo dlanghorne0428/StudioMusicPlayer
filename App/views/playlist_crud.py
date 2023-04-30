@@ -380,7 +380,7 @@ def delete_playlist(request, playlist_id):
         return redirect('App:all_playlists')          
 
  
-def edit_playlist(request, playlist_id):
+def edit_playlist(request, playlist_id, start_index = 0):
     ''' allows the superuser to edit an existing playlist. '''
     
     if not (request.user.is_superuser or request.user.is_teacher):
@@ -403,6 +403,7 @@ def edit_playlist(request, playlist_id):
         # get the URL parameters for command and index in string format
         command = request.GET.get('cmd')
         index_str = request.GET.get('index')
+        new_index = 0
     
         # if there are URL parameters
         if command is not None:
@@ -465,8 +466,12 @@ def edit_playlist(request, playlist_id):
                 # call method in playlist model to rearrange song order
                 playlist.move_song(selected.song, index, new_index)  
                 
+                # adjust highlight index after dragging down
+                if new_index > index:
+                    new_index -= 1;
+                    
             # redirect to this same view in order to remove the URL parameters 
-            return redirect('App:edit_playlist', playlist_id)             
+            return redirect('App:edit_playlist', playlist_id, new_index)             
         
         # no URL parameters, render the template as is
         form = PlaylistInfoForm(instance=playlist, submit_title=None)
@@ -475,7 +480,7 @@ def edit_playlist(request, playlist_id):
             'songs': songs_in_playlist,
             'dance_types': DANCE_TYPE_CHOICES,
             'form': form,
-            'error': None,
+            'start_index': start_index,
         })
 
     else: # POST
