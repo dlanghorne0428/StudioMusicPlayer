@@ -65,7 +65,7 @@
       
       <!-- the rest of the table has one song per row -->
       {% for s in songs %}
-      <tr>
+      <tr id="table-row-{{forloop.counter0}}">
         <!-- show a one-based index as the first column. -->
         <td class="text-center">{{ forloop.counter }}</td>
         
@@ -151,5 +151,7 @@
 
 <!-- need javascript to submit the form when any info items have changed -->
 {% block extra_js %}
-    <script src={% static 'js/edit_playlist.js' %}></script>
+  {{ songs|length|json_script:"max-index-id" }}
+  {{ start_index|json_script:"start-index-id" }}
+  <script src={% static 'js/edit_playlist.js' %}></script>
 {% endblock %}
