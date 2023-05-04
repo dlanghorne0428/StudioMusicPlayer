@@ -81,6 +81,7 @@
             
             <!-- superusers and owners can edit or delete -->
             {% if user.is_superuser or user == playlist.owner %}
+              <a class="btn btn-info btn-sm" href="{% url 'App:copy_playlist' playlist.id %}">Copy</a>
               <a class="btn btn-warning btn-sm" href="{% url 'App:edit_playlist' playlist.id %}">Edit</a>
               <a class="btn btn-danger btn-sm" 
                   onclick="return confirm('Deleting: {{playlist.title}}\n Are you sure?')" 

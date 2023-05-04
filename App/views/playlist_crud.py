@@ -358,7 +358,43 @@ def add_random_song_to_playlist(request, playlist_id, dance_type):
     # redirect to edit playlist page, showing new song at end of list
     return redirect('App:edit_playlist', playlist.id)
 
-   
+
+def copy_playlist(request, playlist_id):
+    ''' allows the superuser to edit an existing playlist. '''    
+    if not (request.user.is_superuser or request.user.is_teacher):
+        logger.warning(request.user.username + " not authorized to copy playlists")
+        return render(request, 'permission_denied.html')    
+    
+    else:        
+        # get the specific playlist object from the database
+        playlist = get_object_or_404(Playlist, pk=playlist_id)
+        
+        # only owner or superuser is allowed to copy playlist
+        if not (request.user.is_superuser or playlist.owner == request.user):
+            logger.warning(request.user.username + " not authorized to copy playlist " + str(playlist))
+            return render(request, 'permission_denied.html') 
+        
+        # create new playlist object and copy fields from existing playlist
+        new_playlist = Playlist()
+        new_playlist.title = "copy-" + playlist.title
+        new_playlist.description = "Copy of " + playlist.description
+        new_playlist.owner = playlist.owner
+        new_playlist.streaming = playlist.streaming
+        new_playlist.category = playlist.category
+        new_playlist.max_song_duration = playlist.max_song_duration
+        new_playlist.preferences = playlist.preferences
+        new_playlist.save()
+        
+        # obtain list of songs in the playlist being copied
+        song_list = playlist.songs.all().order_by('songinplaylist__order')
+        
+        # copy them to the new playlist in the same order
+        for s in song_list:    
+            new_playlist.add_song(s)
+        
+        return redirect('App:user_playlists')
+        
+        
 def delete_playlist(request, playlist_id):
     ''' allows the superuser to edit an existing playlist. '''
     
