@@ -118,8 +118,7 @@ def create_playlist_from_json(request, json_filename="../../../Desktop/spring_sh
             new_playlist.streaming = False   # for now     
             new_playlist.save()
             
-            #with open(json_filename, "r") as read_file:
-            print("Converting JSON encoded data into Python dictionary")
+            logger.info("Converting JSON encoded data into Python dictionary")
             developer = json.loads(json_data) #json.load(read_file)    
             
             for h in developer['heats']:
@@ -314,7 +313,7 @@ def build_random_playlist(request, playlist_id):
         
             if relative_weights.count(0) == len(relative_weights):
                 # if all the weights are zero, random.choices will pick a style at equal probability
-                print("All weights are zero")
+                logger.warning("All weights are zero")
                 random_choice = random.choices(population)
             else:
                 # random choices will pick a style based on the weighted probability 
@@ -426,6 +425,40 @@ def replace_playlist_songs(request, playlist_id):
             index += 1
         
         return redirect('App:edit_playlist', playlist_id)
+
+
+def shuffle_playlist(request, playlist_id):
+    ''' allows the superuser to replace all songs in existing playlist. 
+        the dance type order will remain the same.'''    
+    if not (request.user.is_superuser or request.user.is_teacher):
+        logger.warning(request.user.username + " not authorized to copy playlists")
+        return render(request, 'permission_denied.html')    
+    
+    else:        
+        # get the specific playlist object from the database
+        playlist = get_object_or_404(Playlist, pk=playlist_id)
+        
+        # only owner or superuser is allowed to replace the playlist songs
+        if not (request.user.is_superuser or playlist.owner == request.user):
+            logger.warning(request.user.username + " not authorized to replace playlist " + str(playlist))
+            return render(request, 'permission_denied.html') 
+
+        # obtain list of songs in the playlist
+        song_list = playlist.songs.all().order_by('songinplaylist__order')
+        
+        for index in range(len(song_list)):
+            dance_type = song_list[index].dance_type
+            matches = list()
+            for new_index in range(index+1,len(song_list)):
+                if song_list[new_index].dance_type == dance_type:
+                    matches.append(new_index)
+            if len(matches) > 0:
+                random_index = matches[random.randrange(len(matches))]
+                logger.info("Swapping: " + str(index) + " with " + str(random_index))
+                playlist.swap_songs(index, random_index)
+                
+
+        return redirect('App:edit_playlist', playlist_id)        
     
         
 def delete_playlist(request, playlist_id):
@@ -500,7 +533,7 @@ def edit_playlist(request, playlist_id, start_index = 0):
             elif command == 'replace-select':
                 # find the dance style of the selected song
                 dance_style = selected.song.dance_type  
-                print("Replacing " + str(selected.song))
+                logger.info("Replacing " + str(selected.song))
                 # redirect to select a song
                 return redirect('App:replace_song', playlist_id, index, dance_style)  
             

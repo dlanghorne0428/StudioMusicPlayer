@@ -115,6 +115,18 @@ class Playlist(models.Model):
         target.song = new_song
         target.save()
         
+        
+    def swap_songs(self, index1, index2):
+        # get the selected songs from the playlist
+        target1 = SongInPlaylist.objects.get(playlist=self, order=index1)
+        target2 = SongInPlaylist.objects.get(playlist=self, order=index2)
+        
+        target1.order = index2
+        target2.order = index1
+        
+        target1.save()
+        target2.save()
+        
 
     def __str__(self):
         return self.title
