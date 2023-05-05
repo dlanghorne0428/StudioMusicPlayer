@@ -2,7 +2,8 @@ from django.db import models
 from django.utils.text import get_valid_filename, slugify
 
 import os
-
+import logging
+logger = logging.getLogger("django")
 
 DANCE_TYPE_CHOICES = [
     ("Bac", "Bachata"),
@@ -13,7 +14,7 @@ DANCE_TYPE_CHOICES = [
     ("Fox", "Foxtrot"),
     ("Hus", "Hustle"),
     ("Jiv", "Jive"),
-    ("Mam", "Mambo/Salsa"),
+    ("Mam", "Mambo / Salsa"),
     ("Mer", "Merengue"),
     ("NC2", "Night Club 2-Step"),
     ("PD",  "Paso Doble"),
@@ -25,6 +26,7 @@ DANCE_TYPE_CHOICES = [
     ("VW",  "Viennese Waltz"),
     ("Wal", "Waltz"),
     ("WCS", "West Coast Swing"),
+    ("gen", "General")
     ]
 
 DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS = {
@@ -48,6 +50,7 @@ DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS = {
     "VW":   2,
     "Wal":  2,
     "WCS":  1,
+    "gen":  0
     }
 
 DANCE_TYPE_TEMPOS = {
@@ -71,6 +74,7 @@ DANCE_TYPE_TEMPOS = {
     "VW":  "Fast",
     "Wal": "Slow",
     "WCS": "Mid",
+    "gen": "Mid"
     }
 
 HOLIDAY_CHOICES = [
@@ -99,9 +103,10 @@ def good_filename(filename):
     '''slugify replaces whitespace with a dash and removes everything but alphanumerics,
        underscores and dashes.
        get_valid_filename finds an available filename to avoid duplicates.'''
-    print(filename)
+    logger.debug("Initial filename is " + filename)
     temp_filename = get_valid_filename(filename)
-    print(temp_filename)
+    if temp_filename != filename:
+        logger.debug("Good filename is " + temp_filename)
     filename, ext = os.path.splitext(temp_filename)
     filename = slugify(filename)
     if ext:
@@ -128,19 +133,12 @@ def create_valid_image_filename(instance, filename):
 
 
 class SongFileInput(models.Model):
-    '''This model is for uploading audio files. It consists of the filename,
-      dance type, and holiday (if any) '''
+    '''This model is for uploading audio files. It consists of the filename and dance type.'''
     audio_file = models.FileField(upload_to=create_valid_filename)
     dance_type = models.CharField(
         max_length = 10,
         choices = DANCE_TYPE_CHOICES,
         default = 'Cha'
-        )
-    holiday = models.CharField(
-        max_length = 5,
-        choices = HOLIDAY_CHOICES,
-        blank = True,
-        default = ""
         )
     
     def __str__(self):
@@ -148,8 +146,7 @@ class SongFileInput(models.Model):
     
     
 class SpotifyTrackInput(models.Model):
-    '''This model is for uploading spotify preview auido. It consists of the track URI,
-      dance type, and holiday (if any) '''
+    '''This model is for uploading spotify preview auido. It consists of the track URI and dance type. '''
     track_id = models.CharField(max_length=100)
     title = models.CharField(max_length=200,default="Unknown")
     artist = models.CharField(max_length=200,default="Unknown")   
@@ -159,13 +156,7 @@ class SpotifyTrackInput(models.Model):
         choices = DANCE_TYPE_CHOICES,
         default = 'Cha'
         )
-    holiday = models.CharField(
-        max_length = 5,
-        choices = HOLIDAY_CHOICES,
-        blank = True,
-        default = ""
-        )
-    
+
     def __str__(self):
         return self.track_id + ": " + self.dance_type 
     
@@ -198,6 +189,7 @@ class Song(models.Model):
         max_length = 5,
         choices = HOLIDAY_CHOICES,
         blank = True,
+        null = True,
         default = ""
         )
     

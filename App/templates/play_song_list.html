@@ -19,14 +19,14 @@
           <span id="id-heat-number">?</span>
           <span>- </span>
           <span data-amplitude-song-info="dance_type"></span>
-        </h1>
+        </h1>   
       {% else %}
         <h1 class="dance-type text-center"><span data-amplitude-song-info="dance_type"></span></h1>
       {% endif %}
     </div>
     <div class="col-4">
       <!-- up next on right side, 4 out of 12 columns -->
-      <h2 class="text-warning">Up Next</h2>
+      <h2 class="up-next-title text-warning">Up Next</h2>
     </div>
   </div>
   
@@ -48,13 +48,14 @@
     <div class="col-4 up-next-list">
       <!-- upcoming songs in right section, show dance_type and title only -->
       {% for i in playlist_indices %}
+        <a hidden id="skip-link-{{i}}" href="{% url 'App:play_song_list' playlist_info.id i %}">Skip Here</a>
         <div class="song-meta-container" id="index-{{i}}">
           {% if playlist_info.category == 'Show' %}
-            <span class="song-dance-type">Heat {{forloop.counter}}</span>
-            <span class="song-name" data-amplitude-song-info="dance_type" data-amplitude-song-index="{{ i }}"></span>
+            <span class="song-container-primary">Heat {{forloop.counter}}</span>
+            <span class="song-container-secondary" data-amplitude-song-info="dance_type" data-amplitude-song-index="{{ i }}"></span>
           {% else %}
-            <span class="song-dance-type" data-amplitude-song-info="dance_type" data-amplitude-song-index="{{ i }}"></span>
-            <span class="song-name" data-amplitude-song-info="name" data-amplitude-song-index="{{ i }}"></span>
+            <span class="song-container-primary" data-amplitude-song-info="dance_type" data-amplitude-song-index="{{ i }}"></span>
+            <span class="song-container-secondary" data-amplitude-song-info="name" data-amplitude-song-index="{{ i }}"></span>
           {% endif %}
         </div>
       {% endfor %}
@@ -84,9 +85,9 @@
 
       <!-- Previous, Play/Pause, Next, Volume/Mute, Volume Slider -->
       <div class="control-container text-center">
-        <div class="amplitude-prev" id="prev"></div>
+        <div class="smp-prev" id="smp_reverse"></div>
         <div class="amplitude-play-pause" amplitude-main-play-pause="true" id="play-pause"></div>
-        <div class="amplitude-next" id="next"></div>
+        <div class="smp-next" id="smp_forward"></div>
         
         <div class="amplitude-mute"></div>
         <input type="range" class="amplitude-volume-slider" id="volume_control" step="1"/>
@@ -96,11 +97,11 @@
   
     <div class="col-4">
       <!-- right section has info about the current playlist and link back to all playlists page -->
-      <p class="text-info my-1"><span>Playlist: </span>
+      <p class="text-info my-1"><span> {{ playlist_info.get_category_display }} Mode: </span>
          <span data-amplitude-playlist-info="title" data-amplitude-playlist="the_list"></span>
-         <span><a href="{% url 'App:edit_playlist' playlist_info.id %}">Edit</a></span>
+         <span><a href="{% url 'App:edit_playlist' playlist_info.id %}">Edit Playlist</a></span>
       </p>
-      {% if playlist_info.category != 'Norm' %}
+      {% if playlist_info.category == 'Party' or playlist_info.category == 'Show' %}
         <p class="text-info my-2" id="timelimit">Song time limit: {{ playlist_info.max_song_duration|time:"i:s" }}</p>
       {% endif %}
       {% if playlist_info.category == 'Show' %}
@@ -108,7 +109,7 @@
       {% else %}
          <p class="text-info my-1">Next track played automatically</p>
       {% endif %}
-      <p class="text-center my-2"><a href="{% url 'App:all_playlists' %}">Back to All Playlists</a></p>
+      <p class="text-center my-2"><a href="{% url 'App:user_playlists' %}">Back to Your Playlists</a></p>
     </div>
   </div>
 
@@ -144,6 +145,15 @@
         var current_heat_readable = String(index + 1);
         heat_number_elem.innerHTML = current_heat_readable;
     };
+    
+    function skipToSong(index) {
+      if (index < {{ playlist_indices|length }} && index > -1) {
+        /* find hidden link to next song and generate a click event */
+        var next_index_id = 'skip-link-' + String(index)
+        var hidden_link = document.getElementById(next_index_id)
+        hidden_link.click()
+      }
+    };
   
     const startVolume = 80 /* percent */
     /* get access to time limit paragraph element and is_feature_list */
@@ -163,10 +173,16 @@
     
     var limit; 
     
+    {% if playlist_info.category == 'Norm' %} 
+      document.getElementById("the_body").style.backgroundColor = "maroon";
+      document.getElementById("sticky-credits").style.backgroundColor = "maroon";
+    {% elif playlist_info.category == "Show" %}
+      document.getElementById("the_body").style.backgroundColor = "DarkSlateGrey";
+      document.getElementById("sticky-credits").style.backgroundColor = "DarkSlateGrey";
+    {% endif %}
+    
     Amplitude.init({
       "bindings": {
-        37: 'prev',         /* left arrow */
-        39: 'next',         /* right arrow */
         32: 'play_pause'    /* spacebar */
       },
       
@@ -205,7 +221,7 @@
         'initialized': function(){
           /* when playlist starts, show the next four songs in 'up next' list */
           console.log("Player has been initialized.");
-          for (let i = {{ start_index }} + 1; i <= {{ start_index }} + 4; i++ ) {
+          for (let i = {{ start_index }} + 1; i <= {{ start_index }} + 3; i++ ) {
             showSongInUpNext(i);
           };
           updateHeatNumber({{ start_index }});
@@ -213,7 +229,6 @@
         
         'timeupdate': function(){
         
-          /* is this song a feature? */
           index = Amplitude.getActiveIndex();
           var is_feature = is_feature_list[index];
           var fading_limit;
@@ -225,7 +240,8 @@
           
           if (played > 1) {
           
-            {% if playlist_info.category != 'Norm' %} 
+            {% if playlist_info.category == 'Party' or playlist_info.category == 'Show' %} 
+              /* is this song a feature? */
               if ( is_feature ) {
                 /* hide the time limit paragraph, and play entire song except for last second */ 
                 time_limit_para.setAttribute('hidden','');
@@ -261,6 +277,11 @@
             progress_bar.setAttribute("value", pct_played);
             
             if (played > fading_limit) {
+            
+              if ( is_feature ) {
+                skipToSong(index + 1);
+              }
+              
               /* highlight the time limit text when time has expired */
               time_limit_para.style.backgroundColor = 'red';
                   
@@ -281,6 +302,7 @@
                   {% if playlist_info.category == 'Show' %}
                     /* playlist not auto-continue, so pause after fading complete */
                     Amplitude.pause();
+                    skipToSong(index + 1);
                   {% else %}
                     /* delay two additional seconds then play next */
                     if (played - 3 > {{ max_song_duration_in_sec }}) {
@@ -302,8 +324,8 @@
           /* show the song that was playing in the 'up next' list */
           showSongInUpNext(current_index + 1);
           
-          /* only show 4 songs in up next, so hide the one after that */
-          hideSongInUpNext(current_index + 5);
+          /* only show 3 songs in up next, so hide the one after that */
+          hideSongInUpNext(current_index + 4);
           
           /* update the current heat number */
           updateHeatNumber(current_index);
@@ -317,7 +339,7 @@
           Amplitude.setVolume(startVolume);
           console.log("setting volume to ", startVolume);
           volume_control.value = startVolume; 
-          {% if playlist_info.category != 'Norm' %}
+          {% if playlist_info.category == 'Party' or playlist_info.category == 'Show' %}
             time_limit_para.style.backgroundColor = 'transparent';    
           {% endif %}
 
@@ -327,7 +349,7 @@
           hideSongInUpNext(current_index);
             
           /* show the 4th future song in the list, if there is one */
-          showSongInUpNext(current_index+ 4);
+          showSongInUpNext(current_index + 3);
           
           /* update the current heat number */
           updateHeatNumber(current_index);
@@ -346,6 +368,26 @@
     window.onkeydown = function(e) {
         return !(e.keyCode == 32);
     };
+
+    /* handles a click on the reverse button */
+    document.getElementById('smp_reverse').addEventListener('click', function( e ){
+      var index = Amplitude.getActiveIndex();
+      if (Amplitude.getPlayerState() == "playing") {
+        Amplitude.skipTo(0, index);
+      } else {
+        skipToSong(index - 1);
+      }
+    });
+
+    /* handles a click on the forward button */
+    document.getElementById('smp_forward').addEventListener('click', function( e ){
+      var index = Amplitude.getActiveIndex();
+      if (Amplitude.getPlayerState() == "playing") {
+        Amplitude.next();
+      } else {
+        skipToSong(index + 1);
+      }
+    });
 
     /* Handles a click on the song played progress bar.*/
     document.getElementById('song-played-progress').addEventListener('click', function( e ){

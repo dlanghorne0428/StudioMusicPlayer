@@ -19,6 +19,10 @@
     </div>
   </div>
   
+  {% if error %}
+    <h3 class="text-center text-danger">{{ error }}</h3>
+  {% endif %}
+  
   <!--- next row is the table -->
   <div class="col-12 border border-dark px-0">
   <table class="table table-bordered table-sm">
@@ -29,8 +33,14 @@
         <th class="text-center">Title</th>
         <th class="text-center">Owner</th>
         <th class="text-center">Category</th>        
-        <th class="text-center">Song </br> Time Limit</th>
+        <th class="text-center">Song</br> Time Limit</th>
         <th class="text-center">Description</th>
+        
+        <!-- superusers and teachers can see the play button -->
+        {% if user.is_superuser or user.is_teacher %}
+          <th class="text-center">Starting</br>Song #</th>
+        {% endif %}
+        
         <th class="text-center">Action</th>
       </tr>
     </thead>
@@ -45,25 +55,34 @@
           <td>{{ playlist.get_category_display}}</td>
           
           <!-- if max song duration is set, display in minutes:seconds format -->
-          {% if playlist.category != 'Norm' and playlist.max_song_duration %}
+          {% if playlist.category == 'Party' or playlist.category == 'Show' and playlist.max_song_duration %}
             <td>{{ playlist.max_song_duration|time:"i:s" }}</td>
           {% else %}
             <td>None</td>
           {% endif %}
           
           <td>{{ playlist.description }}</td>
+
+          <!-- superusers and teachers can see the play button -->
+          {% if user.is_superuser or user.is_teacher %}
+            <td>
+              <!-- form for the user to enter the starting song number -->
+              <form class="text-center" enctype="multipart/form-data" method="POST">
+                {% csrf_token %}
+                <input id="id_start_song" name="start_song" type="number" maxlength='3' min='1' value="1" class="text-center"/>
+                <input type="hidden" id="playlist_id" name="playlist_id" value={{ playlist.id }}>
+                <button class="btn btn-primary btn-sm" type="submit">Play</button>
+              </form>
+            </td>
+          {% endif %}
           
           <!-- action buttons -->
           <td class="text-center">
             
-            <!-- superusers and teachers can see the play button -->
-            {% if user.is_superuser or user.is_teacher %}
-              <a class="btn btn-primary btn-sm" href="{% url 'App:play_song_list' playlist.id %}">Play</a>
-            {% endif %}
-          
             <!-- superusers and owners can edit or delete -->
             {% if user.is_superuser or user == playlist.owner %}
-              <a class="btn btn-info btn-sm" href="{% url 'App:edit_playlist' playlist.id %}">Edit</a>
+              <a class="btn btn-info btn-sm" href="{% url 'App:copy_playlist' playlist.id %}">Copy</a>
+              <a class="btn btn-warning btn-sm" href="{% url 'App:edit_playlist' playlist.id %}">Edit</a>
               <a class="btn btn-danger btn-sm" 
                   onclick="return confirm('Deleting: {{playlist.title}}\n Are you sure?')" 
                   href="{% url 'App:delete_playlist' playlist.id %}">Delete</a>
@@ -78,6 +97,7 @@
   <div class="text-center my-2">
     <a class="btn btn-primary" href="{% url 'App:create_playlist' %}">Create Empty Playlist</a>
     <a class="btn btn-primary" href="{% url 'App:create_playlist' 1 %}">Create Random Playlist</a>
+    <a class="btn btn-primary" href="{% url 'App:create_playlist_from_json'  %}">Create Playlist from JSON file</a>
   </div>
 
 {% endblock %}

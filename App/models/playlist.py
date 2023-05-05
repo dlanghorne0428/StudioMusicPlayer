@@ -35,7 +35,7 @@ class Playlist(models.Model):
     category = models.CharField(
         max_length = 10,
         choices = CATEGORY_CHOICES, 
-        default = 'Norm'
+        default = 'Party'
     )
 
     # for Party or Showcase playlist, the time limit
@@ -43,6 +43,7 @@ class Playlist(models.Model):
     
     # this field stores the preferences used when to generate this playlist
     preferences = models.JSONField(null=True, blank=True)    
+    
     
     def add_song(self, song, index=None):
         ''' add a song to the end of a playlist unless index is specified'''
@@ -56,12 +57,17 @@ class Playlist(models.Model):
         )
         new_playlist_entry.save()     
         
+    
+    def number_of_songs(self):
+        ''' return the number of songs stored in the playlist'''
+        return SongInPlaylist.objects.filter(playlist=self).count()
+    
         
     def delete_song(self, song):
         ''' delete the specified song from the playlist'''
         
         # obtain the number of songs in this playlist
-        playlist_length = SongInPlaylist.objects.filter(playlist=self).count()
+        playlist_length = self.number_of_songs()
 
         # get the selected song from the playlist, find its index and delete it
         selected = SongInPlaylist.objects.get(playlist=self, song=song)  
@@ -74,6 +80,7 @@ class Playlist(models.Model):
             next_index.order = higher_index - 1
             #print(next_index.song, next_index.order)
             next_index.save()          
+
 
     def move_song(self, song, old_index, new_index):
         ''' move the specified song to the new index in the playlist'''
@@ -100,6 +107,13 @@ class Playlist(models.Model):
                 prev_index.save()
             selected.order = new_index
             selected.save()    
+            
+        
+    def replace_song(self, index, new_song):
+        # get the selected index in the playlist
+        target = SongInPlaylist.objects.get(playlist=self, order=index)
+        target.song = new_song
+        target.save()
         
 
     def __str__(self):

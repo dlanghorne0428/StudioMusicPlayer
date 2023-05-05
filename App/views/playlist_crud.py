@@ -3,7 +3,9 @@ from django.conf import settings
 from django.core.paginator import Paginator
 
 import os
+import json
 import math
+from base64 import b64encode
 import random
 from datetime import time
 
@@ -11,7 +13,7 @@ from datetime import time
 from App.models.song import Song, DANCE_TYPE_CHOICES, DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS, DANCE_TYPE_TEMPOS, HOLIDAY_DEFAULT_USAGE
 from App.models.user import User
 from App.models.playlist import Playlist, SongInPlaylist
-from App.forms import PlaylistInfoForm, RandomPlaylistForm
+from App.forms import PlaylistInfoForm, RandomPlaylistForm, PlaylistUploadForm
 
 
 import logging
@@ -88,13 +90,68 @@ def create_playlist(request, random=None):
                                     'page_title': page_title, 
                                     'form':PlaylistInfoForm(), 
                                     'error': "Invalid data submitted."})            
+
+def create_playlist_from_json(request, json_filename="../../../Desktop/spring_showcase.json"):
+    
+    if not (request.user.is_superuser or request.user.is_teacher):
+        logger.warning(request.user.username + " not authorized to create playlists")
+        return render(request, 'permission_denied.html')
+    
+    if request.method == "POST":
+        form = PlaylistUploadForm(request.POST, request.FILES)
+        
+        if form.is_valid():
+            uploaded_file = request.FILES['file']
+
+            json_data = ''
+            for line in uploaded_file:
+                json_data = json_data + line.decode()  # "str_text" will be of `str` type
+        
+            # create new playlist
+            new_playlist = Playlist()
+            # set playlist owner to current user
+            user = request.user
+            new_playlist.owner = user 
+            new_playlist.title = form.cleaned_data['title'] 
+            new_playlist.category = 'Show'
+            new_playlist.max_song_duration = time(minute=1, second=15)
+            new_playlist.streaming = False   # for now     
+            new_playlist.save()
+            
+            #with open(json_filename, "r") as read_file:
+            print("Converting JSON encoded data into Python dictionary")
+            developer = json.loads(json_data) #json.load(read_file)    
+            
+            for h in developer['heats']:
+                if h['dance_style'] in ['Mambo', 'Salsa']:
+                    the_style = DANCE_TYPE_CHOICES[8][0]               
+                else:
+                    for d in DANCE_TYPE_CHOICES:
+                        if h['dance_style'] == d[1]:
+                            the_style = d[0]
+                            break
+                
+                placeholder_song = Song.objects.get(title="{Placeholder}", dance_type=the_style)
+                new_playlist.add_song(placeholder_song)          
+                
+                if 'feature' in h:
+                    current_song = SongInPlaylist.objects.get(playlist=new_playlist, order=h['heat']-1)
+                    current_song.feature = True
+                    current_song.save()
+            
+            return redirect("App:edit_playlist", new_playlist.id)
+        else:
+            error = "Form data not valid"
+            return render(request, "create_playlist_from_json.html", {'page_title': page_title, 'form': form, 'error': error})            
+        
+    else:  #GET
+        form = PlaylistUploadForm()
+        page_title = 'Specify title and select JSON file for new playlist'
+        return render(request, "create_playlist_from_json.html", {'page_title': page_title, 'form': form})
     
 
-def pick_random_song(playlist, dance_type, focus_holiday=None):
-    '''pick a random song of this dance type and add it to the playlist.
-      if focus_holiday is set, limit the choices to holiday songs of that type, if any.'''
-    # initialize return variable
-    missed_a_holiday_song = None
+def pick_random_song(playlist, dance_type=None, index=None):
+    '''pick a random song of this dance type and add it to the playlist.'''
     
     # first find either the streaming songs or local songs iin the database 
     if playlist.streaming:
@@ -108,54 +165,29 @@ def pick_random_song(playlist, dance_type, focus_holiday=None):
     
     # create a list for songs that match     
     available_songs = list()
-    
-    # if there is a focus holiday
-    if focus_holiday:
-        # apply another filter for only holiday songs
-        holiday_candidates = candidate_songs.filter(holiday=focus_holiday)
-        # add the holiday songs to the available songs list
-        for s in holiday_candidates:
-            # prevent songs that are already in this playlist
-            if s.playlist_set.filter(id=playlist.id).count() == 0:
-                available_songs.append(s)
-        # if no holiday songs of this type, set missed flag to inform calling routine
-        if len(available_songs) == 0:
-            if dance_type is None:
-                warn_msg = "No %s songs" % (focus_holiday, )
-            else:
-                warn_msg = "No %s songs for %s" % (dance_type, focus_holiday)
-                logger.warning(warn_msg)                            
-            missed_a_holiday_song = True
-        else:
-            missed_a_holiday_song = False
      
-    # if we didn't add any holiday songs, consider all candidate songs            
-    if len(available_songs) == 0:
-        for s in candidate_songs:
-            # don't allow songs from holidays that are excluded
-            if s.holiday: 
-                if playlist.preferences is None:
-                    if HOLIDAY_DEFAULT_USAGE[s.holiday] == "Ex":
-                        logger.debug("Excluding song: " + s.get_holiday_display())
-                        continue
-                elif playlist.preferences['holiday_usage'][s.holiday] == "Ex":
-                    logger.debug("Excluding song: " + s.get_holiday_display())
-                    continue
-            # prevent songs from taking two spots in the same playlist
-            if s.playlist_set.filter(id=playlist.id).count() == 0:
-                available_songs.append(s)
+    for s in candidate_songs:
+        # don't allow placeholder songs
+        if s.title.startswith("{Place"):
+            continue
+        # prevent songs from taking two spots in the same playlist
+        if s.playlist_set.filter(id=playlist.id).count() == 0:
+            available_songs.append(s)
     
     if len(available_songs) == 0:
         logger.warning(dance_type + ": No more songs available")
+        return False
     else:
         # pick a random song from the available list - all equal probability and add it to the playlist
         random_song = available_songs[random.randrange(len(available_songs))]
-        playlist.add_song(random_song)
-        logger.info("Added " + str(random_song) + " to playlist " + str(playlist))
+        if index is None:
+            playlist.add_song(random_song)
+            logger.info("Added " + str(random_song) + " to playlist " + str(playlist))
+        else:
+            playlist.replace_song(index, random_song)
+            logger.info("Replace index " + str(index) + " with " + str(random_song) + " in playlist " + str(playlist))
+        return True
     
-    # return indication that a requested holiday song was not selected
-    return missed_a_holiday_song
-
 
 def build_random_playlist(request, playlist_id):
     ''' generates a random list of songs and adds them to the playlist '''
@@ -230,26 +262,18 @@ def build_random_playlist(request, playlist_id):
         # get song_counts entered by the user from the form
         songs_remaining = dict()
         for key in DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS:
-            form_field = '%s_songs' % (key, )
-            songs_remaining[key] = form_data[form_field]
-            
-        # get holiday usage data from the form and check if this is a holiday-focused playlist 
-        focus_holiday = None
-        focus_ratio = None
-        holiday_usage = dict()
-        for key in HOLIDAY_DEFAULT_USAGE:
-            form_field = "%s_use" % (key, )
-            holiday_usage[key] = form_data[form_field]  
-            if holiday_usage[key].startswith("Ev"):
-                focus_holiday = key
-                focus_ratio = int(holiday_usage[key][-1])
+            if key == "gen":
+                songs_remaining[key] = 0
+            else:
+                form_field = '%s_songs' % (key, )
+                songs_remaining[key] = form_data[form_field]
             
         # save the form inputs into the playlist            
         preferences['playlist_length'] = playlist_length
         preferences['prevent_back_to_back_styles'] = prevent_back_to_back_styles
         preferences['prevent_back_to_back_tempos'] = prevent_back_to_back_tempos
         preferences['counts'] = songs_remaining
-        preferences['holiday_usage'] = holiday_usage
+        preferences['holiday_usage'] = HOLIDAY_DEFAULT_USAGE
         playlist.preferences = preferences
         playlist.save()
         
@@ -263,7 +287,6 @@ def build_random_playlist(request, playlist_id):
         
         # initialize control variables    
         last_song_style = None
-        missed_a_holiday_song = False
         
         # loop until the correct number of songs have been picked
         for index in range(playlist_length):
@@ -297,16 +320,9 @@ def build_random_playlist(request, playlist_id):
                 # random choices will pick a style based on the weighted probability 
                 random_choice = random.choices(population, relative_weights)
                 
-            # save the dance style selected
+            # save the dance style selected and pick a random song of that style
             dance_style = random_choice[0]
-            
-            # if it is time for a holiday song, pass the holiday into the random song picker
-            if focus_holiday and (index % focus_ratio == 0 or missed_a_holiday_song):
-                missed_a_holiday_song = pick_random_song(playlist, dance_style, focus_holiday)
-            else:  
-                # pick any song of the required dance style
-                missed_a_holiday_song == False
-                pick_random_song(playlist, dance_style)
+            pick_random_song(playlist, dance_style)
             
             # decrement the number of remaining songs for that style and remember which style was chosen for next iteration
             songs_remaining[dance_style] -= 1
@@ -346,7 +362,72 @@ def add_random_song_to_playlist(request, playlist_id, dance_type):
     # redirect to edit playlist page, showing new song at end of list
     return redirect('App:edit_playlist', playlist.id)
 
-   
+
+def copy_playlist(request, playlist_id):
+    ''' allows the superuser to edit an existing playlist. '''    
+    if not (request.user.is_superuser or request.user.is_teacher):
+        logger.warning(request.user.username + " not authorized to copy playlists")
+        return render(request, 'permission_denied.html')    
+    
+    else:        
+        # get the specific playlist object from the database
+        playlist = get_object_or_404(Playlist, pk=playlist_id)
+        
+        # only owner or superuser is allowed to copy playlist
+        if not (request.user.is_superuser or playlist.owner == request.user):
+            logger.warning(request.user.username + " not authorized to copy playlist " + str(playlist))
+            return render(request, 'permission_denied.html') 
+        
+        # create new playlist object and copy fields from existing playlist
+        new_playlist = Playlist()
+        new_playlist.title = "copy-" + playlist.title
+        new_playlist.description = "Copy of " + playlist.description
+        new_playlist.owner = playlist.owner
+        new_playlist.streaming = playlist.streaming
+        new_playlist.category = playlist.category
+        new_playlist.max_song_duration = playlist.max_song_duration
+        new_playlist.preferences = playlist.preferences
+        new_playlist.save()
+        
+        # obtain list of songs in the playlist being copied
+        song_list = playlist.songs.all().order_by('songinplaylist__order')
+        
+        # copy them to the new playlist in the same order
+        for s in song_list:    
+            new_playlist.add_song(s)
+        
+        return redirect('App:user_playlists')
+
+
+def replace_playlist_songs(request, playlist_id):
+    ''' allows the superuser to replace all songs in existing playlist. 
+        the dance type order will remain the same.'''    
+    if not (request.user.is_superuser or request.user.is_teacher):
+        logger.warning(request.user.username + " not authorized to copy playlists")
+        return render(request, 'permission_denied.html')    
+    
+    else:        
+        # get the specific playlist object from the database
+        playlist = get_object_or_404(Playlist, pk=playlist_id)
+        
+        # only owner or superuser is allowed to replace the playlist songs
+        if not (request.user.is_superuser or playlist.owner == request.user):
+            logger.warning(request.user.username + " not authorized to replace playlist " + str(playlist))
+            return render(request, 'permission_denied.html') 
+                
+        # obtain list of songs in the playlist
+        song_list = playlist.songs.all().order_by('songinplaylist__order')
+        
+        # copy them to the new playlist in the same order
+        index = 0
+        for s in song_list:
+            dance_type = s.dance_type
+            pick_random_song(playlist, dance_type, index)
+            index += 1
+        
+        return redirect('App:edit_playlist', playlist_id)
+    
+        
 def delete_playlist(request, playlist_id):
     ''' allows the superuser to edit an existing playlist. '''
     
@@ -368,7 +449,7 @@ def delete_playlist(request, playlist_id):
         return redirect('App:all_playlists')          
 
  
-def edit_playlist(request, playlist_id):
+def edit_playlist(request, playlist_id, start_index = 0):
     ''' allows the superuser to edit an existing playlist. '''
     
     if not (request.user.is_superuser or request.user.is_teacher):
@@ -391,6 +472,7 @@ def edit_playlist(request, playlist_id):
         # get the URL parameters for command and index in string format
         command = request.GET.get('cmd')
         index_str = request.GET.get('index')
+        new_index = 0
     
         # if there are URL parameters
         if command is not None:
@@ -410,30 +492,18 @@ def edit_playlist(request, playlist_id):
             if command == 'delsong':
                 playlist.delete_song(selected.song)
                     
-            elif command == "replace-song":
+            elif command == "replace-random":
                 # find the dance style of the selected song
                 dance_style = selected.song.dance_type
+                pick_random_song(playlist, dance_style, index)             
                 
-                # first find either the streaming songs or local songs iin the database for this dance style
-                if playlist.streaming:
-                    candidate_songs = Song.objects.exclude(spotify_track_id__isnull=True).filter(dance_type=dance_style)
-                else:
-                    candidate_songs = Song.objects.filter(spotify_track_id__isnull=True).filter(dance_type=dance_style)                 
-
-                available_songs = list()    
-                
-                for s in candidate_songs:
-                    # TODO: consider holiday usage, when replacing a song
-                    # prevent songs from taking two spots in the same playlist
-                    if s.playlist_set.filter(id=playlist.id).count() == 0:
-                        available_songs.append(s)  
-
-                # pick a random song from the available list - all equal probability
-                random_song = available_songs[random.randrange(len(available_songs))]
-                # delete the original song, add the new one
-                selected.delete()
-                playlist.add_song(random_song, index)                
-                
+            elif command == 'replace-select':
+                # find the dance style of the selected song
+                dance_style = selected.song.dance_type  
+                print("Replacing " + str(selected.song))
+                # redirect to select a song
+                return redirect('App:replace_song', playlist_id, index, dance_style)  
+            
             elif command == 'feature':
                 # toggle the feature field
                 selected.feature = not(selected.feature)
@@ -447,8 +517,12 @@ def edit_playlist(request, playlist_id):
                 # call method in playlist model to rearrange song order
                 playlist.move_song(selected.song, index, new_index)  
                 
+                # adjust highlight index after dragging down
+                if new_index > index:
+                    new_index -= 1;
+                    
             # redirect to this same view in order to remove the URL parameters 
-            return redirect('App:edit_playlist', playlist_id)             
+            return redirect('App:edit_playlist', playlist_id, new_index)             
         
         # no URL parameters, render the template as is
         form = PlaylistInfoForm(instance=playlist, submit_title=None)
@@ -457,7 +531,7 @@ def edit_playlist(request, playlist_id):
             'songs': songs_in_playlist,
             'dance_types': DANCE_TYPE_CHOICES,
             'form': form,
-            'error': None,
+            'start_index': start_index,
         })
 
     else: # POST
@@ -472,7 +546,7 @@ def edit_playlist(request, playlist_id):
                 playlist.max_song_duration = None
                 form.save()
                 
-                if playlist.category != 'Norm':
+                if playlist.category == 'Party' or playlist.category == 'Show':
                     my_error = playlist.get_category_display() + " playlists must have a song time limit."
                     logger.warning(my_error)
                     # ask the user to set a time limit
@@ -483,6 +557,12 @@ def edit_playlist(request, playlist_id):
                         'form': form,
                         'error': my_error, 
                     })
+                
+            elif playlist.category == 'Norm':
+                my_error = "Correcting " + playlist.get_category_display() + " playlists to not have a song time limit"
+                logger.warning(my_error)                
+                playlist.max_song_duration = None
+                form.save()                
                            
             # redirect to show playlists
             return redirect('App:user_playlists')

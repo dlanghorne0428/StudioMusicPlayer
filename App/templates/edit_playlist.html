@@ -15,7 +15,7 @@
   <div class="row">
     <div class="col-12">
       <h2 class="text-center">Edit Playlist</h2>
-      <p>{{ error }}</p>
+      <h4 class='text-center text-danger'>{{ error }}</h4>
     </div>
   </div>
   
@@ -39,7 +39,7 @@
     <div class="col-6">
       <!-- link to regenerate this current playlist-->
       <div class="text-start mt-2">
-        <a class="btn btn-warning btn-sm" href="{% url 'App:build_random_playlist' playlist.id %}">Clear and Regenerate</a>
+        <a class="btn btn-warning btn-sm" href="{% url 'App:replace_playlist' playlist.id %}">Replace All Songs</a>
       </div>
     </div>
   </div>
@@ -51,12 +51,13 @@
     <thead class="table-dark">
       <!-- use sticky to keep table header from scrolling off the page -->
       <tr id='table-header-sticky' >
-        <th class="text-center">Index</th>
-        <th class="text-center">Title</th>
-        <th class="text-center">Artist</th>
-        <th class="text-center">Dance</th>
-        <th class="text-center">Play <br>Whole Song?</th>
-        <th class="text-center">Action</th>
+        <th class="text-center" style="width:80px">Index</th>
+        <th class="text-center" style=>Title</th>
+        <th class="text-center" style=>Artist</th>
+        <th class="text-center" style="width:160px">Dance</th>
+        <th class="text-center" style="width:130px">Play<br>Full Song?</th>
+        <th class="d-xl-table-cell d-sm-none text-center" style="width:260px">Action</th>
+        <th class="d-xl-none d-sm-table-cell text-center" style="width:160px">Action</th>
       </tr>
     </thead>
     <!-- prevent text in table body from being selected. -->
@@ -64,7 +65,7 @@
       
       <!-- the rest of the table has one song per row -->
       {% for s in songs %}
-      <tr>
+      <tr id="table-row-{{forloop.counter0}}">
         <!-- show a one-based index as the first column. -->
         <td class="text-center">{{ forloop.counter }}</td>
         
@@ -90,26 +91,36 @@
         </td>
         
         <!-- final columns are the action buttons -->       
-        <td><span class="dropdown">
-          <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button" 
-                  data-bs-toggle="dropdown">&hellip;       
-          </button>
-          <ul class="dropdown-menu">
-            <!-- allow the user to resume the playlist from this index --> 
-            <li><a class="dropdown-item" 
+        <td>
+          <!-- allow the user to resume the playlist from this index -->
+          <a class="btn btn-sm btn-primary d-xl-inline d-sm-none" 
                    href="{% url 'App:play_song_list' playlist.id forloop.counter0 %}">Play from here</a>
-            </li>
-            <!-- allow the user to replace a song with another of the same dance style --> 
-            <li><a class="dropdown-item" 
-                   href="?{% param_replace cmd="replace-song" index=forloop.counter0 %}">Replace</a>
-            </li>
-     
-            <!-- allow the user delete a song and move all other songs up one slot -->
-            <!-- force the user to confirm before deleting a song --> 
-            <li><a class="dropdown-item" 
-                   onclick="return confirm('Deleting: {{song.title}}\n Are you sure?')" 
-                   href="?{% param_replace cmd="delsong" index=forloop.counter0 %}">Delete</a>
-            </li>
+          <a class="btn btn-sm btn-primary d-xl-none d-sm-inline" 
+                   href="{% url 'App:play_song_list' playlist.id forloop.counter0 %}">Play</a>
+          <span class="dropdown">
+            <button class="btn btn-sm btn-outline-dark dropdown-toggle d-xl-inline d-sm-none" type="button" 
+                  data-bs-toggle="dropdown">Change Song</button>
+            <button class="btn btn-sm btn-outline-dark dropdown-toggle d-xl-none d-sm-inline" type="button" 
+                  data-bs-toggle="dropdown">Change</button>
+            <ul class="dropdown-menu">
+              <!-- allow the user to replace a song with another random song of the same dance style --> 
+              <li><a class="dropdown-item" 
+                     href="?{% param_replace cmd="replace-random" index=forloop.counter0 %}">Replace-Random</a>
+              </li>
+              
+              <!-- allow the user to select a replacement song --> 
+              <li><a class="dropdown-item" 
+                     href="?{% param_replace cmd="replace-select" index=forloop.counter0 %}">Replace-Select</a>
+              </li>     
+              
+              <!-- allow the user delete a song and move all other songs up one slot -->
+              <!-- force the user to confirm before deleting a song --> 
+              <li><a class="dropdown-item" 
+                     onclick="return confirm('Deleting: {{song.title}}\n Are you sure?')" 
+                     href="?{% param_replace cmd="delsong" index=forloop.counter0 %}">Delete</a>
+              </li>
+            </ul>
+          </span>
         </td>
       </tr>
       {% endfor %}
@@ -140,5 +151,7 @@
 
 <!-- need javascript to submit the form when any info items have changed -->
 {% block extra_js %}
-    <script src={% static 'js/edit_playlist.js' %}></script>
+  {{ songs|length|json_script:"max-index-id" }}
+  {{ start_index|json_script:"start-index-id" }}
+  <script src={% static 'js/edit_playlist.js' %}></script>
 {% endblock %}

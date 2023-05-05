@@ -54,3 +54,61 @@ def show_songs(request, song_id = None):
                    'streaming': streaming,
                    'page_title': page_title
                   })
+
+
+def replace_song(request, playlist_id, index, dance_type, song_id=None):
+    
+    if not request.user.is_authenticated:
+        logger.warning("User is not authenticated - redirect to login page")
+        return redirect('login')
+    
+    playlists = Playlist.objects.filter(pk=playlist_id)
+    
+    if song_id is None:
+        if dance_type == "gen":
+            songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=True).order_by('title')) 
+        else:
+            songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=True, dance_type=dance_type).order_by('title')) 
+            
+        page_title = "Playlist " + playlists[0].title + ": Select new song for item " + str(index + 1)
+        streaming = False
+    
+        # render the template
+        return render(request, 'show_songs.html', {
+            'filter': songs,
+            'songs': songs.qs,
+            'playlists': playlists,
+            'streaming': streaming,
+            'index': index + 1,
+            'page_title': page_title
+            })    
+    
+    else:
+        new_song = Song.objects.get(pk=song_id)
+        playlists[0].replace_song(index - 1, new_song)
+        return redirect ("App:edit_playlist", playlists[0].id)
+
+
+def show_songs_no_cover_art(request):
+    if not request.user.is_authenticated:
+        logger.warning("User is not authenticated - redirect to login page")
+        return redirect('login')    
+    
+    playlists = None
+    streaming = False
+    page_title = "Songs without Cover Art"
+    songs = Song.objects.filter(spotify_track_id__isnull=True)
+    no_art_songs = list()
+    for s in songs:
+        if not s.image:
+            no_art_songs.append(s)
+    
+    # render the template
+    return render(request, 'show_songs.html', 
+                  {'songs': no_art_songs,
+                   'playlists': playlists,
+                   'streaming': streaming,
+                   'showing_no_art': True,
+                   'page_title': page_title
+                  })
+     
