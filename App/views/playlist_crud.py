@@ -316,28 +316,6 @@ def build_random_playlist(request, playlist_id):
         return redirect('App:edit_playlist', playlist.id)
 
 
-def shuffle_playlist(request, playlist_id):
-    ''' randomize the order of the songs in this playlist '''
-    # get the specific playlist object from the database
-    playlist = get_object_or_404(Playlist, pk=playlist_id)     
-    logger.info("Shuffling playlist " + str(playlist))
-    
-    # obtain list of songs in this playlist
-    songs_in_playlist = SongInPlaylist.objects.filter(playlist=playlist).order_by('order')
-    playlist_indices = list()
-
-    for s in songs_in_playlist:
-        playlist_indices.append(s.order)
-      
-    random.shuffle(playlist_indices)
-    
-    for i in range(len(playlist_indices)):
-        songs_in_playlist[i].order = playlist_indices[i]
-        songs_in_playlist[i].save()
-    
-    return redirect('App:edit_playlist', playlist.id)
-
-
 def add_to_playlist(request, playlist_id, song_id):
     ''' add a song to the end of a playlist '''
     # get the specific playlist object from the database
