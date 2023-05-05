@@ -89,7 +89,8 @@ def create_playlist(request, random=None):
             return render(request, 'create_playlist.html', {
                                     'page_title': page_title, 
                                     'form':PlaylistInfoForm(), 
-                                    'error': "Invalid data submitted."})            
+                                    'error': "Invalid data submitted."})        
+        
 
 def create_playlist_from_json(request, json_filename="../../../Desktop/spring_showcase.json"):
     
@@ -335,6 +336,7 @@ def add_to_playlist(request, playlist_id, song_id):
     ''' add a song to the end of a playlist '''
     # get the specific playlist object from the database
     playlist = get_object_or_404(Playlist, pk=playlist_id) 
+    last_index = playlist.number_of_songs()
     
     # get the specific song object from the database
     song = get_object_or_404(Song, pk=song_id)    
@@ -344,22 +346,23 @@ def add_to_playlist(request, playlist_id, song_id):
     logger.info("Added " + str(song) + " to playlist " + str(playlist))
     
     # redirect to edit playlist page, showing new song at end of list
-    return redirect('App:edit_playlist', playlist.id)
+    return redirect('App:edit_playlist', playlist.id, last_index)
 
 
 def add_random_song_to_playlist(request, playlist_id, dance_type):
     ''' add a song to the end of a playlist '''
     # get the specific playlist object from the database
     playlist = get_object_or_404(Playlist, pk=playlist_id) 
+    last_index = playlist.number_of_songs()
     
-    if dance_type == "Any":
+    if dance_type == "Any" or dance_type == "gen":
         dance_type = None
         
     # pick a random song of the requested type and add it to playlist
     pick_random_song(playlist, dance_type)
     
     # redirect to edit playlist page, showing new song at end of list
-    return redirect('App:edit_playlist', playlist.id)
+    return redirect('App:edit_playlist', playlist.id, last_index)
 
 
 def copy_playlist(request, playlist_id):
@@ -478,8 +481,8 @@ def delete_playlist(request, playlist_id):
         logger.info("Deleting playlist " + str(playlist))
         playlist.delete()
                     
-        # return to list of all playlists        
-        return redirect('App:all_playlists')          
+        # return to list of user playlists        
+        return redirect('App:user_playlists')          
 
  
 def edit_playlist(request, playlist_id, start_index = 0):
@@ -528,7 +531,9 @@ def edit_playlist(request, playlist_id, start_index = 0):
             elif command == "replace-random":
                 # find the dance style of the selected song
                 dance_style = selected.song.dance_type
-                pick_random_song(playlist, dance_style, index)             
+                # replace with a random song and indicate it for highlighting
+                pick_random_song(playlist, dance_style, index) 
+                new_index = index
                 
             elif command == 'replace-select':
                 # find the dance style of the selected song
@@ -541,6 +546,7 @@ def edit_playlist(request, playlist_id, start_index = 0):
                 # toggle the feature field
                 selected.feature = not(selected.feature)
                 selected.save()
+                new_index = index
                 
             elif command == 'dragsong': 
                 # get the new index (dragged position) and convert to integer
