@@ -132,7 +132,7 @@ def create_playlist_from_json(request, json_filename="../../../Desktop/spring_sh
                             break
                 
                 placeholder_song = Song.objects.get(title="{Placeholder}", dance_type=the_style)
-                new_playlist.add_song(placeholder_song, h['heat']-1)            
+                new_playlist.add_song(placeholder_song)          
                 
                 if 'feature' in h:
                     current_song = SongInPlaylist.objects.get(playlist=new_playlist, order=h['heat']-1)
@@ -180,8 +180,12 @@ def pick_random_song(playlist, dance_type=None, index=None):
     else:
         # pick a random song from the available list - all equal probability and add it to the playlist
         random_song = available_songs[random.randrange(len(available_songs))]
-        playlist.add_song(random_song, index)
-        logger.info("Added " + str(random_song) + " to playlist " + str(playlist))
+        if index is None:
+            playlist.add_song(random_song)
+            logger.info("Added " + str(random_song) + " to playlist " + str(playlist))
+        else:
+            playlist.replace_song(index, random_song)
+            logger.info("Replace index " + str(index) + " with " + str(random_song) + " in playlist " + str(playlist))
         return True
     
 
@@ -393,7 +397,36 @@ def copy_playlist(request, playlist_id):
             new_playlist.add_song(s)
         
         return redirect('App:user_playlists')
+
+
+def replace_playlist_songs(request, playlist_id):
+    ''' allows the superuser to replace all songs in existing playlist. 
+        the dance type order will remain the same.'''    
+    if not (request.user.is_superuser or request.user.is_teacher):
+        logger.warning(request.user.username + " not authorized to copy playlists")
+        return render(request, 'permission_denied.html')    
+    
+    else:        
+        # get the specific playlist object from the database
+        playlist = get_object_or_404(Playlist, pk=playlist_id)
         
+        # only owner or superuser is allowed to replace the playlist songs
+        if not (request.user.is_superuser or playlist.owner == request.user):
+            logger.warning(request.user.username + " not authorized to replace playlist " + str(playlist))
+            return render(request, 'permission_denied.html') 
+                
+        # obtain list of songs in the playlist
+        song_list = playlist.songs.all().order_by('songinplaylist__order')
+        
+        # copy them to the new playlist in the same order
+        index = 0
+        for s in song_list:
+            dance_type = s.dance_type
+            pick_random_song(playlist, dance_type, index)
+            index += 1
+        
+        return redirect('App:edit_playlist', playlist_id)
+    
         
 def delete_playlist(request, playlist_id):
     ''' allows the superuser to edit an existing playlist. '''
@@ -462,25 +495,7 @@ def edit_playlist(request, playlist_id, start_index = 0):
             elif command == "replace-random":
                 # find the dance style of the selected song
                 dance_style = selected.song.dance_type
-                
-                # first find either the streaming songs or local songs iin the database for this dance style
-                if playlist.streaming:
-                    candidate_songs = Song.objects.exclude(spotify_track_id__isnull=True).filter(dance_type=dance_style)
-                else:
-                    candidate_songs = Song.objects.filter(spotify_track_id__isnull=True).filter(dance_type=dance_style)                 
-
-                available_songs = list()    
-                
-                for s in candidate_songs:
-                    # prevent songs from taking two spots in the same playlist
-                    if s.playlist_set.filter(id=playlist.id).count() == 0:
-                        available_songs.append(s)  
-
-                # pick a random song from the available list - all equal probability
-                random_song = available_songs[random.randrange(len(available_songs))]
-                # delete the original song, add the new one
-                selected.delete()
-                playlist.add_song(random_song, index)                
+                pick_random_song(playlist, dance_style, index)             
                 
             elif command == 'replace-select':
                 # find the dance style of the selected song
