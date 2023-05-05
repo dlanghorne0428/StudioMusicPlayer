@@ -61,7 +61,9 @@
         <th class="text-center" style=>Title</th>
         <th class="text-center" style=>Artist</th>
         <th class="text-center" style="width:160px">Dance</th>
-        <th class="text-center" style="width:130px">Play<br>Full Song?</th>
+        {% if playlist.category != 'Norm' %}
+          <th class="text-center" style="width:130px">Play<br>Full Song?</th>
+        {% endif %}
         <th class="d-xl-table-cell d-sm-none text-center" style="width:260px">Action</th>
         <th class="d-xl-none d-sm-table-cell text-center" style="width:160px">Action</th>
       </tr>
@@ -85,16 +87,18 @@
         <!-- display the "readable" string for the dance type -->
         <td class="text-center">{{ s.song.get_dance_type_display }}</td>
         
-        <!-- display a checkmark is song is featured, red x if not -->
-        <td class="text-center">  
-          {% if s.feature %}
-            <a class="fs-5" style="text-decoration: none"
-               href="?{% param_replace cmd="feature" index=forloop.counter0 %}">&#9989;</a>
-          {% else %}
-            <a class="fs-5 link-danger" style="text-decoration: none"
-               href="?{% param_replace cmd="feature" index=forloop.counter0 %}">&cross;</a>
-          {% endif %}
-        </td>
+        {% if playlist.category != 'Norm' %}
+        <!-- display Yes if song is featured, No if not -->
+          <td class="text-center">  
+            {% if s.feature %}
+              <a class="fs-5 link-danger" style="text-decoration: none"
+                 href="?{% param_replace cmd="feature" index=forloop.counter0 %}">Yes</a>
+            {% else %}
+              <a class="fs-5 link-info" style="text-decoration: none"
+                 href="?{% param_replace cmd="feature" index=forloop.counter0 %}">No</a>
+            {% endif %}
+          </td>
+        {% endif %}
         
         <!-- final columns are the action buttons -->       
         <td>
