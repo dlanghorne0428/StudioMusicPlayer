@@ -11,6 +11,11 @@ def home(request):
     ''' The current home page for this app.'''
     return render(request,"home.html", {'user': request.user})
 
+def about(request):
+    ''' The current about page for this app.'''
+    return render(request,"about.html", {'version': '1.3', 'date': '06 May 2023'})
+
+
 def exit(request):
     logout(request)
     logger.info(request.user.username + " exited the application")
