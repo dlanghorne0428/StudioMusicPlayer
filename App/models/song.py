@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.utils.text import get_valid_filename, slugify
 
@@ -117,19 +118,27 @@ def good_filename(filename):
     
 def create_valid_filename(instance, filename):
     ''' When uploading audio files, find a valid name that django can use.'''
-
-    # save music files in a "music" subfolder under MEDIA_ROOT
-    path = 'music/' + good_filename(filename)
-    return path
+    # check if song file is already in the right folder
+    current_dirname = os.path.dirname(filename)
+    if current_dirname == settings.MEDIA_ROOT + 'music':
+        return filename
+    else:    
+        # save music files in a "music" subfolder under MEDIA_ROOT
+        path = 'music/' + good_filename(filename)
+        return path
 
 
 def create_valid_image_filename(instance, filename):
     ''' When uploading audio files, find a valid name that django can use.'''
-
-    # save image files in a "img" subfolder under MEDIA_ROOT
-    path = 'img/' + good_filename(filename)
-    print(path)
-    return path
+    # check if image is already in the right folder
+    current_dirname = os.path.dirname(filename)
+    if current_dirname == settings.MEDIA_ROOT + 'img':
+        return filename
+    else:    
+        # save image files in a "img" subfolder under MEDIA_ROOT
+        path = 'img/' + good_filename(filename)
+        print(path)
+        return path
 
 
 class SongFileInput(models.Model):
