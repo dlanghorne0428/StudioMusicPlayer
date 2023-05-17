@@ -66,6 +66,7 @@ def add_song(request):
             logger.debug(str(metadata.mime))
             artist = 'Unknown Artist'
             title = 'Unknown Title'
+            tempo = -1
             pict = None
         
         if ("audio/mp4" in metadata.mime):
@@ -78,6 +79,10 @@ def add_song(request):
             if tags is not None:
                 artist = tags.get("\xa9ART")[0]
                 title = tags.get("\xa9nam")[0]
+                if tags.get("tmpo") is None:
+                    logger.info("No tempo value in file")
+                else:
+                    temp = tags.get("tmpo")                
                 if tags.get("covr") is None:
                     logger.info("No cover art in file")
                 else:
@@ -102,6 +107,12 @@ def add_song(request):
                 logger.info("No cover art in file")
             else:
                 pict = apic_list[0].data 
+            tempo_list = tags.getall("TBPM")
+            if len(tempo_list) == 0:
+                logger.info("No tempo value in file")
+            else:
+                frame = tempo_list[0]
+                tempo = +frame
                 
         elif content_type == 'audio/x-wav':
             logger.debug("WAV metadata " + str(metadata))
@@ -114,6 +125,10 @@ def add_song(request):
             if 'TIT2' in metadata:
                 title_frame = metadata['TIT2']
                 title = title_frame.text[0]
+                
+            if 'TBPM' in metadata:
+                tempo_frame = metadata['TBPM']
+                tempo = tempo_frame.text[0]            
             
             logger.debug(artist +  ' ' + str(title))   
         
@@ -156,6 +171,7 @@ def add_song(request):
         new_song.title = title
         new_song.artist = artist
         new_song.dance_type = song_instance.dance_type
+        new_song.tempo = tempo
         
         # determine name for the image file based on the name of the audio file
         basename = os.path.basename(new_song.audio_file.url)
