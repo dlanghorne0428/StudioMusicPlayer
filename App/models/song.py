@@ -187,6 +187,8 @@ class Song(models.Model):
     image_link = models.CharField(max_length=200,blank=True, null=True) 
     explicit = models.BooleanField(default=False)
     
+    # the song tempo in BPM will either be created from the audio file or read from Spotify
+    bpm = models.IntegerField(default=-1)
 
     dance_type = models.CharField(
         max_length = 10,

@@ -29,6 +29,10 @@
       <div class="text-center my-2">
         <a class="btn btn-secondary" href="{% url 'App:edit_playlist' playlists.0.id %}">Cancel Replacement</a>  
       </div>
+    {% else %}
+      <div class="text-center my-2">
+        <a class="btn btn-secondary" href="{% url 'App:spotify_find_song_bpms' %}">Find Song BPMs</a>  
+      </div>    
     {% endif %}
   </div>
   
@@ -39,10 +43,11 @@
     <thead class='table-dark'>
       <!-- use sticky to keep header row from scrolling off the page -->
       <tr id='table-header-sticky' >
-        <th class="text-center"style="width:33%">Title</th>
-        <th class="text-center"style="width:25%">Artist</th>
+        <th class="text-center"style="width:30%">Title</th>
+        <th class="text-center"style="width:24%">Artist</th>
         <th class="text-center"style="width:15%">Dance</th>
-        <th class="text-center"style="width:27%">Action</th>
+        <th class="text-center"style="width:6%">BPM</th>
+        <th class="text-center"style="width:25%">Action</th>
       </tr>
     </thead>
     <tbody>
@@ -58,6 +63,7 @@
             <td id='title-filter' class="text-center">{{ filter.form.title }}</td>
             <td id='artist-filter' class="text-center">{{ filter.form.artist }}</td>
             <td id='dance-type-filter' class="text-center">{{ filter.form.dance_type }}</td>
+            <td></td>
             <!-- the last button is used to submit filter data -->
             <!-- name attribute cannot be submit, so javascript submit function will work -->
             <td class="text-center">
@@ -79,6 +85,13 @@
         <!-- display the "readable" string for the dance type -->
         <td class="text-center">{{ song.get_dance_type_display }}</td>
         
+        <!-- if song BPM < 0, display N/A -->
+        {% if song.bpm < 0 %}
+          <td class='text-center'>N/A</td>
+        {% else %}
+          <td class='text-center'>{{song.bpm}}</td>
+        {% endif %}
+          
         <!-- final column has the action buttons -->
         <td class="text-center">
           {% if user.is_superuser or user.is_teacher %}

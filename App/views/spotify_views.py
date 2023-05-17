@@ -45,6 +45,14 @@ class Spotify_Api():
     #################################################################
     # CONVERSION METHODS FOR SPOTIFY CONTENT TO DJANGO MODELS 
     #################################################################
+    def track_bpm(self, spotify_track_id):
+        if spotify_track_id is None:
+            return -1
+        else:
+            features = self.spotify.audio_features(spotify_track_id)
+            return round(features[0]['tempo'])
+            
+            
     def track_info_subset (self, spotify_track, album_name=None, cover_art=None):
         '''This function saves the information about a Spotify track needed by our app'''    
         new_track = dict()
@@ -73,11 +81,13 @@ class Spotify_Api():
             new_track['album_name'] = album_name
             new_track['cover_art'] = cover_art
             
-        if spotify_track['id'] is None:
-            new_track['tempo'] = "Unknown"
-        else:
-            features = self.spotify.audio_features(spotify_track['id'])
-            new_track['tempo'] = round(features[0]['tempo'])
+        new_track['tempo'] = self.track_bpm(spotify_track['id'])
+        
+        #if spotify_track['id'] is None:
+        #    new_track['tempo'] = -1
+        #else:
+        #    features = self.spotify.audio_features(spotify_track['id'])
+        #    new_track['tempo'] = round(features[0]['tempo'])
     
         # build a duration string
         seconds = round(spotify_track['duration_ms']/1000)
@@ -811,6 +821,7 @@ def add_spotify_track(request, track_id, replace_song_id=None):
             new_song.title = song_instance.title
             new_song.artist = song_instance.artist
             new_song.dance_type = song_instance.dance_type
+            new_song.bpm = track['tempo']
             new_song.explicit = track['explicit']
             new_song.save()
             logger.debug(str(new_song))
@@ -888,6 +899,7 @@ def add_spotify_playlist(request, spotify_playlist_id, dance_type_index):
                 new_song.title = t['name']
                 new_song.artist = t['artist_name']
                 new_song.dance_type = DANCE_TYPE_CHOICES[dance_type_index][0]
+                new_song.bpm = t['tempo']
                 new_song.save()
                 song_list.append(new_song)
     
@@ -978,3 +990,36 @@ def fix_non_US_spotify_tracks(request):
                    'streaming': True,
                    'page_title': 'Tracks Modified to US version'
                   })
+
+
+def spotify_find_song_bpms(request):
+    from App.views.song_crud import authorized
+        
+    # must be an administrator or teacher 
+    if not authorized(request.user):
+        logger.warning(request.user.username + " not authorized to replace Spotify tracks")
+        return render(request, 'permission_denied.html')
+    
+    if this.spotify_api is None:
+        logger.warning("Spotify API not initialized")
+        return render(request, 'not_signed_in_spotify.html')
+    
+    songs = Song.objects.filter(bpm__lt=0)
+    if len(songs) > 0: 
+        for s in songs:
+            if s.spotify_track_id is not None:
+                s.bpm = this.spotify_api.track_bpm(s.spotify_track_id)
+                logger.info("Update BPM for " + s.title + ": " + str(s.bpm))
+                s.save()
+            else:
+                search_term = s.title + " artist:" + s.artist
+                results = this.spotify_api.search(search_term, 'track', limit=1)
+                if results['total'] > 0:
+                    s.bpm = results['track_list'][0]['tempo']
+                    logger.info(s.title + " BPM: " + str(s.bpm))
+                    s.save()
+                else:
+                    logger.error(s.title + " by " + s.artist + " Not Found")         
+                    
+            
+    return redirect("App:show_songs")
