@@ -361,11 +361,13 @@ def spotify_token(user):
 #################################################################
 # DJANGO VIEWS TO ACCESS SPOTIFY RESORUCES                      #
 #################################################################
-def spotify_sign_in(request):
+def spotify_sign_in(request, song_id=None):
     '''This view coordinates spotify authorization for the user'''
     user = request.user
     
     # Step 1: initialize cache and authorization managers
+    logger.debug('Song ID is: ' + str(song_id))
+    song_id_path = os.path.join(CACHE_FOLDER, 'song_id.txt')
     cache_path = os.path.join(CACHE_FOLDER, user.username)
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=cache_path)
     auth_manager = spotipy.oauth2.SpotifyOAuth(client_id=config('client_ID'), 
@@ -380,10 +382,23 @@ def spotify_sign_in(request):
         # Step 3. Being redirected from Spotify auth page
         auth_manager.get_access_token(request.GET.get("code"))
         logger.debug("code obtained")
-        return redirect('App:spotify_sign_in')
+        if os.path.exists(song_id_path):
+            f = open(song_id_path, 'r')
+            song_id = int(f.read())
+            f.close()
+            logger.debug("Reading Song ID: " + str(song_id))
+        if song_id is None:
+            return redirect('App:spotify_sign_in')
+        else:
+            return redirect('App:spotify_sign_in', song_id)
 
     if not auth_manager.validate_token(cache_handler.get_cached_token()):
         # Step 2. Display sign in link when no token
+        if song_id is not None:
+            logger.debug('saving song ID: ' +  str(song_id))
+            f = open(song_id_path, 'w')
+            f.write(str(song_id))
+            f.close()
         logger.info("requesting Spotify authorization for " + user.username)
         auth_url = auth_manager.get_authorize_url()
         return redirect(auth_url)    
@@ -391,21 +406,25 @@ def spotify_sign_in(request):
     # Step 4. Signed in, display list of user's recently played tracks
     this.spotify_api = Spotify_Api(auth_manager, cache_handler, user)
     logger.debug(user.username + " authorized. Spotify API initialized")
-    if not user.has_spotify_token:
-        user.has_spotify_token = True
-        logger.debug("saving Spotify token")
-        user.save()
-    
-    tracks = this.spotify_api.saved_tracks(offset=0)
-    
-    return render(request, "spotify_track_list.html", {
-        "spotify_user": this.spotify_api.current_username(),
-        'track_list_description': "Your Liked Songs",
-        "tracks": tracks['track_list'],
-        "first" : tracks['first'],
-        "last"  : tracks['last'],
-        "total" : tracks['total']        
-        })  
+    if song_id is None:
+        if not user.has_spotify_token:
+            user.has_spotify_token = True
+            logger.debug("saving Spotify token")
+            user.save()
+        
+        tracks = this.spotify_api.saved_tracks(offset=0)
+        
+        return render(request, "spotify_track_list.html", {
+            "spotify_user": this.spotify_api.current_username(),
+            'track_list_description': "Your Liked Songs",
+            "tracks": tracks['track_list'],
+            "first" : tracks['first'],
+            "last"  : tracks['last'],
+            "total" : tracks['total']        
+            })  
+    else:
+        os.remove(song_id_path)
+        return redirect('App:spotify_find_song_bpms', song_id)
 
 
 def spotify_sign_out(request):
@@ -992,7 +1011,7 @@ def fix_non_US_spotify_tracks(request):
                   })
 
 
-def spotify_find_song_bpms(request):
+def spotify_find_song_bpms(request, song_id=None):
     from App.views.song_crud import authorized
         
     # must be an administrator or teacher 
@@ -1002,9 +1021,15 @@ def spotify_find_song_bpms(request):
     
     if this.spotify_api is None:
         logger.warning("Spotify API not initialized")
-        return render(request, 'not_signed_in_spotify.html')
-    
-    songs = Song.objects.filter(bpm__lt=0)
+        return render(request, 'not_signed_in_spotify.html', {'song_id': song_id})
+        
+    if song_id is None:
+        songs = Song.objects.filter(bpm__lt=0)
+    else:
+        song_to_update = Song.objects.get(pk=song_id)
+        songs = list()
+        songs.append(song_to_update)
+        
     if len(songs) > 0: 
         for s in songs:
             if s.spotify_track_id is not None:
