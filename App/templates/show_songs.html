@@ -18,7 +18,7 @@
     <!-- link to create a song from an audio file -->
     {% if not streaming and not index %}
       <div class="text-center my-2">
-        <a class="btn btn-primary" href="{% url 'App:add_song' %}">Add Song From File</a>
+        <a class="btn btn-primary" href="{% url 'App:add_song' %}">Add Song from File</a>
         {% if showing_no_art %}
           <a class="btn btn-primary" href="{% url 'App:show_songs' %}">Show All Songs</a>   
         {% else %}

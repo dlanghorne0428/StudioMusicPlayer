@@ -26,7 +26,7 @@ def show_songs(request, song_id = None):
         
         if song_id is None:       
             # get the filtered list of Songs, ordered by title 
-            songs = SongFilter(request.GET, queryset=Song.objects.exclude(spotify_track_id__isnull=True).order_by('title')) 
+            songs = SongFilter(request.GET, queryset=Song.objects.exclude(spotify_track_id__isnull=True).exclude(title='{Placeholder}').order_by('title')) 
         else:
             songs = SongFilter(request.GET, queryset=Song.objects.filter(pk=song_id));
 
@@ -36,7 +36,7 @@ def show_songs(request, song_id = None):
         
     else:
         if song_id is None:
-            songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=True).order_by('title')) 
+            songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=True).exclude(title='{Placeholder}').order_by('title')) 
         else:
             songs = SongFilter(request.GET, queryset=Song.objects.filter(pk=song_id)) 
             
@@ -99,7 +99,7 @@ def show_songs_no_cover_art(request):
     playlists = None
     streaming = False
     page_title = "Songs without Cover Art"
-    songs = Song.objects.filter(spotify_track_id__isnull=True)
+    songs = Song.objects.filter(spotify_track_id__isnull=True).exclude(title='{Placeholder}')
     no_art_songs = list()
     for s in songs:
         if not s.image:
