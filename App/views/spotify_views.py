@@ -846,7 +846,7 @@ def add_spotify_track(request, track_id, replace_song_id=None):
             logger.debug(str(new_song))
         
         # return to list of songs
-        return redirect('App:show_songs')   
+        return redirect('App:show_songs', new_song.id)   
     
     
 def add_spotify_playlist(request, spotify_playlist_id, dance_type_index):
@@ -1047,4 +1047,7 @@ def spotify_find_song_bpms(request, song_id=None):
                     logger.error(s.title + " by " + s.artist + " Not Found")         
                     
             
-    return redirect("App:show_songs")
+        return redirect("App:show_songs", songs[-1].id)
+    
+    else:
+        return redirect("App:show_songs")

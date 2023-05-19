@@ -223,7 +223,7 @@ def add_song(request):
             return redirect('App:update_song', new_song.id)
         else:
             # return to list of songs
-            return redirect('App:show_songs')
+            return redirect('App:show_songs', new_song.id)
     
 
 def update_song(request, song_id):
@@ -248,7 +248,11 @@ def update_song(request, song_id):
         log_msg += "dance_type: " + song.dance_type + ' '
         logger.info(log_msg)
         if song.image_link is None:
-            cover_art = song.image.url
+            print('Song image: ' + str(song.image))
+            if song.image:
+                cover_art = song.image.url
+            else:
+                cover_art = settings.STATIC_URL + 'img/default.png'
         else:
             cover_art = song.image_link
         return render(request, 'update_song.html', {'form':form, 'cover_art': cover_art, 'song_id': song.id})
@@ -259,7 +263,7 @@ def update_song(request, song_id):
             logger.info(form.cleaned_data)
             # save the updated info and return to song list
             form.save() 
-            return redirect('App:show_songs')
+            return redirect('App:show_songs', song.id)
         else:
             # display error on form
             return render(request, 'update_song.html', {'form':SongEditForm(), 'error': "Invalid data submitted."})
