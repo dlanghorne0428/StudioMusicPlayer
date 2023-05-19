@@ -59,6 +59,12 @@ class SongEditForm(ModelForm):
         required = True,
     )
     
+    bpm = forms.IntegerField(
+        label = 'BPM',
+        widget = NumberInput(attrs={'class': 'text-center'}),
+        required = False,
+    )
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
@@ -69,11 +75,19 @@ class SongEditForm(ModelForm):
         self.helper.label_class='fw-bold mt-2'      # allow some top margin for the form
         
         self.helper.layout = Layout(
-            # show the fields in this order
-            'title', 
-            'artist', 
-            'image',
-            'dance_type', 
+            Row(
+                Column(
+                    Field('title'), 
+                    Field('artist'), 
+                    Field('dance_type'), 
+                    Field('bpm'), 
+                    HTML("""<a href="{% url 'App:spotify_find_song_bpms' song_id %}" class="btn btn-info">Lookup BPM on Spotify</a>"""),                   
+                    css_class='col-6'),
+                Column(
+                    HTML("""<img src="{{cover_art}}" style="width:80%;"/>"""),
+                    Field('image'), 
+                    css_class='col-6'),
+            ),
             FormActions(
                 # submit button and cancel link in the form of a button
                 Submit('save', 'Save changes'),
@@ -86,7 +100,7 @@ class SongEditForm(ModelForm):
     class Meta:
         # obtain data from these fields of the song model
         model = Song
-        fields = ['title', 'artist', 'image', 'dance_type']
+        fields = ['title', 'artist', 'image', 'bpm', 'dance_type']
         
         
 class PlaylistInfoForm(ModelForm):
