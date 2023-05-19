@@ -21,23 +21,25 @@ def show_songs(request, song_id = None):
     
     if request.user.has_spotify_token:
         streaming = True
+        page_title = "Songs added from Spotify"
+        logger.info("Displaying " + page_title)        
         
         if song_id is None:       
             # get the filtered list of Songs, ordered by title 
             songs = SongFilter(request.GET, queryset=Song.objects.exclude(spotify_track_id__isnull=True).order_by('title')) 
-            page_title = "Songs added from Spotify"
-            logger.info("Displaying " + page_title)
         else:
             songs = SongFilter(request.GET, queryset=Song.objects.filter(pk=song_id));
-            page_title="Track already added from Spotify"  
-            logger.warning(songs[0].title + " " + page_title)
 
         # get all playlists of streaming songs owned by the current user
         playlists = Playlist.objects.filter(owner=request.user, streaming=True).order_by('title')
         logger.info(request.user.username + " has " + str(len(playlists)) + " streaming playlists.")
         
     else:
-        songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=True).order_by('title')) 
+        if song_id is None:
+            songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=True).order_by('title')) 
+        else:
+            songs = SongFilter(request.GET, queryset=Song.objects.filter(pk=song_id)) 
+            
         page_title = "Songs on this Device"
         streaming = False
         logger.info("Displaying " + page_title)
