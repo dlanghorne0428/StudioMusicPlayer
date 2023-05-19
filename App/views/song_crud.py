@@ -247,7 +247,11 @@ def update_song(request, song_id):
         log_msg += "artist: " + song.artist + ' '
         log_msg += "dance_type: " + song.dance_type + ' '
         logger.info(log_msg)
-        return render(request, 'update_song.html', {'form':form})
+        if song.image_link is None:
+            cover_art = song.image.url
+        else:
+            cover_art = song.image_link
+        return render(request, 'update_song.html', {'form':form, 'cover_art': cover_art, 'song_id': song.id})
     else:
         # obtain information from the submitted form
         form = SongEditForm(request.POST, request.FILES, instance=song)
