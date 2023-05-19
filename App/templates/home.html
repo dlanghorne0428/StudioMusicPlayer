@@ -8,7 +8,7 @@
     <h1 class="text-center mb-3">Studio Music Player</h1>
     <div class="row">
       <div class="text-center">
-        <a class="btn btn-primary" href="{% url 'login' %}">Login</a> 
+        <a class="btn btn-primary" href="{% url 'login' %}">Log in</a> 
         <a class="btn btn-primary" href="{% url 'signup' %}">Create Account</a>
       </div>
     </div>
@@ -29,7 +29,7 @@
           <h3 class="text-dark" href="#">You are currently using Music on this Device</h3> 
         </div>
         <div class="col-6 text-start">
-          <a class="btn btn-primary" href="{% url 'App:spotify_sign_in' %}">Sign In to Spotify</a>
+          <a class="btn btn-primary" href="{% url 'App:spotify_sign_in' %}">Sign in to Spotify</a>
         </div>
       </div>
     {% endif %}
@@ -38,7 +38,7 @@
         <a class="btn btn-secondary" href="{% url 'password_change' %}">Change Password</a>
       </div>
       <div class="col-6 text-start">
-        <a class="btn btn-secondary" href="{% url 'logout' %}">Logout</a>
+        <a class="btn btn-secondary" href="{% url 'logout' %}">Log out</a>
       </div>
     </div>
   {% endif %}
