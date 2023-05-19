@@ -87,6 +87,7 @@ class SongEditForm(ModelForm):
                     HTML("""<img src="{{cover_art}}" style="width:80%;"/>"""),
                     Field('image'), 
                     css_class='col-6'),
+                css_class='border border-dark p-2',
             ),
             FormActions(
                 # submit button and cancel link in the form of a button
