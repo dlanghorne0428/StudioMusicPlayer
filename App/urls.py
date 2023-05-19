@@ -38,6 +38,7 @@ urlpatterns = [
     path('playSongList/<int:playlist_id>/<int:start_index>', views.play_song_list, name="play_song_list"),    
     path("preferences/", views.user_preferences, name="user_preferences"),    
     path("spotify/sign_in", views.spotify_sign_in, name="spotify_sign_in"),  
+    path("spotify/sign_in/<int:song_id>", views.spotify_sign_in, name="spotify_sign_in"), 
     path("spotify/sign_out", views.spotify_sign_out, name="spotify_sign_out"),
     path('spotify/liked-songs', views.spotify_liked_songs, name="spotify_liked_songs"),
     path('spotify/followed-artists', views.spotify_followed_artists, name="spotify_followed_artists"),
@@ -59,5 +60,6 @@ urlpatterns = [
     path("spotify/find-clean-track/<str:track_id>", views.spotify_find_clean_track, name="spotify_find_clean_track"), 
     path("spotify/find-clean-track/<str:track_id>/<int:replace_song_id>", views.spotify_find_clean_track, name="spotify_find_clean_track"), 
     path("spotify/find-song-bpms", views.spotify_find_song_bpms, name="spotify_find_song_bpms"),
+    path("spotify/find-song-bpms/<int:song_id>", views.spotify_find_song_bpms, name="spotify_find_song_bpms"),
     path("spotify/fix_non_US", views.fix_non_US_spotify_tracks, name = 'fix_non_US_spotify_tracks'),
 ]
