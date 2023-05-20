@@ -86,7 +86,10 @@
               {% if track.id %}
                 <button class="btn btn-primary btn-sm">Play</button>
                 <span hidden>{{ track.id }}</span>
-                {% if track.US_market %}
+                <!-- if song_id passed in, we are selecting BPM, not adding track -->
+                {% if song_id %}
+                  <a class="btn btn-sm btn-primary" href="{% url 'App:spotify_find_song_bpms' song_id track.tempo%}">Use BPM</a>
+                {% elif track.US_market %}
                   <a class="btn btn-sm btn-primary" href="{% url 'App:add_spotify_track' track.id %}">Add</a>
                 {% else %}
                   <span class='small'>Non-US track</span>
