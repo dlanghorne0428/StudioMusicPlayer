@@ -61,5 +61,6 @@ urlpatterns = [
     path("spotify/find-clean-track/<str:track_id>/<int:replace_song_id>", views.spotify_find_clean_track, name="spotify_find_clean_track"), 
     path("spotify/find-song-bpms", views.spotify_find_song_bpms, name="spotify_find_song_bpms"),
     path("spotify/find-song-bpms/<int:song_id>", views.spotify_find_song_bpms, name="spotify_find_song_bpms"),
+    path("spotify/find-song-bpms/<int:song_id>/<int:bpm_value>", views.spotify_find_song_bpms, name="spotify_find_song_bpms"),
     path("spotify/fix_non_US", views.fix_non_US_spotify_tracks, name = 'fix_non_US_spotify_tracks'),
 ]

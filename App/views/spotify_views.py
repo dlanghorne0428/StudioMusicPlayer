@@ -423,7 +423,8 @@ def spotify_sign_in(request, song_id=None):
             "total" : tracks['total']        
             })  
     else:
-        os.remove(song_id_path)
+        if os.path.exists(song_id_path):
+            os.remove(song_id_path)
         return redirect('App:spotify_find_song_bpms', song_id)
 
 
@@ -1011,7 +1012,7 @@ def fix_non_US_spotify_tracks(request):
                   })
 
 
-def spotify_find_song_bpms(request, song_id=None):
+def spotify_find_song_bpms(request, song_id=None, bpm_value=None):
     from App.views.song_crud import authorized
         
     # must be an administrator or teacher 
@@ -1027,8 +1028,13 @@ def spotify_find_song_bpms(request, song_id=None):
         songs = Song.objects.filter(bpm__lt=0)
     else:
         song_to_update = Song.objects.get(pk=song_id)
-        songs = list()
-        songs.append(song_to_update)
+        if bpm_value is not None:
+            song_to_update.bpm = bpm_value
+            song_to_update.save()
+            return redirect("App:show_songs", song_id)
+        else:
+            songs = list()
+            songs.append(song_to_update)
         
     if len(songs) > 0: 
         for s in songs:
@@ -1044,10 +1050,23 @@ def spotify_find_song_bpms(request, song_id=None):
                     logger.info(s.title + " BPM: " + str(s.bpm))
                     s.save()
                 else:
-                    logger.error(s.title + " by " + s.artist + " Not Found")         
-                    
+                    logger.error(s.title + " by " + s.artist + " Not Found") 
+                    if len(songs) == 1:
+                        # search for track name only
+                        results = this.spotify_api.search(s.title, 'track')
+                        
+                        # render those results
+                        return render(request, "spotify_track_list.html", {
+                            "spotify_user": this.spotify_api.current_username(),
+                            'track_list_description': "BPM Lookup: Tracks Matching - " + s.title,
+                            "tracks": results['track_list'],
+                            "first": results['first'],
+                            "last":  results['last'],
+                            "total": results['total'],
+                            "song_id": song_id})                       
+                                                    
             
         return redirect("App:show_songs", songs[-1].id)
-    
+
     else:
         return redirect("App:show_songs")
