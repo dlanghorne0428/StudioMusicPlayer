@@ -88,7 +88,7 @@ def replace_song(request, playlist_id, index, dance_type, song_id=None):
     else:
         new_song = Song.objects.get(pk=song_id)
         playlists[0].replace_song(index - 1, new_song)
-        return redirect ("App:edit_playlist", playlists[0].id)
+        return redirect ("App:edit_playlist", playlists[0].id, index-1)
 
 
 def show_songs_no_cover_art(request):

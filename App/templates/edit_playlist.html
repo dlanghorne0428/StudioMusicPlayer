@@ -29,8 +29,8 @@
   </div>
   
   <!-- next row has buttons, use sticky to keep this from scrolling off the page -->
-  <div id='play-and-clear-sticky' class="row">
-    <div class="col-5">
+  <div id='play-and-clear-sticky' class="row pb-2">
+    <div class="col-4">
       <!-- link to play this current playlist-->
       <div class="text-end mt-2">
         <a class="btn btn-primary btn-sm" href="{% url 'App:play_song_list' playlist.id %}">Play from start</a>
@@ -42,16 +42,22 @@
         <a class="btn btn-warning btn-sm" href="{% url 'App:replace_playlist' playlist.id %}">Replace All Songs</a>
       </div>
     </div>
-    <div class="col-5">
+      <div class="col-2">
+      <!-- link to regenerate this current playlist-->
+      <div class="text-center mt-2">
+        <a class="btn btn-info btn-sm" href="{% url 'App:shuffle_playlist' playlist.id %}">Shuffle Songs</a>
+      </div>
+    </div>
+    <div class="col-4">
       <!-- link to regenerate this current playlist-->
       <div class="text-start mt-2">
-        <a class="btn btn-secondary btn-sm" href="{% url 'App:shuffle_playlist' playlist.id %}">Shuffle Songs</a>
+        <a class="btn btn-secondary btn-sm" href="{% url 'App:user_playlists' %}">Cancel</a>
       </div>
     </div>
   </div>
   
    <!-- next row in bootstrap grid is a table, with dark borders and margin above --> 
-  <div class="col-12 border border-dark mt-2">
+  <div class="col-12 border border-dark mt-0">
   <table class="table table-bordered table-sm">
     <!-- column headers have a dark background -->
     <thead class="table-dark">
@@ -126,7 +132,7 @@
               <!-- allow the user delete a song and move all other songs up one slot -->
               <!-- force the user to confirm before deleting a song --> 
               <li><a class="dropdown-item" 
-                     onclick="return confirm('Deleting: {{song.title}}\n Are you sure?')" 
+                     onclick="return confirm('Deleting: {{s.song.title}}\n Are you sure?')" 
                      href="?{% param_replace cmd="delsong" index=forloop.counter0 %}">Delete</a>
               </li>
             </ul>

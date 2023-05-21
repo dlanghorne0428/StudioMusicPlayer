@@ -76,8 +76,10 @@ def user_preferences(request):
             # get song counts entered by the user from the form
             starting_counts = dict()
             for key in DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS:
-                form_field = '%s_songs' % (key, )
-                starting_counts[key] = form_data[form_field]
+                # skip general dances 
+                if key != 'gen':
+                    form_field = '%s_songs' % (key, )
+                    starting_counts[key] = form_data[form_field]
             
             # update the preferences dictionary
             preferences['playlist_length'] = playlist_length
