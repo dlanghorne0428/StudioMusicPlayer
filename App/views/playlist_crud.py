@@ -54,6 +54,8 @@ def create_playlist(request, random=None):
         # use a default title based on number of playlists currently owned by this user
         playlist_count = Playlist.objects.filter(owner=user).count()
         new_playlist.title = user.username + separator + str(playlist_count + 1)
+        new_playlist.category = 'Party'
+        new_playlist.max_song_duration = time(minute=2, second=30)
         logger.info('Preparing to ' + page_title + ": " + new_playlist.title)
             
         # empty description
@@ -603,8 +605,8 @@ def edit_playlist(request, playlist_id, start_index = 0):
                 playlist.max_song_duration = None
                 form.save()                
                            
-            # redirect to show playlists
-            return redirect('App:user_playlists')
+            # redirect to this same view 
+            return redirect('App:edit_playlist', playlist_id)
         
         else: 
             my_error = "Invalid data submitted."
