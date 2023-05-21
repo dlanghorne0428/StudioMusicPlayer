@@ -107,15 +107,15 @@ class SongEditForm(ModelForm):
 class PlaylistInfoForm(ModelForm):
     ''' form to enter information for a playlist '''
     title = forms.CharField(
-        label = "",
+        label = "Name",
         max_length = 50,     # ensure the field is wide enough to show the title
         required = True)
     
     description = forms.CharField(
         label  = "Description",
-        required = False,
-        # limit height of this field to 2 rows
-        widget = Textarea(attrs={'rows': 2}))
+        max_length = 120,    # ensure the field is wide enough to show the description
+        widget=forms.TextInput(attrs={'placeholder': 'optional text to describe the playlist'}),
+        required = False)
     
     category = forms.ChoiceField(
         label = "Cotegory",

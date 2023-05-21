@@ -7,9 +7,9 @@
     <h2 class="text-center">Unable to access Spotify.</h2>
     <div class="text-center my-2">
         {% if song_id %}
-            <a class="btn btn-primary" href="{% url 'App:spotify_sign_in' song_id %}">Sign In to Spotify</a>
+            <a class="btn btn-primary" href="{% url 'App:spotify_sign_in' song_id %}">Sign in to Spotify</a>
         {% else %}
-            <a class="btn btn-primary" href="{% url 'App:spotify_sign_in' %}">Sign In to Spotify</a>
+            <a class="btn btn-primary" href="{% url 'App:spotify_sign_in' %}">Sign in to Spotify</a>
         {% endif %}
     </div>
     <div class="col-4 offset-4 text-center my-2">
