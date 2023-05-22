@@ -534,7 +534,10 @@ def edit_playlist(request, playlist_id, start_index = 0):
                 # find the dance style of the selected song
                 dance_style = selected.song.dance_type
                 # replace with a random song and indicate it for highlighting
-                pick_random_song(playlist, dance_style, index) 
+                if dance_style == "gen":
+                    pick_random_song(playlist, index=index)                     
+                else:
+                    pick_random_song(playlist, dance_style, index) 
                 new_index = index
                 
             elif command == 'replace-select':
