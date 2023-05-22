@@ -7,9 +7,11 @@
   <h2>Sign up for an account</h2>
   <p class="lead">Select below the type of account you want to create</p>
   
-  <!-- buttons for different types of users-->
-  <a href="{% url 'teacher_signup' %}" class="btn btn-primary btn-lg mx-2" role="button">I'm a teacher</a>
-  <!-- TO_DO: the guest user type is currently disabled -->
-  <a href="#" class="btn btn-outline-dark btn-lg mx-2" role="button">I'm a guest</a>
+  <div class="my-3">
+    <!-- buttons for different types of users-->
+    <a href="{% url 'teacher_signup' %}" class="btn btn-primary btn-lg mx-2" role="button">I'm a teacher</a>
+    <!-- TO_DO: the guest user type is currently disabled -->
+    <a href="#" class="btn btn-outline-dark btn-lg mx-2" role="button">I'm a guest</a>
+  </div>
   
 {% endblock %}
