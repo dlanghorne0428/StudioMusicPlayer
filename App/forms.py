@@ -81,12 +81,21 @@ class SongEditForm(ModelForm):
                     Field('artist'), 
                     Field('dance_type'), 
                     Field('bpm'), 
+                    css_class='col-6'),
+                Column(
+                    HTML("""<img src="{{cover_art}}" style="width:65%;"/>"""),
+                    Field('image'),                                      
+                    css_class='col-6'),
+                css_class='align-items-end border border-dark p-2',
+            ),
+            Row(
+                Column(
                     HTML("""<a href="{% url 'App:spotify_find_song_bpms' song_id %}" class="btn btn-info">Lookup BPM on Spotify</a>"""),                   
                     css_class='col-6'),
                 Column(
-                    HTML("""<img src="{{cover_art}}" style="width:80%;"/>"""),
-                    Field('image'), 
-                    css_class='col-6'),
+                    Submit('find_artwork', 'Find Cover Art Online'),
+                    # HTML("""<a href="#" class="btn btn-info">Find Cover Art Online</a>"""),                                       
+                    css_class='col-6'),  
                 css_class='border border-dark p-2',
             ),
             FormActions(
