@@ -20,7 +20,7 @@
     <h4 class="text-center">{{ error }}</h4>
 
     <!-- form for the user to provide information about the new song -->
-    <form class="text-center mt-4" enctype="multipart/form-data" method="POST">
+    <form class="text-center my-4" enctype="multipart/form-data" method="POST">
       {% csrf_token %}  <!-- required by django -->
       {{ form.as_p }}   <!-- form contents passed into the template from the model -->
       

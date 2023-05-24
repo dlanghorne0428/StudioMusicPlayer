@@ -18,7 +18,36 @@ from App.forms import SongFileInputForm, SongEditForm
 
 def authorized(user):
     return user.is_authenticated and (user.is_superuser or user.is_teacher)
-        
+
+
+def image_filename(audio_filename):
+    # determine name for the image file based on the name of the audio file
+    basename = os.path.basename(audio_filename)
+    filename, ext = os.path.splitext(basename)
+    return filename + '.jpg'
+
+
+def find_cover_art(audio_file, image_file_basename):
+    from get_cover_art import CoverFinder
+    
+    folder = os.path.join(settings.MEDIA_ROOT, 'img')
+    logger.info("Attempting to download cover art")
+    finder = CoverFinder({'art-dest': folder, 
+                          'art-dest-filename': image_file_basename,
+                          'force': True,
+                          'verbose': True,
+                          'no-skip': True,
+                          })
+    finder.scan_file(audio_file)
+    print('skipped: ' + str(finder.files_skipped))
+    print('failed: ' + str(finder.files_failed))
+    # if cover art not found online, use default image
+    if len(finder.files_skipped) > 0 or len(finder.files_failed) > 0:
+        logger.warning("Could not download cover art for " + image_file_basename)
+        return None
+    else:
+        return 'img/' + image_file_basename
+    
 
 def add_song(request):
     ''' allows the superuser to enter a song into the database. '''
@@ -30,7 +59,6 @@ def add_song(request):
     from mutagen.easyid3 import EasyID3
     from mutagen.id3 import ID3
     from PIL import Image
-    from get_cover_art import CoverFinder
     
     # must be an administrator or teacher to add songs
     if not authorized(request.user):
@@ -174,24 +202,13 @@ def add_song(request):
         new_song.tempo = tempo
         
         # determine name for the image file based on the name of the audio file
-        basename = os.path.basename(new_song.audio_file.url)
-        filename, ext = os.path.splitext(basename)
-        new_basename = filename + '.jpg'
-        relative_pathname = 'img/' + new_basename
+        image_basename = image_filename(new_song.audio_file.url)
+        relative_pathname = 'img/' + image_basename
         logger.debug("Image file is " + relative_pathname)
         
         if pict is None:
             # download cover art and save into "img" subfolder under MEDIA_ROOT
-            folder = os.path.join(settings.MEDIA_ROOT, 'img')
-            logger.info("Attempting to download cover art")
-            finder = CoverFinder({'art-dest': folder, 
-                                  'art-dest-filename': new_basename,
-                                  })
-            finder.scan_file(audio_file_path)
-            # if cover art not found online, use default image
-            if len(finder.files_skipped) > 0 or len(finder.files_failed) > 0:
-                logger.warning("Could not download cover art for " + new_basename)
-                relative_pathname = None
+            relative_pathname = find_cover_art(audio_file_path, image_basename)
             
         else:
             # extract cover art from file and save in an "img" subfolder under MEDIA_ROOT
@@ -231,6 +248,8 @@ def update_song(request, song_id):
        This does not change the metadata in the music file, only the model fields
        for the selected Song object''' 
     
+    import webbrowser
+    
     # must be an admin user or teacher to edit songs
     if not (request.user.is_superuser or request.user.is_teacher):
         logger.warning(request.user.username + " not authorized to update songs")
@@ -259,14 +278,32 @@ def update_song(request, song_id):
     else:
         # obtain information from the submitted form
         form = SongEditForm(request.POST, request.FILES, instance=song)
+        action = request.POST.get("find_artwork")
+            
         if form.is_valid():
             logger.info(form.cleaned_data)
             # save the updated info and return to song list
             form.save() 
+            
+            if action == "Find Cover Art Online":
+                image_basename = image_filename(song.audio_file.url)
+                audio_path = os.path.join(settings.BASE_DIR, song.audio_file.url[1:])
+                print(audio_path, image_basename)
+                if find_cover_art(audio_path, image_basename) == None:
+                    url = 'https://duckduckgo.com/?q='+ song.artist + ' '+ song.title + '&ia=web&iax=images&ia=images'
+                    webbrowser.open(url)
+                    # display error on form
+                    return render(request, 'update_song.html', {
+                        'form':form, 'cover_art': settings.STATIC_URL + 'img/default.png', 
+                        'song_id': song.id, 'error': "Could not find cover art."})
+                
             return redirect('App:show_songs', song.id)
+        
         else:
             # display error on form
-            return render(request, 'update_song.html', {'form':SongEditForm(), 'error': "Invalid data submitted."})
+            return render(request, 'update_song.html', {
+                'form':SongEditForm(), 'cover_art': settings.STATIC_URL + 'img/default.png', 'song_id': song.id,
+                'error': "Invalid data submitted."})
     
 
 def delete_song(request, song_id):
