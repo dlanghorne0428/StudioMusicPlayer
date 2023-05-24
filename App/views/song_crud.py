@@ -248,6 +248,8 @@ def update_song(request, song_id):
        This does not change the metadata in the music file, only the model fields
        for the selected Song object''' 
     
+    import webbrowser
+    
     # must be an admin user or teacher to edit songs
     if not (request.user.is_superuser or request.user.is_teacher):
         logger.warning(request.user.username + " not authorized to update songs")
@@ -288,10 +290,12 @@ def update_song(request, song_id):
                 audio_path = os.path.join(settings.BASE_DIR, song.audio_file.url[1:])
                 print(audio_path, image_basename)
                 if find_cover_art(audio_path, image_basename) == None:
+                    url = 'https://duckduckgo.com/?q='+ song.artist + ' '+ song.title + '&ia=web&iax=images&ia=images'
+                    webbrowser.open(url)
                     # display error on form
                     return render(request, 'update_song.html', {
-                        'form':SongEditForm(), 'cover_art': settings.STATIC_URL + 'img/default.png', 
-                        'song_id': song.id, 'error': "Invalid data submitted."})
+                        'form':form, 'cover_art': settings.STATIC_URL + 'img/default.png', 
+                        'song_id': song.id, 'error': "Could not find cover art."})
                 
             return redirect('App:show_songs', song.id)
         
