@@ -97,23 +97,22 @@ HANDLERS = {
         "level": "DEBUG"
     },
     "info_handler": {
-        "class": "logging.handlers.RotatingFileHandler",
+        "class": "logging.handlers.TimedRotatingFileHandler",
         "filename": f"{BASE_DIR}/logs/smp_python_info.log",
-        "mode": "a",
+        'when': 'midnight',
         "encoding": "utf-8",
         "formatter": "verbose",
         "level": "INFO",
-        "backupCount": 5,
-        "maxBytes": 1024 * 1024 * 5,  # 5 MB
+        "backupCount": 31,
     },
     "error_handler": {
-        "class": "logging.handlers.RotatingFileHandler",
+        "class": "logging.handlers.TimedRotatingFileHandler",
         "filename": f"{BASE_DIR}/logs/smp_python_error.log",
-        "mode": "a",
+        'when': 'midnight',
         "formatter": "verbose",
+        "encoding": "utf-8",
         "level": "WARNING",
-        "backupCount": 5,
-        "maxBytes": 1024 * 1024 * 5,  # 5 MB
+        "backupCount": 31,
     },
 }
 
