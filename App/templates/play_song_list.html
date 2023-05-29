@@ -256,7 +256,7 @@
                 /* not a feature song, show the time limit paragraph and set time limit*/
                 time_limit_para.removeAttribute('hidden');
                 limit = {{ max_song_duration_in_sec }};
-                fading_limit = limit - 5;
+                fading_limit = limit - 7;
                 duration_time.style.backgroundColor = 'red';
               }
             {% else %}
@@ -288,8 +288,8 @@
               curr_volume = Amplitude.getVolume();
               if (curr_volume > 40) {
                   /* drop volume by 10% after time limit hit */
-                  new_volume = curr_volume - 10;
-              } else if (curr_volume > 10) {
+                  new_volume = curr_volume - 5;
+              } else if (curr_volume > 4) {
                   /* once volume gets to 40, continue fading 2% each time, until volume gets below 10% */
                   new_volume = curr_volume - 2;
               } else {
@@ -306,7 +306,9 @@
                   {% else %}
                     /* delay two additional seconds then play next */
                     if (played - 3 > {{ max_song_duration_in_sec }}) {
-                      Amplitude.next();
+                      if (index + 1 < {{ playlist_indices|length }}) {
+                        Amplitude.next();
+                      }
                     }
                   {% endif %}
                   return;
@@ -337,7 +339,7 @@
           
           /* reset volume level and clear any highlighing */
           Amplitude.setVolume(startVolume);
-          console.log("setting volume to ", startVolume);
+          //console.log("setting volume to ", startVolume);
           volume_control.value = startVolume; 
           {% if playlist_info.category == 'Party' or playlist_info.category == 'Show' %}
             time_limit_para.style.backgroundColor = 'transparent';    
