@@ -112,7 +112,7 @@
     <div class="col-4">
       <!-- right section has info about the current playlist and link back to all playlists page -->
       <p class="text-info my-1"><span>{{ playlist_info.get_category_display }} Mode: </span>
-         <span data-amplitude-playlist-info="title" data-amplitude-playlist="the_list"></span>
+         <span class="playlist-title">{{playlist_info.title}} </span>
          <span><a href="{% url 'App:edit_playlist' playlist_info.id %}">Edit Playlist</a></span>
       </p>
       {% if playlist_info.category == 'Party' or playlist_info.category == 'Show' %}
