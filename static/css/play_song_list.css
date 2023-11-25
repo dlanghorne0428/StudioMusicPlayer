@@ -35,6 +35,9 @@ body {
     padding-top: 1rem;
 }
 
+.playlist-title {
+  color: Yellow;
+}
 
 /****** Cover Art  *****/
 td.info {

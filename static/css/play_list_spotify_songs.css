@@ -39,6 +39,9 @@ body {
     display: none;  /* hidden by default, will be enabled by javascript */
 }
 
+.playlist-title {
+  color: Yellow;
+}
 
 /****** Cover Art  *****/
 td.info {
