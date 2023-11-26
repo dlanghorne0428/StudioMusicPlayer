@@ -968,6 +968,37 @@ def spotify_find_clean_track(request, track_id, replace_song_id=None):
         return render(request, 'add_song.html', {'form':SpotifyTrackInputForm(), 'error': "No clean version found."})  
 
                   
+def play_spotify_track(request, track_id):
+    from App.views.song_crud import authorized
+    
+    # must be an administrator or teacher to fix the database
+    if not authorized(request.user):
+        return render(request, 'permission_denied.html')     
+    
+    if this.spotify_api is None:
+        return render(request, 'not_signed_in_spotify.html') 
+    
+    token_dict = spotify_token(request.user)
+    if token_dict is None:
+        logger.warning("Cannot stream song, user not signed into spotify")
+        return render(request, 'not_signed_in_spotify.html')    
+    
+    track = this.spotify_api.track_info(track_id)
+    
+    spotify_uris = list()
+    spotify_uris.append("spotify:track:" + track_id)
+    logger.info("Streaming spotify song " + track['name'])
+            
+    return render(request, "play_spotify_song.html", 
+              {'spotify_uris': spotify_uris,
+               'user_token': token_dict['access_token'],
+               'title': track['name'],
+               'artist': track['artist_name'],
+               'cover_art': track['cover_art'],
+               'dance_type': 'General'}   
+              )
+
+
 def fix_non_US_spotify_tracks(request):
     from App.views.song_crud import authorized
     

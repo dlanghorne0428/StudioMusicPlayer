@@ -63,4 +63,5 @@ urlpatterns = [
     path("spotify/find-song-bpms/<int:song_id>", views.spotify_find_song_bpms, name="spotify_find_song_bpms"),
     path("spotify/find-song-bpms/<int:song_id>/<int:bpm_value>", views.spotify_find_song_bpms, name="spotify_find_song_bpms"),
     path("spotify/fix_non_US", views.fix_non_US_spotify_tracks, name = 'fix_non_US_spotify_tracks'),
+    path("spotify/play-track/<str:track_id>", views.play_spotify_track, name="play_spotify_track"),
 ]
