@@ -96,14 +96,23 @@
     </div>
   
     <div class="col-4">
-      <!-- right section has info about the current playlist and link back to all playlists page -->
-      <p class="text-info my-1"><span> {{ playlist_info.get_category_display }} Mode: </span>
+      <!-- right section has info about the current playlist and link back to the user's playlists page -->
+      <p class="text-info my-1">
          <span class="playlist-title" data-amplitude-playlist-info="title" data-amplitude-playlist="the_list"></span>
-         <span><a href="{% url 'App:edit_playlist' playlist_info.id %}">Edit Playlist</a></span>
+         <span><a href="{% url 'App:edit_playlist' playlist_info.id %}">(Edit)</a></span>
+         <span> Track </span>
+         <span id="id-track-number">?</span>
+         <span> of {{ playlist_indices|length }}</span>
       </p>
-      {% if playlist_info.category == 'Party' or playlist_info.category == 'Show' %}
-        <p class="text-info my-2" id="timelimit">Song time limit: {{ playlist_info.max_song_duration|time:"i:s" }}</p>
-      {% endif %}
+      <p class="text-info my-1">
+        <span> {{ playlist_info.get_category_display }} Mode - </span>
+        {% if playlist_info.category == 'Party' or playlist_info.category == 'Show' %}
+          <span id="timelimit">Track time limit: {{ playlist_info.max_song_duration|time:"i:s" }}</span>
+          <span id="feature-text" hidden>Featured song</span>
+        {% else %}
+            <span>Playing entire track</span>
+        {% endif %}
+      </p>
       {% if playlist_info.category == 'Show' %}
         <p class="text-info my-1">Pause before playing next track</p>
       {% else %}
@@ -143,6 +152,8 @@
     
     function updateHeatNumber(index) {
         var current_heat_readable = String(index + 1);
+        console.log("Track: ", current_heat_readable);
+        track_number_elem.innerHTML = current_heat_readable;
         heat_number_elem.innerHTML = current_heat_readable;
     };
     
@@ -156,9 +167,11 @@
     };
   
     const startVolume = 80 /* percent */
-    /* get access to time limit paragraph element and is_feature_list */
+    /* get access to specific elements and is_feature_list */
     const time_limit_para = document.getElementById("timelimit");
+    const feature_text_elem = document.getElementById("feature-text");
     const heat_number_elem = document.getElementById("id-heat-number");
+    const track_number_elem = document.getElementById("id-track-number");
     const is_feature_list = JSON.parse(document.getElementById('is-feature-list-data').textContent);
     
     const volume_control = document.getElementById('volume_control');
@@ -247,16 +260,21 @@
                 time_limit_para.setAttribute('hidden','');
                 limit = Math.round(new_song_duration) - 1;
                 fading_limit = limit;
+                feature_text_elem.removeAttribute('hidden');
                 duration_time.style.backgroundColor = 'transparent';
               } else if (new_song_duration < {{ max_song_duration_in_sec }} ) {
-                limit = new_song_duration;
+                limit = Math.round(new_song_duration) - 1;
                 fading_limit = limit;
+                is_feature = true;
+                time_limit_para.removeAttribute('hidden');
+                feature_text_elem.setAttribute('hidden','');
                 duration_time.style.backgroundColor = 'transparent';
               } else {
                 /* not a feature song, show the time limit paragraph and set time limit*/
-                time_limit_para.removeAttribute('hidden');
                 limit = {{ max_song_duration_in_sec }};
                 fading_limit = limit - 7;
+                feature_text_elem.setAttribute('hidden','');
+                time_limit_para.removeAttribute('hidden');
                 duration_time.style.backgroundColor = 'red';
               }
             {% else %}
@@ -279,7 +297,13 @@
             if (played > fading_limit) {
             
               if ( is_feature ) {
-                skipToSong(index + 1);
+                {% if playlist_info.category == 'Show' %}
+                  skipToSong(index + 1);
+                {% else %}
+                    if (index + 1 < {{ playlist_indices|length }}) {
+                      Amplitude.next();   
+                    }
+                {% endif %}
               }
               
               /* highlight the time limit text when time has expired */

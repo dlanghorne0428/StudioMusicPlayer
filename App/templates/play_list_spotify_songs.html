@@ -110,15 +110,23 @@
     </div>
   
     <div class="col-4">
-      <!-- right section has info about the current playlist and link back to all playlists page -->
-      <p class="text-info my-1"><span>{{ playlist_info.get_category_display }} Mode: </span>
+      <!-- right section has info about the current playlist and link back to the user's playlists page -->
+      <p class="text-info my-1">
          <span class="playlist-title">{{playlist_info.title}} </span>
-         <span><a href="{% url 'App:edit_playlist' playlist_info.id %}">Edit Playlist</a></span>
+         <span><a href="{% url 'App:edit_playlist' playlist_info.id %}">(Edit)</a></span>
+         <span> Track </span>
+         <span id="id-track-number">?</span>
+         <span> of {{ song_list|length }}</span>
       </p>
-      {% if playlist_info.category == 'Party' or playlist_info.category == 'Show' %}
-        <p class="text-info my-2" id="timelimit">Song time limit: {{ playlist_info.max_song_duration|time:"i:s" }}</p>
-        <p class="text-info my-2" id="feature-text" hidden>Featured song</p>
-      {% endif %}
+      <p class="text-info my-1">
+         <span>{{ playlist_info.get_category_display }} Mode - </span>
+         {% if playlist_info.category == 'Party' or playlist_info.category == 'Show' %}
+            <span id="timelimit">Track time limit: {{ playlist_info.max_song_duration|time:"i:s" }}</span>
+            <span id="feature-text" hidden>Featured song</span>
+         {% else %}
+            <span>Playing entire track</span>
+         {% endif %}
+      </p>
       {% if playlist_info.category == 'Show' %} 
         <p class="text-info my-1">Pause before playing next track</p>
       {% else %}
@@ -203,6 +211,7 @@
     
     const time_limit_para = document.getElementById("timelimit");
     const feature_text_para = document.getElementById("feature-text");
+    const track_number_elem = document.getElementById("id-track-number");
     var progress_bar = document.getElementById('song-played-progress');
     var current_minutes = document.getElementById('current-minutes');
     var current_seconds = document.getElementById('current-seconds');
@@ -306,7 +315,7 @@
             
           } else {
             limit = {{ max_song_duration_in_sec }};
-            fading_limit = limit - 5;
+            fading_limit = limit - 7;
             feature_text_para.setAttribute('hidden','');
             time_limit_para.removeAttribute('hidden');
             duration_time.style.backgroundColor = 'red';
@@ -436,6 +445,7 @@
               current_index = new_index;
               showSongElementsForIndex(current_index); 
               showUpNextElements(current_index);
+              track_number_elem.innerHTML = String(current_index + 1);
             };
             
             {% if playlist_info.category == 'Party' or playlist_info.category == 'Show' %}
@@ -454,6 +464,7 @@
       play_control.onclick = function() {
         if (initial_load) {
           offset = {"position": current_index};
+          track_number_elem.innerHTML = String(current_index + 1);
           play({
             playerInstance: player,
             spotify_uris: spotify_uris,
@@ -501,8 +512,8 @@
       };
       
       function fade_volume() {
-        if (saved_volume > 0.5) {
-          saved_volume = 0.5;
+        if (saved_volume > 0.6) {
+          saved_volume = 0.6;
         }
         else if (saved_volume > 0.2) { 
           saved_volume -= 0.1;
