@@ -578,6 +578,13 @@
           console.log('The Web Playback SDK successfully connected to Spotify!');
         }
       })
+      
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden") {
+          console.log("Disconnecting Player");
+          player.disconnect();
+        } 
+      });
     
     };  
   </script>
