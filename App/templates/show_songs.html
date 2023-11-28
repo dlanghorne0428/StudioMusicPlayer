@@ -43,10 +43,11 @@
     <thead class='table-dark'>
       <!-- use sticky to keep header row from scrolling off the page -->
       <tr id='table-header-sticky' >
-        <th class="text-center"style="width:30%">Title</th>
-        <th class="text-center"style="width:24%">Artist</th>
+        <th class="text-center"style="width:5%">#</th>
+        <th class="text-center"style="width:28%">Title</th>
+        <th class="text-center"style="width:22%">Artist</th>
         <th class="text-center"style="width:15%">Dance</th>
-        <th class="text-center"style="width:6%">BPM</th>
+        <th class="text-center"style="width:5%">BPM</th>
         <th class="text-center"style="width:25%">Action</th>
       </tr>
     </thead>
@@ -59,6 +60,7 @@
           {% csrf_token %}
           <!-- use sticky to keep this row from scrolling off the page -->
           <tr id='song-filter-sticky' class="table-secondary">
+            <td></td>
             <!-- user can filter on any of these columns --> 
             <td id='title-filter' class="text-center">{{ filter.form.title }}</td>
             <td id='artist-filter' class="text-center">{{ filter.form.artist }}</td>
@@ -77,6 +79,7 @@
       <!-- the rest of the table has the list of songs, one song per row -->
       {% for song in songs %}
       <tr class="table-row">
+        <td class="text-center">{{ forloop.counter }}
         <td class="text-center">{{ song.title }}
           {% if song.explicit %}
             <img src={% static 'img/explicit-fill.svg' %}>
