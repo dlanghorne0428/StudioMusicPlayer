@@ -1056,7 +1056,7 @@ def spotify_find_song_bpms(request, song_id=None, bpm_value=None):
         return render(request, 'not_signed_in_spotify.html', {'song_id': song_id})
         
     if song_id is None:
-        songs = Song.objects.filter(bpm__lt=0)
+        songs = Song.objects.filter(bpm__lt=0).exclude(title='{Placeholder}')
     else:
         song_to_update = Song.objects.get(pk=song_id)
         if bpm_value is not None:
@@ -1068,10 +1068,12 @@ def spotify_find_song_bpms(request, song_id=None, bpm_value=None):
             songs.append(song_to_update)
         
     if len(songs) > 0: 
+        match_id = None
         for s in songs:
             if s.spotify_track_id is not None:
                 s.bpm = this.spotify_api.track_bpm(s.spotify_track_id)
                 logger.info("Update BPM for " + s.title + ": " + str(s.bpm))
+                match_id = s.id
                 s.save()
             else:
                 search_term = s.title + " artist:" + s.artist
@@ -1079,6 +1081,7 @@ def spotify_find_song_bpms(request, song_id=None, bpm_value=None):
                 if results['total'] > 0:
                     s.bpm = results['track_list'][0]['tempo']
                     logger.info(s.title + " BPM: " + str(s.bpm))
+                    match_id = s.id
                     s.save()
                 else:
                     logger.error(s.title + " by " + s.artist + " Not Found") 
@@ -1096,8 +1099,10 @@ def spotify_find_song_bpms(request, song_id=None, bpm_value=None):
                             "total": results['total'],
                             "song_id": song_id})                       
                                                     
+        if match_id is None:
+            match_id = songs[0].id
             
-        return redirect("App:show_songs", songs[-1].id)
+        return redirect("App:show_songs", match_id)
 
     else:
         return redirect("App:show_songs")
