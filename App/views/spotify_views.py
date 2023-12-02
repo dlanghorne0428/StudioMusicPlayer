@@ -9,6 +9,7 @@ from App.forms import SpotifyTrackInputForm, SpotifySearchForm
 import os
 import sys
 import spotipy
+import time
 from spotipy.oauth2 import SpotifyOAuth
 from decouple import config
 
@@ -97,7 +98,7 @@ class Spotify_Api():
         
         return new_track
     
-    def track_list_info(self, tracks): 
+    def track_list_info(self, tracks, verbose=True): 
         '''This method processes a list of spotify tracks and returns the required information 
            for each track. It also returns the offset, last, and total index fields, which
            can be used to get another page of tracks.'''
@@ -107,7 +108,11 @@ class Spotify_Api():
                 track_list.append(self.track_info_subset(track['track']))
             else:
                 track_list.append(self.track_info_subset(track))
-            logger.info("Track ID: " + track_list[-1]['id'] + " Name: " + track_list[-1]['name'])
+                
+            if verbose:
+                logger.info("Track ID: " + track_list[-1]['id'] + " Name: " + track_list[-1]['name'])
+            else:
+                logger.debug("Track ID: " + track_list[-1]['id'] + " Name: " + track_list[-1]['name'])
                 
         return {'track_list': track_list,
                 'first': tracks['offset'] + 1,
@@ -321,11 +326,15 @@ class Spotify_Api():
         track = self.spotify.track(track_id)
         return self.track_info_subset(track)
     
-    def search(self, search_term, content_type, offset=0, limit=16):
+    def search(self, search_term, content_type, offset=0, limit=16, verbose=True):
         '''This method searches spotify for items matching the given search term.
            The content_type can be 'album', 'artist', 'playlist', or 'track'.
            The offset parameter can be used to get additional pages of matching items.'''
-        logger.info("Searching Spotify " + str(content_type) + " for " + search_term)
+        if verbose:
+            logger.info("Searching Spotify " + str(content_type) + " for " + search_term)
+        else:
+            logger.debug ("Searching Spotify " + str(content_type) + " for " + search_term)   
+            
         results = self.spotify.search(q=search_term, limit=limit, offset=offset, type=content_type, market='US')
         logger.debug("spotify search returned")
         
@@ -339,7 +348,7 @@ class Spotify_Api():
             return self.info_for_playlists(results['playlists']) 
 
         if content_type == 'track':
-            return self.track_list_info(results['tracks']) 
+            return self.track_list_info(results['tracks'], verbose) 
         
         return None
 ###########################################
@@ -1056,7 +1065,7 @@ def spotify_find_song_bpms(request, song_id=None, bpm_value=None):
         return render(request, 'not_signed_in_spotify.html', {'song_id': song_id})
         
     if song_id is None:
-        songs = Song.objects.filter(bpm__lt=0)
+        songs = Song.objects.filter(bpm__lt=0).exclude(title='{Placeholder}')
     else:
         song_to_update = Song.objects.get(pk=song_id)
         if bpm_value is not None:
@@ -1068,10 +1077,12 @@ def spotify_find_song_bpms(request, song_id=None, bpm_value=None):
             songs.append(song_to_update)
         
     if len(songs) > 0: 
+        match_id = None
         for s in songs:
             if s.spotify_track_id is not None:
                 s.bpm = this.spotify_api.track_bpm(s.spotify_track_id)
                 logger.info("Update BPM for " + s.title + ": " + str(s.bpm))
+                match_id = s.id
                 s.save()
             else:
                 search_term = s.title + " artist:" + s.artist
@@ -1079,6 +1090,7 @@ def spotify_find_song_bpms(request, song_id=None, bpm_value=None):
                 if results['total'] > 0:
                     s.bpm = results['track_list'][0]['tempo']
                     logger.info(s.title + " BPM: " + str(s.bpm))
+                    match_id = s.id
                     s.save()
                 else:
                     logger.error(s.title + " by " + s.artist + " Not Found") 
@@ -1096,8 +1108,59 @@ def spotify_find_song_bpms(request, song_id=None, bpm_value=None):
                             "total": results['total'],
                             "song_id": song_id})                       
                                                     
+        if match_id is None:
+            match_id = songs[0].id
             
-        return redirect("App:show_songs", songs[-1].id)
+        return redirect("App:show_songs", match_id)
 
     else:
         return redirect("App:show_songs")
+    
+    
+def spotify_match_local_tracks(request):
+    from App.views.song_crud import authorized
+    
+    # TODO: deal with rate limit errors
+        
+    # must be an administrator or teacher 
+    if not authorized(request.user):
+        logger.warning(request.user.username + " not authorized to find matching Spotify tracks")
+        return render(request, 'permission_denied.html')
+    
+    if this.spotify_api is None:
+        logger.warning("Spotify API not initialized")
+        return render(request, 'not_signed_in_spotify.html')
+        
+    # get list of local tracks
+    songs = Song.objects.filter(spotify_track_id__isnull=True).exclude(title='{Placeholder}')
+    for s in songs:
+        search_term = s.title + " artist:" + s.artist
+        results = this.spotify_api.search(search_term, 'track', limit=1, verbose=False)
+        if results['total'] > 0:
+            matching_track = results['track_list'][0]
+            already_in_spotify_db = Song.objects.filter(spotify_track_id=matching_track['id'])
+            if len(already_in_spotify_db) > 0:
+                print('ALREADY IN SPOTIFY LIST: ' + s.title + ' (' + s.artist + ')' )
+                time.sleep(3)
+            else:
+                # add track        
+                new_song = Song()
+            
+                # save the metadata
+                new_song.spotify_track_id = matching_track['id']
+                new_song.image_link = matching_track['cover_art']
+                new_song.title = matching_track['name']
+                new_song.artist = matching_track['artist_name']
+                new_song.bpm = matching_track['tempo']
+                
+                # copy the dance type from the local song
+                new_song.dance_type = s.dance_type
+                
+                new_song.save()    
+                time.sleep(1)
+                print('Added ' + new_song.title + ' (' + new_song.artist + ') ' + new_song.dance_type + ': ' + matching_track['id'])
+        else:
+            print('NO MATCH: ' + s.title + ' (' + s.artist + '):')
+            time.sleep(3)
+
+    return redirect("App:show_songs")  

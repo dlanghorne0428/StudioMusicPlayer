@@ -56,7 +56,7 @@ def play_song_list(request, playlist_id, start_index=0):
     # pass the path to the default cover art for any songs that don't have art 
     default_url = settings.STATIC_URL + "img/default.png"
     
-    if song_list[0].spotify_track_id:
+    if playlist.streaming:
         
         token_dict = spotify_token(request.user)
         if token_dict is None:
