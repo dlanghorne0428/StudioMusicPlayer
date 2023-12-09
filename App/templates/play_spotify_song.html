@@ -118,6 +118,13 @@
     var pause_control = document.getElementById('pause-control');
     var progress_timer;
 
+    // create a web socket for the 'playing' page
+    const chatSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/playing'
+        );
+    
     
     window.onSpotifyWebPlaybackSDKReady = () => {
     // You can now initialize Spotify.Player and use the SDK
@@ -129,16 +136,35 @@
         volume: saved_volume
         });
     
+    
+      // send info about the current song (or indicate no song is playing) to the web socket.
+      function send_to_socket(music_on = true) {
+        if (music_on) {
+          const message = '{"dance": "{{dance_type}}", "title": "{{title}}", "artist": "{{artist}}", "music_playing": "1"}';
+          chatSocket.send(JSON.stringify({
+            'message': message}))
+        } else {
+          <!-- use an value of -1 to indicate no song is playing -->
+          const message = '{"music_playing": "-1"}';
+          chatSocket.send(JSON.stringify({
+            'message': message}))
+        }
+      };
+    
+
       function pause_the_song(between_songs) {
         pause_control.setAttribute('hidden','');
         play_control.removeAttribute('hidden');
         current_state = 'paused';
+        // update the socket when the pause button is hit to indicate nothing is playing.
+        send_to_socket(false);
         player.pause();
       };
       
       
       function update_progress_bar (position, duration) {
         var pct_played, total_minutes, total_seconds;
+        var played_minutes, played_seconds;
         var duration_seconds = Math.round(duration/1000);
         var limit, fading_limit;
     
@@ -153,12 +179,18 @@
         played_seconds = Math.trunc((position - played_minutes * 60000) / 1000);
         current_minutes.innerHTML = played_minutes
         current_seconds.innerHTML = zeroPad(played_seconds, 2)
+        
+        // update the socket every 15 seconds with current song info
+        if (played_seconds % 15 == 1) {
+          send_to_socket()
+        }
     
         duration_minutes.innerHTML = total_minutes;
         duration_secs.innerHTML = zeroPad(total_seconds, 2);
         duration_time.removeAttribute('hidden');
         progress_bar.setAttribute("value", pct_played);
       };
+    
     
       // Ready
       player.addListener('ready', ({ device_id }) => {
@@ -216,6 +248,8 @@
                 console.log("Song is playing");
                 current_state = 'playing';
                 pause_control.removeAttribute('hidden'); /* show the pause button */
+                // update the socket to indicate the current song
+                send_to_socket();
               }
             }
           } else if (state.paused && (current_state == 'playing')) {
@@ -244,6 +278,8 @@
           play_control.setAttribute('hidden','');
           pause_control.removeAttribute('hidden');
           current_state = 'playing';
+          // update the socket to indicate the current song
+          send_to_socket();
         }
       };
   

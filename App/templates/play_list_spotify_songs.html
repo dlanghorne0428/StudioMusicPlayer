@@ -148,6 +148,36 @@
   <script> 
     var my_device_id; 
     
+    // create a web socket for the 'playing' page
+    const chatSocket = new WebSocket(
+           'ws://'
+           + window.location.host
+           + '/ws/playing'
+    );
+    
+    // variables to hold info about the current song
+    var the_dance;
+    var the_title;
+    var the_artist; 
+    
+    // send info about the current song (or indicate no song is playing) to the web socket.
+    function send_to_socket(music_on=true) {
+
+      if (music_on) {
+        // Build the JSON message to send
+        var message = '{"dance": "' + the_dance + '", "title": "' + the_title +'", '
+        message += '"artist": "' + the_artist + '", "music_playing": "1"}';
+
+        chatSocket.send(JSON.stringify({
+          'message': message}))
+      } else {
+        <!-- use an value of -1 to indicate no song is playing -->
+        const message = '{"music_playing": "-1"}';
+        chatSocket.send(JSON.stringify({
+          'message': message}))
+      }
+    };
+    
     const is_feature_list = JSON.parse(document.getElementById('is-feature-list-data').textContent);
     const spotify_uris = JSON.parse(document.getElementById('spotify-uris-data').textContent);
     
@@ -183,10 +213,23 @@
       /* ensure index is valid */
       if ((index_to_show >= 0) && (index_to_show < {{ song_list|length }})) {
         var index_string = index_to_show.toString();
-        document.getElementById(index_string.concat("-dance-type-index")).style.display = "block";
-        document.getElementById(index_string.concat("-song-title-index")).style.display = "block";
-        document.getElementById(index_string.concat("-song-artist-index")).style.display = "block";
+        
+        // show the HTML elements for the current song
+        var dance_elem = document.getElementById(index_string.concat("-dance-type-index"));
+        dance_elem.style.display = "block";
+        
+        var title_elem = document.getElementById(index_string.concat("-song-title-index"));
+        title_elem.style.display = "block";
+        
+        var artist_elem = document.getElementById(index_string.concat("-song-artist-index"));
+        artist_elem.style.display = "block";
+        
         document.getElementById(index_string.concat("-cover-art-index")).removeAttribute("hidden");
+        
+        // save the data for those elements in variables for upcoming socket updates
+        the_dance = dance_elem.innerHTML;
+        the_title = title_elem.innerHTML;
+        the_artist = artist_elem.innerHTML;
       };
     };
     
@@ -350,6 +393,11 @@
         played_seconds = Math.trunc((position - played_minutes * 60000) / 1000);
         current_minutes.innerHTML = played_minutes
         current_seconds.innerHTML = zeroPad(played_seconds, 2)
+        
+        // update the socket once every 15 seconds
+        if (played_seconds % 15 == 1) {
+          send_to_socket()
+        }
     
         duration_minutes.innerHTML = total_minutes;
         duration_secs.innerHTML = zeroPad(total_seconds, 2);
@@ -440,10 +488,11 @@
               console.log("Expected:", spotify_uris[current_index],"Playing:", state.track_window.current_track.uri)
               spotify_uris[current_index] = state.track_window.current_track.uri;
             } else {
-              /* show and hide the metadata */
+              /* show and hide the metadata and update socket with new song info */
               hideSongElementsForIndex(current_index);
               current_index = new_index;
-              showSongElementsForIndex(current_index); 
+              showSongElementsForIndex(current_index);
+              send_to_socket();
               showUpNextElements(current_index);
               track_number_elem.innerHTML = String(current_index + 1);
             };
@@ -484,11 +533,15 @@
             play_control.setAttribute('hidden','');
             pause_control.removeAttribute('hidden');  
           }
-        }
+        };
+        // update socket when play button is clicked
+        send_to_socket();
       };
   
       pause_control.onclick = function() {
         pause_the_song();
+        // update socket when pause button is clicked to indicate no music is playing
+        send_to_socket(false);
       };
       
       next_button.onclick = function() {    
