@@ -132,6 +132,37 @@
   <script type="text/javascript" src={% static "js/amplitude.min.js" %}></script>
   <script>
   
+    // create a web socket for the 'playing' page
+    const chatSocket = new WebSocket(
+           'ws://'
+           + window.location.host
+           + '/ws/playing'
+    );
+       
+    // send info about the current song (or indicate no song is playing) to the web socket.    
+    function send_to_socket(index) {
+      /* ensure index is valid */
+      if (index > -1 && index < {{ playlist_indices|length }}) {
+        the_song = Amplitude.getSongAtIndex(index);
+        
+        // Build the JSON message to send
+        var message = '{"dance": "' + the_song.dance_type + '", "title": "' + the_song.name +'", '
+        message += '"artist": "' + the_song.artist + '", "music_playing": "1"}';
+
+        chatSocket.send(JSON.stringify({
+          'message': message}))
+      } else {
+        <!-- use an value of -1 to indicate no song is playing -->
+        const message = '{"music_playing": "-1"}';
+        chatSocket.send(JSON.stringify({
+          'message': message}))
+      }
+    };
+    
+    // flag to indicate if a message needs to be sent to the web socket.
+    var send_update = true;    
+    
+    
     /* common function to hide a song at the given index from the "up next" list */
     function hideSongInUpNext(index_to_hide) {
       /* ensure index is valid */
@@ -251,6 +282,16 @@
           played = Amplitude.getSongPlayedSeconds();
           new_song_duration = Amplitude.getSongDuration();
           
+          /* send a socket update every 15 seconds with the current song */
+          if (Math.round(played % 15) == 1) {
+            if (send_update) {
+              send_to_socket(index)
+              send_update = false;
+            } 
+          } else {
+              send_update = true;
+          }
+          
           if (played > 1) {
           
             {% if playlist_info.category == 'Party' or playlist_info.category == 'Show' %} 
@@ -344,6 +385,18 @@
           }
         },
           
+        'play': function(){
+          console.log('Audio has started');
+          // update the socket when the play button is hit
+          send_to_socket(Amplitude.getActiveIndex())
+        },
+        
+        'pause': function(){
+          console.log('Audio has paused');
+          // update the socket when the pause button is hit to indicate nothing is playing.
+          send_to_socket(-1)
+        },
+        
         'prev': function() {          
           var current_index = Amplitude.getActiveIndex();
           

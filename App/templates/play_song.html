@@ -68,6 +68,32 @@
   <!-- Javascript for the AmplitudeJS player -->
   <script type="text/javascript" src={% static "js/amplitude.min.js" %}></script>
   <script>
+  
+    // create a web socket for the 'playing' page
+    const chatSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/playing'
+        );
+    
+    // send info about the current song (or indicate no song is playing) to the web socket.    
+    function send_to_socket(music_on = true) {
+      if (music_on) {
+        const message = '{"dance": "{{song.get_dance_type_display}}", "title": "{{song.title}}", "artist": "{{song.artist}}", "music_playing": "1"}';
+        chatSocket.send(JSON.stringify({
+          'message': message}))
+      } else {
+        <!-- use an value of -1 to indicate no song is playing -->
+        const message = '{"music_playing": "-1"}';
+        chatSocket.send(JSON.stringify({
+          'message': message}))
+      }
+    };
+    
+    // flag to indicate if a message needs to be sent to the web socket.
+    var send_update = true;
+    
+    
     <!-- similar to example at https://521dimensions.com/open-source/amplitudejs/docs/examples/single-song.html -->
     Amplitude.init({
       "bindings": {  
@@ -86,8 +112,42 @@
         {% else %}
           "cover_art_url": "{{default_url}}",
         {% endif %}
-        "dance_type": "{{song.get_dance_type_display}}"
-      }]
+        "dance_type": "{{song.get_dance_type_display}}",
+      }],
+      "callbacks": {
+        'initialized': function(){
+          console.log("Player has been initialized.");
+        },
+        'timeupdate': function(){
+          /* check how long this song has been playing */
+          played = Math.round(Amplitude.getSongPlayedSeconds());
+          
+          // update the socket once every 15 seconds
+          if (played % 15 == 1) {
+            if (send_update) {
+              send_to_socket()
+              send_update = false;
+            } 
+          } else {
+              send_update = true;
+          }
+        },
+        'play': function(){
+          console.log('Audio has started');
+          // update the socket when the play button is hit
+          send_to_socket()
+        },
+        'pause': function(){
+          console.log('Audio has paused');
+          // update the socket when the pause button is hit to indicate nothing is playing.
+          send_to_socket(false)
+        },
+        'ended': function(){
+          console.log('Song has finished');
+          // update the socket when the song ends to indicate nothing is playing.
+          send_to_socket(false)
+        }
+      }
     });
 
     window.onkeydown = function(e) {
