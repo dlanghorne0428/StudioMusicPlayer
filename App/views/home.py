@@ -12,8 +12,11 @@ def home(request):
     return render(request,"home.html", {'user': request.user})
 
 def about(request):
-    ''' The current about page for this app.'''
+    ''' The current about page for this app.'''    
     return render(request,"about.html", {'version': '1.4', 'date': '23 May 2023'})
+
+def playing(request):
+    return render(request,"playing.html", {'user': request.user, 'studio_name': "Dancin' Dance Studio"})
 
 
 def exit(request):
