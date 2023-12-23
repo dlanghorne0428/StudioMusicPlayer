@@ -28,7 +28,7 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['davids-imac.local', '192.168.1.247', 'localhost']
+ALLOWED_HOSTS = ['davids-imac.local', '192.168.1.247', 'tara-alienware.local', '192.168.1.171', 'localhost']
 
 
 # Application definition
