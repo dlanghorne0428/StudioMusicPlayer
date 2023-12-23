@@ -1,0 +1,39 @@
+body {
+    background-color: DarkSlateGrey;
+}
+
+.page-content {
+    font-family: "Tahoma", "Verdana", "Segoe", sans-serif;
+}
+
+
+/****** Song info  *****/
+
+.studio-name {
+  color: ghostwhite;
+  font-size: 28px;
+}
+
+.div-title {
+  color: DodgerBlue;
+  font-size: 32px;
+}
+
+#id-dance-type-playing {
+    margin: 1rem;
+    font-size: 28px;
+    color: Yellow;
+    letter-spacing: 1.0px;
+}
+
+#id-song-title-playing {
+    margin: 1rem;
+    font-size: 20px;
+    color: White;
+}
+
+#id-song-artist-playing {
+    margin: 1rem;
+    font-size: 16px;
+    color: White;
+}
