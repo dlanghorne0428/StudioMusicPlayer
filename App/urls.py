@@ -30,7 +30,7 @@ urlpatterns = [
     path("playlists/copy/<int:playlist_id>", views.copy_playlist, name="copy_playlist"),
     path("playlists/delete/<int:playlist_id>", views.delete_playlist, name="delete_playlist"),
     path("playlists/edit/<int:playlist_id>", views.edit_playlist, name="edit_playlist"),
-    path("playlists/edit/<int:playlist_id>/>=<int:start_index>", views.edit_playlist, name="edit_playlist"),
+    path("playlists/edit/<int:playlist_id>/<int:start_index>", views.edit_playlist, name="edit_playlist"),
     path("playlists/edit/<int:playlist_id>/addrandomsong/<str:dance_type>", views.add_random_song_to_playlist, name="add_random_song_to_playlist"),
     path("playlists/edit/<int:playlist_id>/addsong/<int:song_id>", views.add_to_playlist, name="add_to_playlist"),
     path("playlists/replace/<int:playlist_id>", views.replace_playlist_songs, name="replace_playlist"),
