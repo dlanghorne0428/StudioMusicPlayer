@@ -147,9 +147,10 @@
         
         // Build the JSON message to send
         var message = '{"dance": "' + the_song.dance_type + '", "title": "' + the_song.name +'", '
-        message += '"artist": "' + the_song.artist + '", "music_playing": "1"}';
+        message += '"artist": "' + the_song.artist + '", "song_id": "' + the_song.id +'", "music_playing": "1"}';
 
         chatSocket.send(JSON.stringify({
+          'type': "now_playing",
           'message': message}))
       } else {
         <!-- use an value of -1 to indicate no song is playing -->
@@ -245,6 +246,7 @@
           {% else %}
             "cover_art_url": "{{default_url}}",
           {% endif %}
+          "id": "{{song.id}}",
           "dance_type": "{{song.get_dance_type_display}}",
         },
       {% endfor %}

@@ -79,8 +79,9 @@
     // send info about the current song (or indicate no song is playing) to the web socket.    
     function send_to_socket(music_on = true) {
       if (music_on) {
-        const message = '{"dance": "{{song.get_dance_type_display}}", "title": "{{song.title}}", "artist": "{{song.artist}}", "music_playing": "1"}';
+        const message = '{"dance": "{{song.get_dance_type_display}}", "title": "{{song.title}}", "artist": "{{song.artist}}", "song_id": "{{song.id}}", "music_playing": "1"}';
         chatSocket.send(JSON.stringify({
+          'type': "now_playing",
           'message': message}))
       } else {
         <!-- use an value of -1 to indicate no song is playing -->
