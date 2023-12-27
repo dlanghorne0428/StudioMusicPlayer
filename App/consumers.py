@@ -37,7 +37,7 @@ class ChatConsumer(WebsocketConsumer):
         # if this is a "now_playing message
         if text_data_json["type"] == 'now_playing':
             message = text_data_json["message"]
-            logger.info('message received from websocket')
+            logger.debug('message received from websocket')
         
             # Send message to group
             async_to_sync(self.channel_layer.group_send)(
