@@ -156,6 +156,7 @@
         <!-- use an value of -1 to indicate no song is playing -->
         const message = '{"music_playing": "-1"}';
         chatSocket.send(JSON.stringify({
+          'type': "now_playing",
           'message': message}))
       }
     };
