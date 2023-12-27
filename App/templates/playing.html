@@ -9,16 +9,52 @@
 
 {% block content %}
 
-    <div "class=row">
+    <div class="row">
         <h1 class='studio-name text-center'>{{studio_name}}</h1>
     </div>
 
-    <div class="row mx-1">   
+    <div class="row" id="id-connecting-section">   
         <div class="col-12 border border-success">
-            <h1 class="div-title text-center mb-3" id="id-now-playing-section">Connecting...</h1>
-            <h3 id="id-dance-type-playing"></h3>
-            <p id="id-song-title-playing"></p>
-            <p id="id-song-artist-playing"></p>
+            <h1 class="div-title text-center my-2">Connecting...</h1>
+        </div>
+    </div>
+    
+    <div hidden class="row" id="id-disconnected-section">   
+        <div class="col-12 border border-success">
+            <h1 class="div-title text-center my-2">Disconncted</h1>
+            <p class= "my-1">Reload Page to Connect</p>
+        </div>
+    </div>
+    
+    <div hidden id="id-now-playing-section" class="row border border-success">
+        <div class="row" >   
+            <div class="col-12">
+                <h1 class="div-title text-center my-2" >Now Playing</h1>
+                <h3 class="my-2" id="id-dance-type-playing"></h3>
+            </div>
+        </div>
+        <div class="row my=0 align-middle">
+            <div class="col-1 text-center">
+                <button id="id-hate-song-playing" class="like-button btn-secondary">
+                    <img height=24 src={% static 'img/hand-thumbs-down.svg' %}>
+                </button>
+            </div>
+            <div class="col-10"> 
+                <p class= "my-1" id="id-song-title-playing"></p>
+                <p class= "my-1" id="id-song-artist-playing"></p>
+                <p hidden id="id-song-id-playing"></p>
+            </div>
+            <div class="col-1 text-center">
+                <button id="id-like-song-playing" class="like-button btn-secondary">
+                    <img height=24 src={% static 'img/hand-thumbs-up.svg' %}>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div hidden class="row" id="id-no-music-section">   
+        <div class="col-12 border border-success">
+            <h1 class="div-title text-center my-2">No Music Playing</h1>
         </div>
     </div>
     <script>
@@ -35,31 +71,49 @@
             console.log(message_dict);
             if (message_dict.music_playing === '-1') {
                 // clear out song info
-                document.getElementById("id-now-playing-section").innerHTML = "No Music Playing";
-                document.getElementById("id-dance-type-playing").innerHTML = '';
-                document.getElementById("id-song-title-playing").innerHTML = '';
-                document.getElementById("id-song-artist-playing").innerHTML = '';
+                document.getElementById("id-no-music-section").removeAttribute("hidden");
+                document.getElementById("id-connecting-section").setAttribute("hidden",'');
+                document.getElementById("id-disconnected-section").setAttribute("hidden",'');
+                document.getElementById("id-now-playing-section").setAttribute("hidden",'');
             } else {
                 // indicate the dance type, title and artist of the current song.
-                document.getElementById("id-now-playing-section").innerHTML = "Now Playing";
+                document.getElementById("id-now-playing-section").removeAttribute("hidden");
+                document.getElementById("id-connecting-section").setAttribute("hidden",'');
+                document.getElementById("id-disconnected-section").setAttribute("hidden",'');
+                document.getElementById("id-no-music-section").setAttribute("hidden",'');
                 document.getElementById("id-dance-type-playing").innerHTML = message_dict.dance;
                 document.getElementById("id-song-title-playing").innerHTML = message_dict.title;
                 document.getElementById("id-song-artist-playing").innerHTML = message_dict.artist; 
+                document.getElementById("id-song-id-playing").innerHTML = message_dict.song_id;
             }           
         };
     
         chatSocket.onclose = function(e) { 
             // if the socket disconnects (for example, the phone's browser has gone to sleep)
             // inform the user to reload the page
-            document.getElementById('id-now-playing-section').innerHTML = "Disconnected";
-            document.getElementById("id-dance-type-playing").innerHTML = '';
-            document.getElementById("id-song-title-playing").innerHTML = 'Reload Page to Connect';
-            document.getElementById("id-song-artist-playing").innerHTML = '';
+            document.getElementById("id-disconnected-section").removeAttribute("hidden");
+            document.getElementById("id-connecting-section").setAttribute("hidden",'');
+            document.getElementById("id-no-music-section").setAttribute("hidden",'');
+            document.getElementById("id-now-playing-section").setAttribute("hidden",'');
             console.error('Chat socket closed unexpectedly');
         };
-    
-        // these methods will be replaced by like / dislike buttons
 
+        var like_current_song = document.getElementById("id-like-song-playing");
+        var hate_current_song = document.getElementById("id-hate-song-playing");
+        
+        like_current_song.onclick = function(e) {
+            var song_id = document.getElementById("id-song-id-playing").innerHTML;
+            const msg_dict = {"type": "like", "song_id": song_id};
+            console.log(msg_dict);
+            chatSocket.send(JSON.stringify(msg_dict));
+        };
+        
+        hate_current_song.onclick = function(e) {
+            var song_id = document.getElementById("id-song-id-playing").innerHTML;
+            const msg_dict = {"type": "hate", "song_id": song_id};
+            console.log(msg_dict);
+            chatSocket.send(JSON.stringify(msg_dict));
+        };
     
         //document.querySelector('#chat-message-submit').onclick = function(e) {
         //    const messageInputDom = document.querySelector('#chat-message-input');

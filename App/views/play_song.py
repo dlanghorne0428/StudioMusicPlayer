@@ -39,6 +39,7 @@ def play_song(request, song_id):
                    'user_token': token_dict['access_token'],
                    'title': song.title,
                    'artist': song.artist,
+                   'song_id': song.id,
                    'cover_art': song.image_link,
                    'dance_type': song.get_dance_type_display}
                   )    
