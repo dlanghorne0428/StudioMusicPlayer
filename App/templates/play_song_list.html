@@ -132,33 +132,37 @@
   <script type="text/javascript" src={% static "js/amplitude.min.js" %}></script>
   <script>
   
-    // create a web socket for the 'playing' page
-    const chatSocket = new WebSocket(
+    {% if wifi_enabled %}
+      // create a web socket for the 'playing' page
+      const chatSocket = new WebSocket(
            'ws://'
            + window.location.host
            + '/ws/playing'
-    );
+      );
+    {% endif %}
        
     // send info about the current song (or indicate no song is playing) to the web socket.    
     function send_to_socket(index) {
-      /* ensure index is valid */
-      if (index > -1 && index < {{ playlist_indices|length }}) {
-        the_song = Amplitude.getSongAtIndex(index);
-        
-        // Build the JSON message to send
-        var message = '{"dance": "' + the_song.dance_type + '", "title": "' + the_song.name +'", '
-        message += '"artist": "' + the_song.artist + '", "song_id": "' + the_song.id +'", "music_playing": "1"}';
+      {% if wifi_enabled %}
+        /* ensure index is valid */
+        if (index > -1 && index < {{ playlist_indices|length }}) {
+          the_song = Amplitude.getSongAtIndex(index);
+          
+          // Build the JSON message to send
+          var message = '{"dance": "' + the_song.dance_type + '", "title": "' + the_song.name +'", '
+          message += '"artist": "' + the_song.artist + '", "song_id": "' + the_song.id +'", "music_playing": "1"}';
 
-        chatSocket.send(JSON.stringify({
-          'type': "now_playing",
-          'message': message}))
-      } else {
-        <!-- use an value of -1 to indicate no song is playing -->
-        const message = '{"music_playing": "-1"}';
-        chatSocket.send(JSON.stringify({
-          'type': "now_playing",
-          'message': message}))
-      }
+          chatSocket.send(JSON.stringify({
+            'type': "now_playing",
+            'message': message}))
+        } else {
+          <!-- use an value of -1 to indicate no song is playing -->
+          const message = '{"music_playing": "-1"}';
+          chatSocket.send(JSON.stringify({
+            'type': "now_playing",
+            'message': message}))
+        }
+      {% endif %}
     };
     
     // flag to indicate if a message needs to be sent to the web socket.
