@@ -69,27 +69,32 @@
   <script type="text/javascript" src={% static "js/amplitude.min.js" %}></script>
   <script>
   
-    // create a web socket for the 'playing' page
-    const chatSocket = new WebSocket(
+    {% if wifi_enabled %}
+    
+      // create a web socket for the 'playing' page
+      const chatSocket = new WebSocket(
             'ws://'
             + window.location.host
             + '/ws/playing'
         );
+    {% endif %}
     
     // send info about the current song (or indicate no song is playing) to the web socket.    
     function send_to_socket(music_on = true) {
-      if (music_on) {
-        const message = '{"dance": "{{song.get_dance_type_display}}", "title": "{{song.title}}", "artist": "{{song.artist}}", "song_id": "{{song.id}}", "music_playing": "1"}';
-        chatSocket.send(JSON.stringify({
-          'type': "now_playing",
-          'message': message}))
-      } else {
-        <!-- use an value of -1 to indicate no song is playing -->
-        const message = '{"music_playing": "-1"}';
-        chatSocket.send(JSON.stringify({
-          'type': 'now_playing',
-          'message': message}))
-      }
+      {% if wifi_enabled %}
+        if (music_on) {
+          const message = '{"dance": "{{song.get_dance_type_display}}", "title": "{{song.title}}", "artist": "{{song.artist}}", "song_id": "{{song.id}}", "music_playing": "1"}';
+          chatSocket.send(JSON.stringify({
+            'type': "now_playing",
+            'message': message}))
+        } else {
+          <!-- use an value of -1 to indicate no song is playing -->
+          const message = '{"music_playing": "-1"}';
+          chatSocket.send(JSON.stringify({
+            'type': 'now_playing',
+            'message': message}))
+        }
+      {% endif %}
     };
     
     // flag to indicate if a message needs to be sent to the web socket.

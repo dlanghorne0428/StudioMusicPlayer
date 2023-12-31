@@ -118,12 +118,14 @@
     var pause_control = document.getElementById('pause-control');
     var progress_timer;
 
-    // create a web socket for the 'playing' page
-    const chatSocket = new WebSocket(
+    {% if wifi_enabled %}
+      // create a web socket for the 'playing' page
+       const chatSocket = new WebSocket(
             'ws://'
             + window.location.host
             + '/ws/playing'
-        );
+       );
+    {% end if %}
     
     
     window.onSpotifyWebPlaybackSDKReady = () => {
@@ -139,18 +141,20 @@
     
       // send info about the current song (or indicate no song is playing) to the web socket.
       function send_to_socket(music_on = true) {
-        if (music_on) {
-          const message = '{"dance": "{{dance_type}}", "title": "{{title}}", "artist": "{{artist}}", "song_id": "{{song_id}}", "music_playing": "1"}';
-          chatSocket.send(JSON.stringify({
-            'type': 'now_playing',
-            'message': message}))
-        } else {
-          <!-- use an value of -1 to indicate no song is playing -->
-          const message = '{"music_playing": "-1"}';
-          chatSocket.send(JSON.stringify({
-            'type': 'now_playing',
-            'message': message}))
-        }
+        {% if wifi_enabled %}
+          if (music_on) {
+            const message = '{"dance": "{{dance_type}}", "title": "{{title}}", "artist": "{{artist}}", "song_id": "{{song_id}}", "music_playing": "1"}';
+            chatSocket.send(JSON.stringify({
+              'type': 'now_playing',
+              'message': message}))
+          } else {
+            <!-- use an value of -1 to indicate no song is playing -->
+            const message = '{"music_playing": "-1"}';
+            chatSocket.send(JSON.stringify({
+              'type': 'now_playing',
+              'message': message}))
+          }
+        {% endif %}
       };
     
 

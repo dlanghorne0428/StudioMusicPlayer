@@ -41,6 +41,7 @@ def play_song(request, song_id):
                    'artist': song.artist,
                    'song_id': song.id,
                    'cover_art': song.image_link,
+                   'wifi_enabled': settings.WIFI_ENABLED,
                    'dance_type': song.get_dance_type_display}
                   )    
     else:
@@ -48,5 +49,6 @@ def play_song(request, song_id):
         # render the template
         return render(request, "play_song.html", 
                       {'song':song, 
+                       'wifi_enabled': settings.WIFI_ENABLED,
                        'default_url': default_url}
                       )   
