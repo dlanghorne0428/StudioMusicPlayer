@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.core.paginator import Paginator
+from django.conf import settings
 
 # imported our models
 from App.models.song import Song
@@ -9,6 +10,7 @@ from App.models.playlist import Playlist
 import logging
 logger = logging.getLogger("django")
 
+import random
 
 def show_songs(request, song_id = None):
     ''' shows all the Songs in the database. '''
@@ -47,7 +49,30 @@ def show_songs(request, song_id = None):
         # get all local playlists owned by the current user
         playlists = Playlist.objects.filter(owner=request.user, streaming=False).order_by('title') 
         logger.info(request.user.username + " has " + str(len(playlists)) + " local playlists.")
-        
+    
+    if request.method == "GET":
+        if request.GET.get('btn_play_all') is not None:
+            logger.info('Play All button clicked')
+            
+            playlist_indices = list()
+            song_list = list()
+            for i in range(len(songs.qs)):
+                song_list.append(songs.qs[i])
+                playlist_indices.append(i)
+            random.shuffle(song_list) 
+            
+            default_url = settings.STATIC_URL + "img/default.png"
+            
+            return render(request, "play_song_list.html", {
+                'playlist_info': {'id': None, 'category': 'Norm', 'title': "Filtered Songs"},
+                'song_list':song_list, 
+                'start_index': 0,
+                'max_song_duration_in_sec': None,
+                'default_url': default_url,
+                "playlist_indices": playlist_indices,
+                "wifi_enabled": settings.WIFI_ENABLED
+        })              
+            
     # render the template
     return render(request, 'show_songs.html', 
                   {'filter': songs,

@@ -48,7 +48,9 @@
     <div class="col-4 up-next-list">
       <!-- upcoming songs in right section, show dance_type and title only -->
       {% for i in playlist_indices %}
-        <a hidden id="skip-link-{{i}}" href="{% url 'App:play_song_list' playlist_info.id i %}">Skip Here</a>
+        {% if playlist_info.id != None %}
+          <a hidden id="skip-link-{{i}}" href="{% url 'App:play_song_list' playlist_info.id i %}">Skip Here</a>
+        {% endif %}
         <div class="song-meta-container" id="index-{{i}}">
           {% if playlist_info.category == 'Show' %}
             <span class="song-container-primary">Heat {{forloop.counter}}</span>
@@ -99,13 +101,19 @@
       <!-- right section has info about the current playlist and link back to the user's playlists page -->
       <p class="text-info my-1">
          <span class="playlist-title" data-amplitude-playlist-info="title" data-amplitude-playlist="the_list"></span>
-         <span><a href="{% url 'App:edit_playlist' playlist_info.id %}">(Edit)</a></span>
+         {% if playlist.info.id != None %}
+            <span><a href="{% url 'App:edit_playlist' playlist_info.id %}">(Edit)</a></span>
+         {% endif %}
          <span> Track </span>
          <span id="id-track-number">?</span>
          <span> of {{ playlist_indices|length }}</span>
       </p>
       <p class="text-info my-1">
-        <span> {{ playlist_info.get_category_display }} Mode - </span>
+        {% if playlist_info.id == None %} 
+          <span> Normal Mode - </span>      
+        {% else %}
+          <span> {{ playlist_info.get_category_display }} Mode - </span>
+        {% endif %}
         {% if playlist_info.category == 'Party' or playlist_info.category == 'Show' %}
           <span id="timelimit">Track time limit: {{ playlist_info.max_song_duration|time:"i:s" }}</span>
           <span id="feature-text" hidden>Featured song</span>
@@ -461,7 +469,15 @@
       if (Amplitude.getPlayerState() == "playing") {
         Amplitude.skipTo(0, index);
       } else {
-        skipToSong(index - 1);
+        {% if playlist_info.id == None %}
+          if (index > 0) {
+            Amplitude.playSongAtIndex(index-1);
+          } else {
+            Amplitude.playSongAtIndex(0);
+          }
+        {% else %}
+          skipToSong(index - 1);
+        {% endif %}
       }
     });
 
@@ -471,7 +487,15 @@
       if (Amplitude.getPlayerState() == "playing") {
         Amplitude.next();
       } else {
-        skipToSong(index + 1);
+        {% if playlist_info.id == None %}
+          if (index < {{ playlist_indices|length }}) {
+            Amplitude.playSongAtIndex(index+1);
+          } else {
+            Amplitude.playSongAtIndex(index);
+          }
+        {% else %}
+          skipToSong(index + 1);
+        {% endif %}
       }
     });
 
