@@ -79,7 +79,8 @@ def play_song_list(request, playlist_id, start_index=0):
             'max_song_duration_in_sec': max_song_duration_in_sec,
             'default_url': default_url,
             'user_token': token_dict['access_token'],
-            'is_feature_list': is_feature_list
+            'is_feature_list': is_feature_list,
+            'wifi_enabled': settings.WIFI_ENABLED,
         })          
     else:
         # render the template
@@ -91,5 +92,6 @@ def play_song_list(request, playlist_id, start_index=0):
             'max_song_duration_in_sec': max_song_duration_in_sec,
             'default_url': default_url,
             "playlist_indices": playlist_indices,
-            'is_feature_list': is_feature_list
+            'is_feature_list': is_feature_list,
+            'wifi_enabled': settings.WIFI_ENABLED,
         })   
