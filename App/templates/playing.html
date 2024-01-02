@@ -33,13 +33,13 @@
                 <h3 class="my-2" id="id-dance-type-playing"></h3>
             </div>
         </div>
-        <div class="row my=0 align-middle">
+        <div class="row my=0">
             <div class="col-1 text-center">
-                <button id="id-hate-song-playing" class="like-button btn-secondary">
+                <button id="id-hate-song-playing" class="thumb-button left-thumb btn-secondary">
                     <img height=24 src={% static 'img/hand-thumbs-down.svg' %}>
                 </button>
                 <!-- the filled buttons are initially hidden and disabled so they can't be clicked -->
-                <button hidden id="id-hated-song-playing" class="like-button btn-outline-dark">
+                <button hidden id="id-hated-song-playing" class="thumb-button left-thumb btn-outline-dark">
                     <img disabled height=24 src={% static 'img/hand-thumbs-down-fill.svg' %}>
                 </button>
             </div>
@@ -49,10 +49,10 @@
                 <p hidden id="id-song-id-playing"></p>
             </div>
             <div class="col-1 text-center">
-                <button id="id-like-song-playing" class="like-button btn-secondary">
+                <button id="id-like-song-playing" class="thumb-button right-thumb btn-secondary">
                     <img height=24 src={% static 'img/hand-thumbs-up.svg' %}>
                 </button>
-                <button hidden id="id-liked-song-playing" class="like-button btn-outline-dark">
+                <button hidden id="id-liked-song-playing" class="thumb-button right-thumb btn-outline-dark">
                     <img disabled height=24 src={% static 'img/hand-thumbs-up-fill.svg' %}>
                 </button>
             </div>
