@@ -38,7 +38,7 @@ body {
     right: 0;
 }
 
-#id-dance-type-playing {
+.dance-type {
     margin: 1rem;
     font-size: 28px;
     color: Yellow;
