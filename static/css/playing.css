@@ -27,6 +27,7 @@ body {
     display: block;
     padding: 8px 8px;
     position: absolute;
+    width: 40px;
     bottom: 0;
 }
 
@@ -39,20 +40,17 @@ body {
 }
 
 .dance-type {
-    margin: 1rem;
     font-size: 28px;
     color: Yellow;
     letter-spacing: 1.0px;
 }
 
 #id-song-title-playing {
-    margin: 1rem;
     font-size: 20px;
     color: White;
 }
 
 #id-song-artist-playing {
-    margin: 1rem;
     font-size: 16px;
     color: White;
 }
