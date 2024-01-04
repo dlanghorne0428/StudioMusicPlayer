@@ -26,37 +26,38 @@
         </div>
     </div>
     
-    <div hidden id="id-now-playing-section" class="row border border-success">
-        <div class="row" >   
-            <div class="col-12">
-                <h1 class="div-title text-center my-2" >Now Playing</h1>
-                <h3 class="my-2" id="id-dance-type-playing"></h3>
-            </div>
+    <div hidden id="id-now-playing-section" class="border border-success">
+        <div class="row text-center">
+            <h1 class="div-title my-2" >Now Playing</h1>
+            <h3 class="my-2 dance-type" id="id-dance-type-playing"></h3>
+            <p class= "my-1" id="id-song-title-playing"></p>
+            <p class= "my-1" id="id-song-artist-playing"></p>
+            <p hidden id="id-song-id-playing"></p>
         </div>
-        <div class="row my=0">
-            <div class="col-1 text-center">
-                <button id="id-hate-song-playing" class="thumb-button left-thumb btn-secondary">
-                    <img height=24 src={% static 'img/hand-thumbs-down.svg' %}>
-                </button>
-                <!-- the filled buttons are initially hidden and disabled so they can't be clicked -->
-                <button hidden id="id-hated-song-playing" class="thumb-button left-thumb btn-outline-dark">
-                    <img disabled height=24 src={% static 'img/hand-thumbs-down-fill.svg' %}>
-                </button>
-            </div>
-            <div class="col-10"> 
-                <p class= "my-1" id="id-song-title-playing"></p>
-                <p class= "my-1" id="id-song-artist-playing"></p>
-                <p hidden id="id-song-id-playing"></p>
-            </div>
-            <div class="col-1 text-center">
-                <button id="id-like-song-playing" class="thumb-button right-thumb btn-secondary">
-                    <img height=24 src={% static 'img/hand-thumbs-up.svg' %}>
-                </button>
-                <button hidden id="id-liked-song-playing" class="thumb-button right-thumb btn-outline-dark">
-                    <img disabled height=24 src={% static 'img/hand-thumbs-up-fill.svg' %}>
-                </button>
-            </div>
+    
+       <div class="col-1">
+            <button id="id-hate-song-playing" class="thumb-button left-thumb btn-secondary">
+                <img height=24 src={% static 'img/hand-thumbs-down.svg' %}>
+            </button>
+            <!-- the filled buttons are initially hidden and disabled so they can't be clicked -->
+            <button hidden id="id-hated-song-playing" class="thumb-button left-thumb btn-outline-dark">
+                <img disabled height=24 src={% static 'img/hand-thumbs-down-fill.svg' %}>
+            </button>
         </div>
+        </div class="col-1 offset-10">
+            <button id="id-like-song-playing" class="thumb-button right-thumb btn-secondary">
+                <img height=24 src={% static 'img/hand-thumbs-up.svg' %}>
+            </button>
+            <button hidden id="id-liked-song-playing" class="thumb-button right-thumb btn-outline-dark">
+                <img disabled height=24 src={% static 'img/hand-thumbs-up-fill.svg' %}>
+            </button>
+        </div>
+    </div>
+    
+    <div hidden id="id-up-next-section text-center" class="row border border-success">
+        <h1 class="div-title my-2" >Up Next</h1>
+        <h3 class="my-2 dance-type" id="id-dance-type-up-next-1"></h3>
+        <h3 class="my-2 dance-type" id="id-dance-type-up-next-2"></h3>
     </div>
     
     <div hidden class="row" id="id-no-music-section">   
@@ -93,6 +94,7 @@
                 document.getElementById("id-connecting-section").setAttribute("hidden",'');
                 document.getElementById("id-disconnected-section").setAttribute("hidden",'');
                 document.getElementById("id-now-playing-section").setAttribute("hidden",'');
+                document.getElementById("id-up-next-section").setAttribute("hidden",'');
             } else {
                 // if the song_id is different from what this page thinks is current
                 if (message_dict.song_id != current_song_id) {
@@ -107,9 +109,21 @@
                     document.getElementById("id-no-music-section").setAttribute("hidden",'');
                     
                     // indicate the dance type, title and artist of the current song.
-                    document.getElementById("id-dance-type-playing").innerHTML = message_dict.dance;
-                    document.getElementById("id-song-title-playing").innerHTML = message_dict.title;
-                    document.getElementById("id-song-artist-playing").innerHTML = message_dict.artist;
+                    document.getElementById("id-dance-type-playing").innerHTML = message_dict["dance"];
+                    document.getElementById("id-song-title-playing").innerHTML = message_dict["title"];
+                    document.getElementById("id-song-artist-playing").innerHTML = message_dict["artist"];
+                    
+                    if ("next-1" in message_dict) {
+                        document.getElementById("id-up-next-section").removeAttribute("hidden");
+                        document.getElementById("id-dance-type-up-next-1").innerHTML = message_dict["next-1"];
+                        if ("next-2" in message_dict) {
+                            document.getElementById("id-dance-type-up-next-2").innerHTML = message_dict["next-2"];
+                        } else {
+                            document.getElementById("id-dance-type-up-next-2").innerHTML = "end of list";
+                        }                            
+                    } else {
+                        document.getElementById("id-up-next-section").setAttribute("hidden",'');
+                    };
                     
                     // return like buttons to default state
                     liked_current_song.setAttribute("hidden",'');
@@ -127,6 +141,7 @@
             document.getElementById("id-connecting-section").setAttribute("hidden",'');
             document.getElementById("id-no-music-section").setAttribute("hidden",'');
             document.getElementById("id-now-playing-section").setAttribute("hidden",'');
+            document.getElementById("id-up-next-section").setAttribute("hidden",'');
             console.error('Chat socket closed unexpectedly');
         };
 
