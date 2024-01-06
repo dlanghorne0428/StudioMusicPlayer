@@ -19,11 +19,6 @@
     {% if not streaming and not index %}
       <div class="text-center my-2">
         <a class="btn btn-primary" href="{% url 'App:add_song' %}">Add Song from File</a>
-        {% if showing_no_art %}
-          <a class="btn btn-primary" href="{% url 'App:show_songs' %}">Show All Songs</a>   
-        {% else %}
-          <a class="btn btn-primary" href="{% url 'App:show_songs_no_cover_art' %}">Show Songs without Cover Art</a>
-        {% endif %}
       </div>
     {% elif index %}
       <div class="text-center my-2">
