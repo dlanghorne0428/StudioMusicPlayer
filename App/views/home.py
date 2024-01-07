@@ -20,11 +20,12 @@ def playing(request):
 
 
 def exit(request):
-    # only admin users or teachers can exit the application
-    if request.user.is_superuser or request.user.is_teacher:    
-        logger.info(request.user.get_username() + " exited the application")
-        logout(request)
-        os.abort()
-        sys.exit("Operator terminated program")
-    else:
-        return render(request,"home.html", {'user': request.user})
+    if request.user.is_authenticated: 
+        # only admin users or teachers can exit the application
+        if request.user.is_superuser or request.user.is_teacher:    
+            logger.info(request.user.get_username() + " exited the application")
+            logout(request)
+            os.abort()
+            sys.exit("Operator terminated program")
+    
+    return render(request,"home.html", {'user': request.user}) 

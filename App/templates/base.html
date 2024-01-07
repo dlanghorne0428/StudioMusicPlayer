@@ -71,15 +71,19 @@
             </li>
             <!-- only show links to songs and playlists once the user is authenticated -->
             {% if user.is_authenticated %}
-              <li class="nav-item">
-                <a class="nav-link" href="{% url 'App:show_songs' %}">Songs</a>
+              <li class="nav-item mx-2 dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarSongDropdown" role="button" data-bs-toggle="dropdown">Songs</a>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="{% url 'App:show_songs' %}">All Songs</a>
+                  <a class="dropdown-item" href="{% url 'App:show_songs_no_cover_art' %}">Missing Cover Art</a>
+                  <a class="dropdown-item" href="{% url 'App:show_song_stats' %}">Popularity</a>
+                </div>
               </li>
               <li class="nav-item mx-2 dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarPlaylistDropdown" role="button" data-bs-toggle="dropdown">Playlists</a>
                 <div class="dropdown-menu">
                   <a class="dropdown-item" href="{% url 'App:user_playlists' %}">Your Playlists</a>
                   <a class="dropdown-item" href="{% url 'App:user_preferences' %}">Your Playlist Preferences</a>
-  
                   <a class="dropdown-item" href="{% url 'App:all_playlists' %}">All Playlists</a>
                 </div>
               </li>

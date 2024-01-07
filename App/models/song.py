@@ -175,6 +175,8 @@ class Song(models.Model):
        The music itself is either in a filename or link to the file. 
        The metadata (artist and title) are stored.
        There is also an image filename for the cover art.
+       The tempo is stored in a BPM field.
+       Statistics are kept on the number of plays, likes, and hates (dislikes).
        Finally, the dance_type is also stored.'''
     
     audio_file = models.FileField(blank=True, null=True)
@@ -190,12 +192,19 @@ class Song(models.Model):
     # the song tempo in BPM will either be created from the audio file or read from Spotify
     bpm = models.IntegerField(default=-1)
 
+    # number of times this song is played, liked, and hated
+    num_plays = models.BigIntegerField(default=0)
+    num_likes = models.BigIntegerField(default=0)
+    num_hates = models.BigIntegerField(default=0)
+
+    # the dance type assigned to this song
     dance_type = models.CharField(
         max_length = 10,
         choices = DANCE_TYPE_CHOICES,
         default = 'Cha'
         )
     
+    # this field is no longer used
     holiday = models.CharField(
         max_length = 5,
         choices = HOLIDAY_CHOICES,
