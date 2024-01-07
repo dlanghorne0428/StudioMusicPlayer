@@ -141,7 +141,6 @@ def show_songs_no_cover_art(request):
                   {'songs': no_art_songs,
                    'playlists': playlists,
                    'streaming': streaming,
-                   'showing_no_art': True,
                    'page_title': page_title
                   })
      
