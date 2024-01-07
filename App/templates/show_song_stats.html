@@ -81,4 +81,9 @@
   </table>
 </div>
 
+<div class="text-center my-2">
+    <a class="btn btn-primary" href="{% url 'App:reset_song_stats' %}"
+       onclick="return confirm('Clearing all popularity counts\n Are you sure?')">Clear Popularity Data</a>
+</div>
+
 {% endblock %}
