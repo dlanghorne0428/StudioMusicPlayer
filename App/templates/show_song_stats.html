@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block extra_css %}
+  <!-- special styling needed for this page -->
+  <link rel="stylesheet" href="{% static 'css/show_songs.css' %}">
+{% endblock %}
+
+{% block content %}
+
+  <!-- first row in bootstrap grid is the page title, with some padding on the bottom -->
+  <div class="row">
+    <div class="col-12">
+      <h2 class="text-center">{{page_title}}</h2>
+    </div>
+  </div>
+  
+  <!-- next row in bootstrap grid is a table, with dark borders --> 
+  <div class="col-12 border border-dark">
+  <table class="table table-bordered table-sm">
+    <!-- column headers have a dark background -->
+    <thead class='table-dark'>
+      <!-- use sticky to keep header row from scrolling off the page -->
+      <tr id='table-header-sticky' >
+        <th class="text-center"style="width:7%">#</th>
+        <th class="text-center"style="width:28%">Title</th>
+        <th class="text-center"style="width:22%">Artist</th>
+        <th class="text-center"style="width:15%">Dance</th>
+        <th class="text-center"style="width:7%">BPM</th>
+        {% if sort_field == 0 %}
+          <th class="text-center text-warning"style="width:7%">Plays</th>
+        {% else %}
+          <th class="text-center text-secondary"style="width:7%">
+            <a href="{% url 'App:show_song_stats' 0 %}">Plays</a>
+          </th>
+        {% endif %}
+        {% if sort_field == 1 %}
+          <th class="text-center text-warning"style="width:7%">Likes</th>
+        {% else %}
+          <th class="text-center text-secondary"style="width:7%">
+            <a href="{% url 'App:show_song_stats' 1 %}">Likes</a>
+          </th>
+        {% endif %}
+        {% if sort_field == 2 %}
+          <th class="text-center text-warning"style="width:7%">Dislikes</th>
+        {% else %}
+          <th class="text-center text-secondary"style="width:7%">
+            <a href="{% url 'App:show_song_stats' 2 %}">Dislikes</a>
+          </th>
+        {% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      <!-- the rest of the table has the list of songs, one song per row -->
+      {% for song in songs %}
+      <tr class="table-row">
+        <td class="text-center">{{ forloop.counter }}
+        <td class="text-center">{{ song.title }}
+          {% if song.explicit %}
+            <img src={% static 'img/explicit-fill.svg' %}>
+          {% endif %}
+        </td>
+        <td class="text-center">{{ song.artist }}</td>
+        <!-- display the "readable" string for the dance type -->
+        <td class="text-center">{{ song.get_dance_type_display }}</td>
+        
+        <!-- if song BPM < 0, display N/A -->
+        {% if song.bpm < 0 %}
+          <td class='text-center'>N/A</td>
+        {% else %}
+          <td class='text-center'>{{song.bpm}}</td>
+        {% endif %}
+          
+        <td class="text-center">{{ song.num_plays }}</td>          
+        <td class="text-center">{{ song.num_likes }}</td>   
+        <td class="text-center">{{ song.num_hates }}</td>    
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}
