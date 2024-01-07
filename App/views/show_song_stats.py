@@ -51,3 +51,39 @@ def show_song_stats(request, sort_field=1):
                    'sort_field' : sort_field,
                    'page_title': page_title
                   })
+
+
+def reset_song_stats(request):
+    ''' resets the popularity stats for all songs in the database '''
+    if not request.user.is_authenticated:
+        logger.warning("User is not authenticated - redirect to login page")
+        return redirect('login')
+    
+    if not (request.user.is_superuser):
+        logger.warning(request.user.username + " not authorized to create playlists")
+        return render(request, 'permission_denied.html') 
+  
+    if request.user.has_spotify_token:  
+        streaming = True
+        page_title = "Popularity of Songs added from Spotify"
+        songs = Song.objects.exclude(spotify_track_id__isnull=True).exclude(title='{Placeholder}').order_by('title') 
+        
+    else:
+        streaming = False
+        page_title = "Popularity of Songs on local device"
+        songs = Song.objects.filter(spotify_track_id__isnull=True).exclude(title='{Placeholder}').order_by('title')    
+        
+    logger.info("Resetting " + page_title) 
+    for s in songs:
+        s.num_plays = 0
+        s.num_likes = 0
+        s.num_hates = 0
+        s.save()
+        
+    # render the template
+    return render(request, 'show_song_stats.html', 
+                  {'songs': songs,
+                   'streaming': streaming,
+                   'sort_field' : 1,
+                   'page_title': page_title
+                  })    
