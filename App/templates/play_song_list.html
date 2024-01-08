@@ -160,6 +160,22 @@
           var message = '{"dance": "' + the_song.dance_type + '", "title": "' + the_song.name +'", '
           message += '"artist": "' + the_song.artist + '", "song_id": "' + the_song.id +'", "music_playing": "1"';
 
+          if (index > 0) {
+            var previous_song = Amplitude.getSongAtIndex(index-1);
+            message += ', "previous-1-dance": "' + previous_song.dance_type + '"';
+            message += ', "previous-1-title": "' + previous_song.name + '"';
+            message += ', "previous-1-artist": "' + previous_song.artist + '"';
+            message += ', "previous-1-song-id": "' + previous_song.id + '"';
+          };          
+
+          if (index > 1) {
+            var earlier_song = Amplitude.getSongAtIndex(index-2);
+            message += ', "previous-2-dance": "' + earlier_song.dance_type + '"';
+            message += ', "previous-2-title": "' + earlier_song.name + '"';
+            message += ', "previous-2-artist": "' + earlier_song.artist + '"';
+            message += ', "previous-2-song-id": "' + earlier_song.id + '"';
+          };
+          
           if (index < ({{ playlist_indices|length }} - 1)) { 
             var next_song = Amplitude.getSongAtIndex(index+1);
             message += ', "next-1": "' + next_song.dance_type + '"';
@@ -172,7 +188,7 @@
           
           message += '}';
                     
-          //console.log(message);
+          console.log(message);
           
           chatSocket.send(JSON.stringify({
             'type': "now_playing",
