@@ -25,20 +25,28 @@ body {
     position: relative;
 }
 
+#id-previous-1-section {
+    position: relative;
+}
+
+#id-previous-2-section {
+    position: relative;
+}
+
 .thumb-button {
     display: block;
-    padding: 8px 8px;
+    padding: 2px 2px;
     position: absolute;
-    width: 40px;
-    bottom: 0;
+    width: 32px;
+    bottom: 2px;
 }
 
 .left-thumb {
-    left: 0;
+    left: 8px;
 }
 
 .right-thumb {
-    right: 0;
+    right: 8px;
 }
 
 .dance-type {
@@ -47,14 +55,16 @@ body {
     letter-spacing: 1.0px;
 }
 
-#id-song-title-playing {
+.song-title {
     font-size: 20px;
     color: White;
+    overflow: hidden;
 }
 
-#id-song-artist-playing {
-    font-size: 16px;
+.song-artist {
+    font-size: 18px;
     color: White;
+    overflow: hidden;
 }
 
 /* hide the navbar on this page */

@@ -22,7 +22,7 @@
     <div hidden class="row" id="id-disconnected-section">   
         <div class="col-12 border border-success">
             <h1 class="div-title text-center my-2">Disconncted</h1>
-            <p class= "my-1">Reload Page to Connect</p>
+            <p class= "my-1 text-info">Reload Page to Connect</p>
         </div>
     </div>
     
@@ -30,9 +30,8 @@
         <div class="text-center">
             <h1 class="div-title my-2" >Now Playing</h1>
             <h3 class="my-2 dance-type" id="id-dance-type-playing"></h3>
-            <p class= "my-1" id="id-song-title-playing"></p>
-            <p class= "my-1" id="id-song-artist-playing"></p>
-            <p hidden id="id-song-id-playing"></p>
+            <p class= "my-1 song-title" id="id-song-title-playing"></p>
+            <p class= "mb-2 song-artist" id="id-song-artist-playing"></p>
         </div>
     
         <div>
@@ -56,9 +55,61 @@
     </div>
     
     <div hidden id="id-up-next-section" class="row border border-success text-center">
-        <h1 class="div-title my-2" >Up Next</h1>
-        <h3 class="my-2 dance-type" id="id-dance-type-up-next-1"></h3>
-        <h3 class="my-2 dance-type" id="id-dance-type-up-next-2"></h3>
+        <h1 class="div-title my-1" >Up Next</h1>
+        <h3 class="my-1 dance-type text-warning" id="id-dance-type-up-next-1"></h3>
+        <h3 class="mb-2 dance-type text-warning" id="id-dance-type-up-next-2"></h3>
+    </div>
+    
+    <div hidden id="id-recently-played-section" class="row border border-success text-center">
+        <h1 class="div-title mt-2 text-info" >Recently Played</h1>        
+        <div id="id-previous-1-section" class="col-12 border-bottom border-success text-center">
+            <h3 class="my-1 dance-type text-secondary" id="id-dance-type-previous-1"></h3>
+            <p class= "my-0 song-title text-secondary" id="id-song-title-previous-1"></p>
+            <p class= "my-0 song-artist text-secondary" id="id-song-artist-previous-1"></p>
+
+            <div>
+                <button id="id-hate-previous-1" class="thumb-button left-thumb btn-secondary">
+                    <img height=24 src={% static 'img/hand-thumbs-down.svg' %}>
+                </button>
+                <!-- the filled buttons are initially hidden and disabled so they can't be clicked -->
+                <button hidden id="id-hated-previous-1" class="thumb-button left-thumb btn-outline-dark">
+                    <img disabled height=24 src={% static 'img/hand-thumbs-down-fill.svg' %}>
+                </button>
+            </div>
+        
+            <div>
+                <button id="id-like-previous-1" class="thumb-button right-thumb btn-secondary">
+                    <img height=24 src={% static 'img/hand-thumbs-up.svg' %}>
+                </button>
+                <button hidden id="id-liked-previous-1" class="thumb-button right-thumb btn-outline-dark">
+                    <img disabled height=24 src={% static 'img/hand-thumbs-up-fill.svg' %}>
+                </button>
+            </div>
+        </div>
+        
+        <div id="id-previous-2-section" class="col-12 text-center">
+            <h3 class="my-1 dance-type text-secondary" id="id-dance-type-previous-2"></h3>
+            <p class= "my-0 song-title text-secondary" id="id-song-title-previous-2"></p>
+            <p class= "my-0 song-artist text-secondary" id="id-song-artist-previous-2"></p>  
+            <div>
+                <button id="id-hate-previous-2" class="thumb-button left-thumb btn-secondary">
+                    <img height=24 src={% static 'img/hand-thumbs-down.svg' %}>
+                </button>
+                <!-- the filled buttons are initially hidden and disabled so they can't be clicked -->
+                <button hidden id="id-hated-previous-2" class="thumb-button left-thumb btn-outline-dark">
+                    <img disabled height=24 src={% static 'img/hand-thumbs-down-fill.svg' %}>
+                </button>
+            </div>
+        
+            <div>
+                <button id="id-like-previous-2" class="thumb-button right-thumb btn-secondary">
+                    <img height=24 src={% static 'img/hand-thumbs-up.svg' %}>
+                </button>
+                <button hidden id="id-liked-previous-2" class="thumb-button right-thumb btn-outline-dark">
+                    <img disabled height=24 src={% static 'img/hand-thumbs-up-fill.svg' %}>
+                </button>
+            </div>
+        </div>
     </div>
     
     <div hidden class="row" id="id-no-music-section">   
@@ -71,13 +122,23 @@
         // variables for like / dislike buttons
         var like_current_song = document.getElementById("id-like-song-playing");
         var hate_current_song = document.getElementById("id-hate-song-playing");
+        var like_previous_1 = document.getElementById("id-like-previous-1");
+        var hate_previous_1 = document.getElementById("id-hate-previous-1");
+        var like_previous_2 = document.getElementById("id-like-previous-2");
+        var hate_previous_2 = document.getElementById("id-hate-previous-2");
     
         // variables for filled buttons
         var liked_current_song = document.getElementById("id-liked-song-playing");
         var hated_current_song = document.getElementById("id-hated-song-playing");
+        var liked_previous_1 = document.getElementById("id-liked-previous-1");
+        var hated_previous_1 = document.getElementById("id-hated-previous-1");
+        var liked_previous_2 = document.getElementById("id-liked-previous-2");
+        var hated_previous_2 = document.getElementById("id-hated-previous-2");
         
         // variable for the current song id
         var current_song_id;
+        var previous_song_id;
+        var earlier_song_id
     
         const chatSocket = new WebSocket(
             'ws://'
@@ -96,11 +157,12 @@
                 document.getElementById("id-disconnected-section").setAttribute("hidden",'');
                 document.getElementById("id-now-playing-section").setAttribute("hidden",'');
                 document.getElementById("id-up-next-section").setAttribute("hidden",'');
+                document.getElementById("id-recently-played-section").setAttribute("hidden",'');
+                current_song_id = -1;
             } else {
                 // if the song_id is different from what this page thinks is current
                 if (message_dict.song_id != current_song_id) {
                     //update the current song id variable
-                    document.getElementById("id-song-id-playing").innerHTML = message_dict.song_id;
                     current_song_id = message_dict.song_id;
 
                     // show the now playing section, hide the others
@@ -126,7 +188,69 @@
                         document.getElementById("id-up-next-section").setAttribute("hidden",'');
                     };
                     
-                    // return like buttons to default state
+                    if ("previous-1-dance" in message_dict) {
+                        document.getElementById("id-recently-played-section").removeAttribute("hidden");
+                        document.getElementById("id-dance-type-previous-1").innerHTML = message_dict["previous-1-dance"];
+                        document.getElementById("id-song-title-previous-1").innerHTML = message_dict["previous-1-title"];
+                        document.getElementById("id-song-artist-previous-1").innerHTML = message_dict["previous-1-artist"];
+                        previous_song_id = message_dict["previous-1-song-id"];
+                        if ("previous-2-dance" in message_dict) {
+                            document.getElementById("id-dance-type-previous-2").innerHTML = message_dict["previous-2-dance"];
+                            document.getElementById("id-song-title-previous-2").innerHTML = message_dict["previous-2-title"];
+                            document.getElementById("id-song-artist-previous-2").innerHTML = message_dict["previous-2-artist"];
+                            earlier_song_id = message_dict["previous-1-song-id"];
+                            document.getElementById("id-previous-2-section").removeAttribute("hidden");
+                        } else {
+                            document.getElementById("id-previous-2-section").setAttribute("hidden",'');
+                        }                            
+                    } else {
+                        document.getElementById("id-recently-played-section").setAttribute("hidden",'');
+                    };
+                    
+                    // pass like/dislike state down the recently played list
+                    if (like_previous_1.getAttribute("hidden") == "") {
+                        like_previous_2.setAttribute("hidden", "");
+                    } else {
+                        like_previous_2.removeAttribute("hidden");
+                    }
+                    if (hate_previous_1.getAttribute("hidden") == "") {
+                        hate_previous_2.setAttribute("hidden", "");
+                    } else {
+                        hate_previous_2.removeAttribute("hidden");
+                    }
+                    if (liked_previous_1.getAttribute("hidden") == "") {
+                        liked_previous_2.setAttribute("hidden", "");
+                    } else {
+                        liked_previous_2.removeAttribute("hidden");
+                    }
+                    if (hated_previous_1.getAttribute("hidden") == "") {
+                        hated_previous_2.setAttribute("hidden", "");
+                    } else {
+                        hated_previous_2.removeAttribute("hidden");
+                    }
+                    
+                    if (like_current_song.getAttribute("hidden") == "") {
+                        like_previous_1.setAttribute("hidden", "");
+                    } else {
+                        like_previous_1.removeAttribute("hidden");
+                    }
+                    if (hate_current_song.getAttribute("hidden") == "") {
+                        hate_previous_1.setAttribute("hidden", "");
+                    } else {
+                        hate_previous_1.removeAttribute("hidden");
+                    }
+                    if (liked_current_song.getAttribute("hidden") == "") {
+                        liked_previous_1.setAttribute("hidden", "");
+                    } else {
+                        liked_previous_1.removeAttribute("hidden");
+                    }
+                    if (hated_current_song.getAttribute("hidden") == "") {
+                        hated_previous_1.setAttribute("hidden", "");
+                    } else {
+                        hated_previous_1.removeAttribute("hidden");
+                    }
+                    
+                    // set like/dislike defaults for current song.
                     liked_current_song.setAttribute("hidden",'');
                     hated_current_song.setAttribute("hidden",'');
                     like_current_song.removeAttribute("hidden");
@@ -143,33 +267,132 @@
             document.getElementById("id-no-music-section").setAttribute("hidden",'');
             document.getElementById("id-now-playing-section").setAttribute("hidden",'');
             document.getElementById("id-up-next-section").setAttribute("hidden",'');
+            document.getElementById("id-recently-played-section").setAttribute("hidden",'');
             console.error('Chat socket closed unexpectedly');
         };
 
-        
+        // send a like message, hide the like and dislike buttons, unhide the filled like button
         like_current_song.onclick = function(e) {
-            // hide the like and dislike buttons, unhide the filled like button
             like_current_song.setAttribute("hidden",'');
             hate_current_song.setAttribute("hidden",'');
             liked_current_song.removeAttribute("hidden");
-            
-            // send a like message to the websocket
+    
             const msg_dict = {"type": "like", "song_id": current_song_id};
             console.log(msg_dict);
             chatSocket.send(JSON.stringify(msg_dict));
         };
         
+        like_previous_1.onclick = function(e) {
+            like_previous_1.setAttribute("hidden",'');
+            hate_previous_1.setAttribute("hidden",'');
+            liked_previous_1.removeAttribute("hidden");
+            
+            const msg_dict = {"type": "like", "song_id": previous_song_id};
+            console.log(msg_dict);
+            chatSocket.send(JSON.stringify(msg_dict));
+        };
+        
+        like_previous_2.onclick = function(e) {
+            like_previous_2.setAttribute("hidden",'');
+            hate_previous_2.setAttribute("hidden",'');
+            liked_previous_2.removeAttribute("hidden");
+            
+            const msg_dict = {"type": "like", "song_id": earlier_song_id};
+            console.log(msg_dict);
+            chatSocket.send(JSON.stringify(msg_dict));
+        };
+        
+        // send a hate message, hide the like and dislike buttons, unhide the filled hate button
         hate_current_song.onclick = function(e) {
-            // hide the like and dislike buttons, unhide the filled dislike button
             like_current_song.setAttribute("hidden",'');
             hate_current_song.setAttribute("hidden",'');
             hated_current_song.removeAttribute("hidden");
             
-            // send a dislike message to the websocket
             const msg_dict = {"type": "hate", "song_id": current_song_id};
             console.log(msg_dict);
             chatSocket.send(JSON.stringify(msg_dict));
         };
         
+        hate_previous_1.onclick = function(e) {
+            like_previous_1.setAttribute("hidden",'');
+            hate_previous_1.setAttribute("hidden",'');
+            hated_previous_1.removeAttribute("hidden");
+            
+            const msg_dict = {"type": "hate", "song_id": previous_song_id};
+            console.log(msg_dict);
+            chatSocket.send(JSON.stringify(msg_dict));
+        };
+        
+        hate_previous_2.onclick = function(e) {
+            like_previous_2.setAttribute("hidden",'');
+            hate_previous_2.setAttribute("hidden",'');
+            hated_previous_2.removeAttribute("hidden");
+            
+            const msg_dict = {"type": "hate", "song_id": earlier_song_id};
+            console.log(msg_dict);
+            chatSocket.send(JSON.stringify(msg_dict));
+        };
+        
+        // send a un-like message, unhide the like and dislike buttons, hide the filled like button
+        liked_current_song.onclick = function(e) {
+            like_current_song.removeAttribute("hidden");
+            hate_current_song.removeAttribute("hidden");
+            liked_current_song.setAttribute("hidden",'');
+    
+            const msg_dict = {"type": "unlike", "song_id": current_song_id};
+            console.log(msg_dict);
+            chatSocket.send(JSON.stringify(msg_dict));
+        };
+        
+        liked_previous_1.onclick = function(e) {
+            like_previous_1.removeAttribute("hidden");
+            hate_previous_1.removeAttribute("hidden");
+            liked_previous_1.setAttribute("hidden",'');
+            
+            const msg_dict = {"type": "unlike", "song_id": previous_song_id};
+            console.log(msg_dict);
+            chatSocket.send(JSON.stringify(msg_dict));
+        };
+        
+        liked_previous_2.onclick = function(e) {
+            like_previous_2.removeAttribute("hidden");
+            hate_previous_2.removeAttribute("hidden");
+            liked_previous_2.setAttribute("hidden",'');
+            
+            const msg_dict = {"type": "unlike", "song_id": earlier_song_id};
+            console.log(msg_dict);
+            chatSocket.send(JSON.stringify(msg_dict));
+        };
+        
+        // send a un-hate message, unhide the like and dislike buttons, hide the filled hate button
+        hated_current_song.onclick = function(e) {
+            like_current_song.removeAttribute("hidden");
+            hate_current_song.removeAttribute("hidden");
+            hated_current_song.setAttribute("hidden",'');
+            
+            const msg_dict = {"type": "unhate", "song_id": current_song_id};
+            console.log(msg_dict);
+            chatSocket.send(JSON.stringify(msg_dict));
+        };
+        
+        hated_previous_1.onclick = function(e) {
+            like_previous_1.removeAttribute("hidden");
+            hate_previous_1.removeAttribute("hidden");
+            hated_previous_1.setAttribute("hidden",'');
+            
+            const msg_dict = {"type": "unhate", "song_id": previous_song_id};
+            console.log(msg_dict);
+            chatSocket.send(JSON.stringify(msg_dict));
+        };
+        
+        hated_previous_2.onclick = function(e) {
+            like_previous_2.removeAttribute("hidden");
+            hate_previous_2.removeAttribute("hidden");
+            hated_previous_2.setAttribute("hidden",'');
+    
+            const msg_dict = {"type": "unhate", "song_id": earlier_song_id};
+            console.log(msg_dict);
+            chatSocket.send(JSON.stringify(msg_dict));
+        };
     </script>
 {% endblock %}

@@ -69,6 +69,14 @@ class ChatConsumer(WebsocketConsumer):
             song_object.num_likes += 1
             song_object.save()
             
+        # if this is an un-like message
+        elif text_data_json["type"] == 'unlike':
+            song_id = text_data_json["song_id"]
+            logger.info("User un-liked song " + song_id)
+            song_object = Song.objects.get(pk=song_id)
+            song_object.num_likes -= 1
+            song_object.save()
+                
         # if this is a dislike message
         elif text_data_json["type"] == 'hate':
             song_id = text_data_json["song_id"]
@@ -76,6 +84,15 @@ class ChatConsumer(WebsocketConsumer):
             song_object = Song.objects.get(pk=song_id)
             song_object.num_hates += 1
             song_object.save()            
+
+        # if this is a un-dislike message
+        elif text_data_json["type"] == 'unhate':
+            song_id = text_data_json["song_id"]
+            logger.info("User hated song " + song_id)
+            song_object = Song.objects.get(pk=song_id)
+            song_object.num_hates -= 1
+            song_object.save()  
+
         else:
             logger.warning("Other message type received")
 
