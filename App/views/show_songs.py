@@ -31,10 +31,6 @@ def show_songs(request, song_id = None):
             songs = SongFilter(request.GET, queryset=Song.objects.exclude(spotify_track_id__isnull=True).exclude(title='{Placeholder}').order_by('title')) 
         else:
             songs = SongFilter(request.GET, queryset=Song.objects.filter(pk=song_id));
-
-        # get all playlists of streaming songs owned by the current user
-        playlists = Playlist.objects.filter(owner=request.user, streaming=True).order_by('title')
-        logger.info(request.user.username + " has " + str(len(playlists)) + " streaming playlists.")
         
     else:
         if song_id is None:
@@ -45,10 +41,6 @@ def show_songs(request, song_id = None):
         page_title = "Songs on this Device"
         streaming = False
         logger.info("Displaying " + page_title)
-        
-        # get all local playlists owned by the current user
-        playlists = Playlist.objects.filter(owner=request.user, streaming=False).order_by('title') 
-        logger.info(request.user.username + " has " + str(len(playlists)) + " local playlists.")
     
     if request.method == "GET":
         if request.GET.get('btn_play_all') is not None:
@@ -77,7 +69,6 @@ def show_songs(request, song_id = None):
     return render(request, 'show_songs.html', 
                   {'filter': songs,
                    'songs': songs.qs,
-                   'playlists': playlists,
                    'streaming': streaming,
                    'page_title': page_title
                   })
@@ -110,7 +101,7 @@ def replace_song(request, playlist_id, index, dance_type, song_id=None):
         return render(request, 'show_songs.html', {
             'filter': songs,
             'songs': songs.qs,
-            'playlists': playlists,
+            'playlist_id': playlist_id,
             'streaming': streaming,
             'index': index + 1,
             'page_title': page_title

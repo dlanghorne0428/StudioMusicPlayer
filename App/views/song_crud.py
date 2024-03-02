@@ -8,7 +8,7 @@ logger = logging.getLogger("django")
 
 # imported our models
 from App.models.song import Song
-from App.models.playlist import SongInPlaylist
+from App.models.playlist import Playlist, SongInPlaylist
 from App.forms import SongFileInputForm, SongEditForm
 
 # Create your views here.
@@ -345,3 +345,100 @@ def delete_song(request, song_id):
     # remove Song from database and redirect to song list. 
     song.delete()    
     return redirect('App:show_songs')
+
+
+def playlists_with_song(request, song_id):
+    ''' allows a user to find all of their playlists containing a specific song.
+        a superuser can look at all playlists for that song.'''
+        
+    
+    # must be an admin user or teacher to find song in playlists
+    if not (request.user.is_superuser or request.user.is_teacher):
+        logger.warning(request.user.username + " not authorized to lookup song in playlists")
+        return render(request, 'permission_denied.html')  
+    
+    # find this song
+    song = get_object_or_404(Song, pk=song_id) 
+    
+    # find the playlists that use this song
+    matches = SongInPlaylist.objects.filter(song=song)
+    
+    # build a list of matching playlists owned by the user or all if superuser
+    playlists = list()
+    indices = list()
+    for m in matches:
+        if (request.user == m.playlist.owner) or (request.user.is_superuser):
+            playlists.append(m.playlist)
+            indices.append(m.order)
+            print(m.playlist, m.order)
+
+    error = None
+    
+    # if song is only in one playlist, go to that playlist immediately
+    if len(playlists) == 1:
+        return redirect('App:edit_playlist', playlists[0].id, indices[0])
+    
+    # if song isn't in any playlists, include an error message
+    elif len(playlists) == 0:
+        error = "This song does not appear in any playlist"
+    
+    # combine the lists in a tuple for template rendering
+    playlists_and_indices = zip(playlists, indices)
+    
+    # display the list of playlists containing the song
+    return render(request, 'show_song_and_playlists.html', {
+                'song': song, 'playlists_and_indices': playlists_and_indices,
+                'page_title': "Find song in playlist",
+                'finding': True,
+                'error': error})
+
+            
+def playlists_without_song(request, song_id):    
+    ''' allows a user to add a song to the end of any of their playlists that don't already have that song.
+        a superuser add to any playlist.'''
+    
+    # must be an admin user or teacher to access playlists
+    if not (request.user.is_superuser or request.user.is_teacher):
+        logger.warning(request.user.username + " not authorized to access playlists")
+        return render(request, 'permission_denied.html')  
+    
+    # find this song
+    song = get_object_or_404(Song, pk=song_id)
+    logger.debug('Selected Song: ' + str(song))
+    
+    # build a list of playlists owned by the user or all if superuser
+    if request.user.is_superuser:
+        playlists = Playlist.objects.all()
+    else:
+        playlists = Playlist.objects.filter(owner=request.user)        
+    
+    # look at either local or streaming playlists, not both
+    if request.user.has_spotify_token:
+        playlists = playlists.filter(streaming=True)
+    else:
+        playlists = playlists.filter(streaming=False)        
+    
+    # build a list of matching playlists that don't have this song
+    matching_playlists = list()
+    # the indices list is maintain compatibility with the playlists_with_song view
+    indices = list()
+    
+    for p in playlists:
+        if SongInPlaylist.objects.filter(song=song, playlist=p).count() == 0:
+            matching_playlists.append(p)
+            indices.append(p.songs.all().count())
+            logger.debug("Playlist without song: " + str(p))
+    
+    # if there are no playlists that don't have this song, create an error message        
+    error = None
+    if len(matching_playlists) == 0:
+        error = "There are no available playlists for this song"
+  
+    # combine the lists in a tuple for template rendering      
+    playlists_and_indices = zip(matching_playlists, indices)
+   
+    # display the list of playlists that don't have this song
+    return render(request, 'show_song_and_playlists.html', {
+                'song': song, 'playlists_and_indices': playlists_and_indices, 
+                'page_title': "Add song to end of playlist",
+                'error': error})
