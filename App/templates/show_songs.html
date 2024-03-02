@@ -22,7 +22,7 @@
       </div>
     {% elif index %}
       <div class="text-center my-2">
-        <a class="btn btn-secondary" href="{% url 'App:edit_playlist' playlists.0.id %}">Cancel Replacement</a>  
+        <a class="btn btn-secondary" href="{% url 'App:edit_playlist' playlist_id %}">Cancel Replacement</a>  
       </div>
     {% else %}
       <div class="text-center my-2">
@@ -98,30 +98,27 @@
             <!-- only admin users or teachers can play or edit songs -->
             <a class="btn btn-primary btn-sm" href="{% url 'App:play_song' song.id %}">Play</a>
             <a class="btn btn-info btn-sm" href="{% url 'App:update_song' song.id %}">Edit</a>            
+            {% if user.is_superuser %}
+              <!-- only admin users can edit or delete a song -->
+              <!-- force the user to confirm before deleting a song -->
+              <a class="btn btn-danger btn-sm" href="{% url 'App:delete_song' song.id %}"
+                onclick="return confirm('Deleting: {{song.title}}\n Are you sure?')">Delete</a>
+            {% endif %}
             {% if index %}
-              <a class="btn btn-warning btn-sm" href="{% url 'App:replace_song' playlists.0.id index song.dance_type song.id %}">Select</a>
+              <a class="btn btn-warning btn-sm" href="{% url 'App:replace_song' playlist_id index song.dance_type song.id %}">Select</a>
             {% else %}
               {% if song.explicit %}
                 <li><a class="dropdown-item" href="{% url 'App:spotify_find_clean_track' song.spotify_track_id song.id %}">Find Clean Version</a></li>
               {% endif %}
               <span class="dropdown">
                 <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button" 
-                        data-bs-toggle="dropdown">Add to Playlist       
+                        data-bs-toggle="dropdown">Playlist       
                 </button>
                 <ul class="dropdown-menu">
-                  {% for p in playlists %}
-                    <li><a class="dropdown-item" 
-                           href="{% url 'App:add_to_playlist' p.id song.id %}">{{p.title}}</a>
-                    </li>
-                  {% endfor %}
+                    <li><a class="dropdown-item" href="{% url 'App:playlists_without_song' song.id %}">Add to Playlist</a></li>
+                    <li><a class="dropdown-item" href="{% url 'App:playlists_with_song' song.id %}">Find In Playlist</a></li>
                 </ul>
               </span>
-              {% if user.is_superuser %}
-                <!-- only admin users can edit or delete a song -->
-                <!-- force the user to confirm before deleting a song -->
-                <a class="btn btn-danger btn-sm" href="{% url 'App:delete_song' song.id %}"
-                  onclick="return confirm('Deleting: {{song.title}}\n Are you sure?')">Delete</a>
-              {% endif %}
             {% endif %}
           {% endif %}
         </td>
