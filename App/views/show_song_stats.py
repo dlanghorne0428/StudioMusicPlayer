@@ -5,14 +5,14 @@ from django.conf import settings
 # imported our models
 from App.models.song import Song
 from App.filters import SongFilter
-from App.models.playlist import Playlist
+from App.models.playlist import Playlist, SongInPlaylist
 
 import logging
 logger = logging.getLogger("django")
 
 import random
 
-def show_song_stats(request, sort_field=1):
+def show_song_stats(request, sort_field=0):
     ''' shows all the Songs in the database and their popularity stats. '''
 
     if not request.user.is_authenticated:
@@ -22,27 +22,35 @@ def show_song_stats(request, sort_field=1):
     playlists = None
     
     if request.user.has_spotify_token:              
-        # get the filtered list of Songs, ordered by the sort field selection
-        if sort_field == 0:    # NUM PLAYS
-            songs = Song.objects.exclude(spotify_track_id__isnull=True).exclude(title='{Placeholder}').order_by('-num_plays', 'title')
-        elif sort_field == 2:  # NUM HATES
-            songs = Song.objects.exclude(spotify_track_id__isnull=True).exclude(title='{Placeholder}').order_by('-num_hates', 'title')
-        else:                  # NUM LIKES (Default)
-            songs = Song.objects.exclude(spotify_track_id__isnull=True).exclude(title='{Placeholder}').order_by('-num_likes', 'title')            
+        # get the filtered list of Songs
+        songs = Song.objects.exclude(spotify_track_id__isnull=True).exclude(title='{Placeholder}').order_by('title')            
         streaming = True
         page_title = "Popularity of Songs added from Spotify"
         logger.info("Displaying " + page_title)         
     else:
-        # get the filtered list of Songs, ordered by the sort field selection
-        if sort_field == 0:    # NUM PLAYS
-            songs = Song.objects.filter(spotify_track_id__isnull=True).exclude(title='{Placeholder}').order_by('-num_plays', 'title')    
-        elif sort_field == 2:  # NUM HATES
-            songs = Song.objects.filter(spotify_track_id__isnull=True).exclude(title='{Placeholder}').order_by('-num_hates', 'title')            
-        else:                  # NUM LIKES (Default)
-            songs = Song.objects.filter(spotify_track_id__isnull=True).exclude(title='{Placeholder}').order_by('-num_likes', 'title')    
+        # get the filtered list of Songs
+        songs = Song.objects.filter(spotify_track_id__isnull=True).exclude(title='{Placeholder}').order_by('title')    
         page_title = "Popularity of Songs on this Device"
         streaming = False
-        logger.info("Displaying " + page_title)            
+        logger.info("Displaying " + page_title)   
+    
+    # calculate how many playlists each song is in
+    playlist_counts = list()    
+    for s in songs: 
+        the_count = SongInPlaylist.objects.filter(song=s).count()
+        playlist_counts.append(the_count)
+        if the_count != s.num_playlists:
+            s.num_playlists = the_count
+            s.save()
+             
+    if sort_field == 1:         # NUM HATES
+        songs = songs.order_by('-num_hates')
+    elif sort_field == 2:       # NUM PLAYS
+            songs = songs.order_by('-num_plays')    
+    elif sort_field == 3:       # NUM PLAYLISTS
+        songs = songs.order_by('-num_playlists')
+    else:                       # NUM LIKES (Default)
+        songs = songs.order_by('-num_likes')
             
     # render the template
     return render(request, 'show_song_stats.html', 
@@ -74,15 +82,20 @@ def reset_song_stats(request):
         songs = Song.objects.filter(spotify_track_id__isnull=True).exclude(title='{Placeholder}').order_by('title')    
         
     logger.info("Resetting " + page_title) 
+    playlist_counts = list()
     for s in songs:
         s.num_plays = 0
         s.num_likes = 0
         s.num_hates = 0
         s.save()
+        playlist_counts.append(SongInPlaylist.objects.filter(song=s).count())
+
+    # combine the lists in a tuple for template rendering      
+    songs_and_pl_counts = zip(songs, playlist_counts)         
         
     # render the template
     return render(request, 'show_song_stats.html', 
-                  {'songs': songs,
+                  {'songs_and_pl_counts': songs_and_pl_counts,
                    'streaming': streaming,
                    'sort_field' : 1,
                    'page_title': page_title

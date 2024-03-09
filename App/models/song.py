@@ -196,6 +196,9 @@ class Song(models.Model):
     num_plays = models.BigIntegerField(default=0)
     num_likes = models.BigIntegerField(default=0)
     num_hates = models.BigIntegerField(default=0)
+    
+    # number of playlists this song is a part of
+    num_playlists = models.BigIntegerField(default=0)
 
     # the dance type assigned to this song
     dance_type = models.CharField(
