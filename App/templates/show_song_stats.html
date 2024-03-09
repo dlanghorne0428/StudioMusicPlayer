@@ -28,33 +28,39 @@
         <th class="text-center"style="width:20%">Artist</th>
         <th class="text-center"style="width:14%">Dance</th>
         <th class="text-center"style="width:7%">BPM</th>
-        <th class="text-center"style="width:7%">Playlists</th>
-        {% if sort_field == 0 %}
-          <th class="text-center text-warning"style="width:7%">Plays</th>
+        {% if sort_field == 3 %}
+          <th class="text-center text-warning" style="width:7%">Playlists</th>
         {% else %}
-          <th class="text-center text-secondary"style="width:7%">
-            <a href="{% url 'App:show_song_stats' 0 %}">Plays</a>
-          </th>
-        {% endif %}
-        {% if sort_field == 1 %}
-          <th class="text-center text-warning"style="width:7%">Likes</th>
-        {% else %}
-          <th class="text-center text-secondary"style="width:7%">
-            <a href="{% url 'App:show_song_stats' 1 %}">Likes</a>
+          <th class="text-center text-secondary" style="width:7%">
+            <a href="{% url 'App:show_song_stats' 3 %}">Playlists</a>
           </th>
         {% endif %}
         {% if sort_field == 2 %}
+          <th class="text-center text-warning" style="width:7%">Plays</th>
+        {% else %}
+          <th class="text-center text-secondary" style="width:7%">
+            <a href="{% url 'App:show_song_stats' 2 %}">Plays</a>
+          </th>
+        {% endif %}
+        {% if sort_field == 0 %}
+          <th class="text-center text-warning" style="width:7%">Likes</th>
+        {% else %}
+          <th class="text-center text-secondary" style="width:7%">
+            <a href="{% url 'App:show_song_stats' 0 %}">Likes</a>
+          </th>
+        {% endif %}
+        {% if sort_field == 1 %}
           <th class="text-center text-warning"style="width:7%">Dislikes</th>
         {% else %}
           <th class="text-center text-secondary"style="width:7%">
-            <a href="{% url 'App:show_song_stats' 2 %}">Dislikes</a>
+            <a href="{% url 'App:show_song_stats' 1 %}">Dislikes</a>
           </th>
         {% endif %}
       </tr>
     </thead>
     <tbody>
       <!-- the rest of the table has the list of songs, one song per row -->
-      {% for song, playlist_count in songs_and_pl_counts %}
+      {% for song in songs %}
       <tr class="table-row">
         <td class="text-center">{{ forloop.counter }}
         <td class="text-center">{{ song.title }}
@@ -73,7 +79,7 @@
           <td class='text-center'>{{song.bpm}}</td>
         {% endif %}
         
-        <td class="text-center">{{ playlist_count}}</td>   
+        <td class="text-center">{{ song.num_playlists }}</td>   
         <td class="text-center">{{ song.num_plays }}</td>          
         <td class="text-center">{{ song.num_likes }}</td>   
         <td class="text-center">{{ song.num_hates }}</td>    
