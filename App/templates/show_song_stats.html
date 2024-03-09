@@ -23,11 +23,12 @@
     <thead class='table-dark'>
       <!-- use sticky to keep header row from scrolling off the page -->
       <tr id='table-header-sticky' >
-        <th class="text-center"style="width:7%">#</th>
-        <th class="text-center"style="width:28%">Title</th>
-        <th class="text-center"style="width:22%">Artist</th>
-        <th class="text-center"style="width:15%">Dance</th>
+        <th class="text-center"style="width:6%">#</th>
+        <th class="text-center"style="width:25%">Title</th>
+        <th class="text-center"style="width:20%">Artist</th>
+        <th class="text-center"style="width:14%">Dance</th>
         <th class="text-center"style="width:7%">BPM</th>
+        <th class="text-center"style="width:7%">Playlists</th>
         {% if sort_field == 0 %}
           <th class="text-center text-warning"style="width:7%">Plays</th>
         {% else %}
@@ -53,7 +54,7 @@
     </thead>
     <tbody>
       <!-- the rest of the table has the list of songs, one song per row -->
-      {% for song in songs %}
+      {% for song, playlist_count in songs_and_pl_counts %}
       <tr class="table-row">
         <td class="text-center">{{ forloop.counter }}
         <td class="text-center">{{ song.title }}
@@ -71,7 +72,8 @@
         {% else %}
           <td class='text-center'>{{song.bpm}}</td>
         {% endif %}
-          
+        
+        <td class="text-center">{{ playlist_count}}</td>   
         <td class="text-center">{{ song.num_plays }}</td>          
         <td class="text-center">{{ song.num_likes }}</td>   
         <td class="text-center">{{ song.num_hates }}</td>    

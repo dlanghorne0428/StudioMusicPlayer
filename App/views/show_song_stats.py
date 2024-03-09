@@ -5,7 +5,7 @@ from django.conf import settings
 # imported our models
 from App.models.song import Song
 from App.filters import SongFilter
-from App.models.playlist import Playlist
+from App.models.playlist import Playlist, SongInPlaylist
 
 import logging
 logger = logging.getLogger("django")
@@ -42,11 +42,19 @@ def show_song_stats(request, sort_field=1):
             songs = Song.objects.filter(spotify_track_id__isnull=True).exclude(title='{Placeholder}').order_by('-num_likes', 'title')    
         page_title = "Popularity of Songs on this Device"
         streaming = False
-        logger.info("Displaying " + page_title)            
+        logger.info("Displaying " + page_title)   
+    
+    # calculate how many playlists each song is in
+    playlist_counts = list()    
+    for s in songs: 
+        playlist_counts.append(SongInPlaylist.objects.filter(song=s).count())
+        
+    # combine the lists in a tuple for template rendering      
+    songs_and_pl_counts = zip(songs, playlist_counts)    
             
     # render the template
     return render(request, 'show_song_stats.html', 
-                  {'songs': songs,
+                  {'songs_and_pl_counts': songs_and_pl_counts,
                    'streaming': streaming,
                    'sort_field' : sort_field,
                    'page_title': page_title
@@ -74,15 +82,20 @@ def reset_song_stats(request):
         songs = Song.objects.filter(spotify_track_id__isnull=True).exclude(title='{Placeholder}').order_by('title')    
         
     logger.info("Resetting " + page_title) 
+    playlist_counts = list()
     for s in songs:
         s.num_plays = 0
         s.num_likes = 0
         s.num_hates = 0
         s.save()
+        playlist_counts.append(SongInPlaylist.objects.filter(song=s).count())
+
+    # combine the lists in a tuple for template rendering      
+    songs_and_pl_counts = zip(songs, playlist_counts)         
         
     # render the template
     return render(request, 'show_song_stats.html', 
-                  {'songs': songs,
+                  {'songs_and_pl_counts': songs_and_pl_counts,
                    'streaming': streaming,
                    'sort_field' : 1,
                    'page_title': page_title
