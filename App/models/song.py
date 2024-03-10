@@ -2,6 +2,8 @@ from django.conf import settings
 from django.db import models
 from django.utils.text import get_valid_filename, slugify
 
+from App.models.tag import Tag
+
 import os
 import logging
 logger = logging.getLogger("django")
@@ -199,6 +201,9 @@ class Song(models.Model):
     
     # number of playlists this song is a part of
     num_playlists = models.BigIntegerField(default=0)
+    
+    # a song can have many tags. Each tag can have several songs
+    tags = models.ManyToManyField(Tag, through='Tagged_Song')
 
     # the dance type assigned to this song
     dance_type = models.CharField(
@@ -224,3 +229,17 @@ class Song(models.Model):
     
     class Meta:
         ordering = ['title']
+        
+        
+        
+        
+    
+class Tagged_Song(models.Model):
+    '''This model is used for the mapping of songs to tags. .'''
+    
+    song = models.ForeignKey(Song, on_delete=models.CASCADE)
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+    
+    
+    class Meta:
+        unique_together = ['song', 'tag']          
