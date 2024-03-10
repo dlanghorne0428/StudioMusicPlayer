@@ -10,7 +10,7 @@ import random
 from datetime import time
 
 # imported our models
-from App.models.song import Song, DANCE_TYPE_CHOICES, DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS, DANCE_TYPE_TEMPOS, HOLIDAY_DEFAULT_USAGE
+from App.models.song import Song, DANCE_TYPE_CHOICES, DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS, DANCE_TYPE_TEMPOS
 from App.models.user import User
 from App.models.playlist import Playlist, SongInPlaylist
 from App.forms import PlaylistInfoForm, RandomPlaylistForm, PlaylistUploadForm
@@ -212,7 +212,6 @@ def build_random_playlist(request, playlist_id):
             'prevent_back_to_back_styles': True,
             'prevent_back_to_back_tempos': True,
             'counts'                     : DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS,
-            'holiday_usage'              : HOLIDAY_DEFAULT_USAGE,
         }
         
     if 'counts' not in preferences:
@@ -275,7 +274,6 @@ def build_random_playlist(request, playlist_id):
         preferences['prevent_back_to_back_styles'] = prevent_back_to_back_styles
         preferences['prevent_back_to_back_tempos'] = prevent_back_to_back_tempos
         preferences['counts'] = songs_remaining
-        preferences['holiday_usage'] = HOLIDAY_DEFAULT_USAGE
         playlist.preferences = preferences
         playlist.save()
         

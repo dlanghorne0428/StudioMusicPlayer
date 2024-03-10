@@ -6,7 +6,7 @@ from django.views.generic import CreateView, TemplateView
 
 from App.forms import RandomPlaylistForm, TeacherSignUpForm
 from App.models import User
-from App.models.song import DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS, HOLIDAY_DEFAULT_USAGE
+from App.models.song import DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS
 
 import logging
 logger = logging.getLogger("django")
@@ -32,7 +32,6 @@ def user_preferences(request):
             'prevent_back_to_back_tempos': True,
             'counts'                     : DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS,
             'playlist_length'            : 25,
-            'holiday_usage'              : HOLIDAY_DEFAULT_USAGE,
         }
     else:
         preferences = user.preferences
@@ -86,7 +85,6 @@ def user_preferences(request):
             preferences['prevent_back_to_back_styles'] = prevent_back_to_back_styles
             preferences['prevent_back_to_back_tempos'] = prevent_back_to_back_tempos
             preferences['counts'] = starting_counts
-            preferences['holiday_usage'] = HOLIDAY_DEFAULT_USAGE
             user.preferences = preferences
             user.save()
             logger.info("Saved new playlist preferences for " + user.username)

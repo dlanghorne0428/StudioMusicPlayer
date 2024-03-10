@@ -80,27 +80,6 @@ DANCE_TYPE_TEMPOS = {
     "gen": "Mid"
     }
 
-HOLIDAY_CHOICES = [
-    ("Jul4", "4th of July"),
-    ("Hween", "Halloween"),
-    ("Xmas", "Christmas"),
-    ("NYE",  "New Year's Eve"),
-    ]
-
-HOLIDAY_USE_OPTIONS = [
-    ("Ex", "Exclude"),
-    ("In", "Include At Random"), 
-    ("Ev2", "Every Other Song"),
-    ("Ev3", "Every Third Song"),
-    ("Ev4", "Every Fourth Song"),
-    ]
-
-HOLIDAY_DEFAULT_USAGE = {
-    "Jul4" : "In",
-    "Hween": "In",
-    "Xmas" : "Ex",  # exclude Christmas songs by default
-    "NYE"  : "In"
-    }
 
 def good_filename(filename):
     '''slugify replaces whitespace with a dash and removes everything but alphanumerics,
@@ -212,14 +191,6 @@ class Song(models.Model):
         default = 'Cha'
         )
     
-    # this field is no longer used
-    holiday = models.CharField(
-        max_length = 5,
-        choices = HOLIDAY_CHOICES,
-        blank = True,
-        null = True,
-        default = ""
-        )
     
     def spotify_uri(self):
         return "spotify:track:" + self.spotify_track_id

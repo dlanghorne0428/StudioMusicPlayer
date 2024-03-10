@@ -79,7 +79,6 @@ def add_song(request):
         
         # save the song instance into the database and get the path to the audio file uploaded by the form
         content_type = request.FILES['audio_file'].content_type
-        form.holiday = ""
         song_instance = form.save() 
         logger.debug("Saving " + str(form.cleaned_data))
         audio_file_path = song_instance.audio_file.path
