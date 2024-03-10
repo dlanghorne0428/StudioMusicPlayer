@@ -8,7 +8,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Div, Field, HTML, Layout, Row, Submit
 from crispy_forms.bootstrap import FormActions
 
-from .models.song import Song, SongFileInput, SpotifyTrackInput, DANCE_TYPE_CHOICES, HOLIDAY_CHOICES, HOLIDAY_USE_OPTIONS, HOLIDAY_DEFAULT_USAGE #StreamingSongInput, 
+from .models.song import Song, SongFileInput, SpotifyTrackInput, DANCE_TYPE_CHOICES #StreamingSongInput, 
 from .models.tag import Tag
 from .models.user import User
 from .models.playlist import Playlist, CATEGORY_CHOICES
