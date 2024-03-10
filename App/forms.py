@@ -9,6 +9,7 @@ from crispy_forms.layout import Column, Div, Field, HTML, Layout, Row, Submit
 from crispy_forms.bootstrap import FormActions
 
 from .models.song import Song, SongFileInput, SpotifyTrackInput, DANCE_TYPE_CHOICES, HOLIDAY_CHOICES, HOLIDAY_USE_OPTIONS, HOLIDAY_DEFAULT_USAGE #StreamingSongInput, 
+from .models.tag import Tag
 from .models.user import User
 from .models.playlist import Playlist, CATEGORY_CHOICES
 
@@ -358,6 +359,19 @@ class PlaylistUploadForm(forms.Form):
         required = True)
     file = forms.FileField()
 
+
+class TagEntryForm(ModelForm):
+    '''form to enter a new Tag.'''
+    title = forms.CharField(
+        label = "Tag Name",
+        max_length = 20,     # ensure the field is wide enough to show the title
+        required = True)
+
+    class Meta:
+        model = Tag
+        # include these fields in the form
+        fields = ['title']    
+        
         
 # based on example at: https://github.com/sibtc/django-multiple-user-types-example        
 class TeacherSignUpForm(UserCreationForm):
