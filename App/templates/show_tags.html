@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+
+  <!-- first row in bootstrap grid is the page title, with some padding on the bottom -->
+  <div class="row">
+    <div class="col-12">
+      <h2 class="text-center">Tags</h2>
+    </div>
+    
+    <!-- link to create a new tag -->
+    <div class="col-6 text-center border border-dark mb-3">
+      <!-- form for the user to provide information about the new tag -->
+      <h3 class="text-center">{{ form_title }}</h3>
+      <form class="text-center my-4" enctype="multipart/form-data" method="POST">
+        {% csrf_token %}  <!-- required by django -->
+        {{ form.as_p }}   <!-- form contents passed into the template from the model -->
+        
+        <!-- This button submits info to the view -->
+        <button class="btn btn-primary" type="submit" name='submit', value='Create'>{{ button_title }}</button>
+        
+      </form>
+    </div>
+  
+    <!-- next row in bootstrap grid is a table, with dark borders --> 
+    <div class="col-6 border border-dark mb-3">
+      <h3 class="text-center">Current Tags</h3>
+      <table class="table table-bordered table-sm">
+        <!-- column headers have a dark background -->
+        <thead class='table-dark'>
+          <!-- use sticky to keep header row from scrolling off the page -->
+          <tr id='table-header-sticky' >
+            <th class="text-center">Tag Name</th>
+            <th class="text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- the table has the list of tags, one tag per row -->
+          {% for t in tags %}
+          <tr class="table-row">
+            <td class="text-center">{{ t.title }}</td>
+            <td>
+              {% if user.is_superuser %}
+                <!-- only admin users can edit or delete a tag -->
+                <!-- force the user to confirm before deleting a tag -->
+                <a class="btn btn-warning btn-sm" href="{% url 'App:edit_tag' t.id %}">Edit</a>
+                <a class="btn btn-danger btn-sm" href="{% url 'App:delete_tag' t.id %}"
+                   onclick="return confirm('Deleting Tag: {{t.title}}\n Are you sure?')">Delete</a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+{% endblock %}
