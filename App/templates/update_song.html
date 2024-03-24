@@ -6,7 +6,13 @@
 <div class="row">
   <div class="col-12 col-lg-8 offset-lg-2">
     <!-- page title and placeholder for form errors -->
-    <h2 class='text-center my-2'>Edit Song Info <a href="{% url 'App:show_songs' %}" class="btn btn-small btn-secondary">Cancel</a></h2>
+    <h2 class='text-center my-2'>Edit Song Info</h2>
+    {% if user.is_superuser %}
+        <!-- only admin users can edit or delete a song -->
+        <!-- force the user to confirm before deleting a song -->
+        <a class="btn btn-danger btn-sm" href="{% url 'App:delete_song' song_id %}"
+          onclick="return confirm('Deleting: {{song_title}}\n Are you sure?')">Delete Song</a>
+    {% endif %}
     <h3 class='text-center text-danger'>{{ error }}</h3>
 
     <!-- display the form --> 
