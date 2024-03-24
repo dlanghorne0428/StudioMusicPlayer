@@ -97,13 +97,7 @@
           {% if user.is_superuser or user.is_teacher %}
             <!-- only admin users or teachers can play or edit songs -->
             <a class="btn btn-primary btn-sm" href="{% url 'App:play_song' song.id %}">Play</a>
-            <a class="btn btn-info btn-sm" href="{% url 'App:update_song' song.id %}">Edit</a>            
-            {% if user.is_superuser %}
-              <!-- only admin users can edit or delete a song -->
-              <!-- force the user to confirm before deleting a song -->
-              <a class="btn btn-danger btn-sm" href="{% url 'App:delete_song' song.id %}"
-                onclick="return confirm('Deleting: {{song.title}}\n Are you sure?')">Delete</a>
-            {% endif %}
+            <a class="btn btn-secondary btn-sm" href="{% url 'App:update_song' song.id %}">Edit</a>            
             {% if index %}
               <a class="btn btn-warning btn-sm" href="{% url 'App:replace_song' playlist_id index song.dance_type song.id %}">Select</a>
             {% else %}
@@ -119,6 +113,7 @@
                     <li><a class="dropdown-item" href="{% url 'App:playlists_with_song' song.id %}">Find In Playlist</a></li>
                 </ul>
               </span>
+              <a class="btn btn-info btn-sm" href="#">Tags</a>
             {% endif %}
           {% endif %}
         </td>
