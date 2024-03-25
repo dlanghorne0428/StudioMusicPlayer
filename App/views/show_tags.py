@@ -119,7 +119,7 @@ def show_tags_for_song(request, song_id):
     else:
         cover_art = song.image_link 
         
-    current_tags = Tagged_Song.objects.filter(song=song)
+    current_tags = Tagged_Song.objects.filter(song=song).order_by('-tag')
     print(current_tags)
     
     all_tags = Tag.objects.all().order_by(Lower('title'))
@@ -170,7 +170,7 @@ def remove_tag_from_song(request, tagged_song_id):
         return render(request, 'permission_denied.html')   
     
     # find the specific song object and tag object
-    tagged_song = get_object_or_404(Tagged_Song, pk=tagged_song_id) 
+    tagged_song = get_object_or_404(Tagged_Song, pk=tagged_song_id)
     
     # save song id for redirect
     song_id = tagged_song.song.id

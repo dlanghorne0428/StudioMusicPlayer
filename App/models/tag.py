@@ -9,5 +9,8 @@ class Tag(models.Model):
     # a  title for the tag
     title = models.CharField(max_length=50) 
     
+    class Meta:
+        ordering = ['-title']
+    
 
 
