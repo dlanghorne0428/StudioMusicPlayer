@@ -113,7 +113,7 @@
                     <li><a class="dropdown-item" href="{% url 'App:playlists_with_song' song.id %}">Find In Playlist</a></li>
                 </ul>
               </span>
-              <a class="btn btn-info btn-sm" href="#">Tags</a>
+              <a class="btn btn-info btn-sm" href="{% url 'App:show_tags_for_song' song.id %}">Tags</a>
             {% endif %}
           {% endif %}
         </td>
