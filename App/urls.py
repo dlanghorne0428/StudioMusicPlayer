@@ -72,6 +72,9 @@ urlpatterns = [
     path("spotify/fix_non_US", views.fix_non_US_spotify_tracks, name = 'fix_non_US_spotify_tracks'),
     path("spotify/play-track/<str:track_id>", views.play_spotify_track, name="play_spotify_track"),
     path("tags/", views.show_tags, name="show_tags"),
+    path("tags/<int:song_id>", views.show_tags_for_song, name="show_tags_for_song"),
+    path("tags/add/<int:tag_id>/<int:song_id>", views.add_tag_to_song, name="add_tag_to_song"),
+    path("tags/remove/<int:tagged_song_id>", views.remove_tag_from_song, name="remove_tag_from_song"),
     path("delete-tag/<int:tag_id>'", views.delete_tag, name="delete_tag"),
     path("edit-tag/<int:tag_id>'", views.edit_tag, name="edit_tag"),
 ]

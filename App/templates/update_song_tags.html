@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <!-- page title and placeholder for form errors -->
+    <h1 class='text-center my-2'>Edit Song Tags</h1>
+    <h3 class='text-center text-danger'>{{ error }}</h3>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-4">
+    <h4 class='text-center mb-2'>Available Tags</h4>
+    {% if available_tags %}
+      <table class="table table-bordered table-sm">
+        <!-- column headers have a dark background -->
+        <thead class='table-dark'>
+          <!-- use sticky to keep header row from scrolling off the page -->
+          <tr id='table-header-sticky' >
+            <th class="text-center">Tag Name</th>
+            <th class="text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- the table has the list of tags, one tag per row -->
+          {% for t in available_tags %}
+          <tr class="table-row">
+            <td class="text-center">{{ t.title }}</td>
+            <td>
+              {% if user.is_authenticated %}
+                <!-- only authorized users can modify song tag -->
+                <a class="btn btn-warning btn-sm" href="{% url 'App:add_tag_to_song' t.id song.id %}">Add &rarr;</a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <h4 class='text-center'>None</h4>
+    {% endif %} 
+  </div>
+  <div class="col-4">
+      <img class="my-4" src="{{ cover_art }}" style="width:80%;"/>
+      <h2 class='text-center text-dark'>{{ song.get_dance_type_display }}</h2>
+      <h3 class='text-center text-dark'>{{ song.artist }}</h3>     
+      <h3 class='text-center text-dark'>{{ song.title }}</h3>   
+  </div>
+  <div class="col-4">
+    <h4 class='text-center mb-2'>Current Tags</h4>
+    {% if current_tags %}
+      <table class="table table-bordered table-sm">
+        <!-- column headers have a dark background -->
+        <thead class='table-dark'>
+          <!-- use sticky to keep header row from scrolling off the page -->
+          <tr id='table-header-sticky' >
+            <th class="text-center">Tag Name</th>
+            <th class="text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- the table has the list of tags, one tag per row -->
+          {% for t in current_tags %}
+          <tr class="table-row">
+            <td class="text-center">{{ t.tag.title }}</td>
+            <td>
+              {% if user.is_authenticated %}
+                <!-- only authorized users can modify song tag -->
+                <a class="btn btn-danger btn-sm" href="{% url 'App:remove_tag_from_song' t.id %}">&larr; Remove</a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <h4 class='text-center my-4'>None</h4>
+    {% endif %} 
+  </div>
+</div>
+
+<div class="text-center my-2">
+  <a class="btn btn-primary" href="{% url 'App:show_songs' %}">Done</a>
+</div>
+
+{% endblock %}

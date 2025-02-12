@@ -210,7 +210,8 @@ class Tagged_Song(models.Model):
     
     song = models.ForeignKey(Song, on_delete=models.CASCADE)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
-    
+
     
     class Meta:
-        unique_together = ['song', 'tag']          
+        unique_together = ['song', 'tag']  
+        order_with_respect_to = "tag"

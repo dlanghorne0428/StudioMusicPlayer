@@ -273,7 +273,9 @@ def update_song(request, song_id):
                 cover_art = settings.STATIC_URL + 'img/default.png'
         else:
             cover_art = song.image_link
-        return render(request, 'update_song.html', {'form':form, 'cover_art': cover_art, 'song_id': song.id})
+        return render(request, 'update_song.html', {
+            'form':form, 'cover_art': cover_art, 
+            'song_id': song.id, 'song_title': song.title})
     else:
         # obtain information from the submitted form
         form = SongEditForm(request.POST, request.FILES, instance=song)
@@ -294,14 +296,16 @@ def update_song(request, song_id):
                     # display error on form
                     return render(request, 'update_song.html', {
                         'form':form, 'cover_art': settings.STATIC_URL + 'img/default.png', 
-                        'song_id': song.id, 'error': "Could not find cover art."})
+                        'song_id': song.id, 'song_title': song.title,
+                        'error': "Could not find cover art."})
                 
             return redirect('App:show_songs', song.id)
         
         else:
             # display error on form
             return render(request, 'update_song.html', {
-                'form':SongEditForm(), 'cover_art': settings.STATIC_URL + 'img/default.png', 'song_id': song.id,
+                'form':SongEditForm(), 'cover_art': settings.STATIC_URL + 'img/default.png', 
+                'song_id': song.id, 'song_title': song.title,
                 'error': "Invalid data submitted."})
     
 
