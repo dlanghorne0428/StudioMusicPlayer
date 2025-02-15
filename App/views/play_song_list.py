@@ -24,6 +24,11 @@ def play_song_list(request, playlist_id, start_index=0):
     playlist = get_object_or_404(Playlist, pk=playlist_id)
     logger.info("Preparing " + playlist.get_category_display() + " playlist: " + playlist.title)
     
+    # if the resume index was not zero, clear it
+    if playlist.resume_index != 0:
+        playlist.resume_index = 0
+        playlist.save()
+    
     # obtain list of songs in this playlist
     song_list = playlist.songs.all().order_by('songinplaylist__order')
     
