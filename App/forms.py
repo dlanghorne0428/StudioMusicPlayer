@@ -238,7 +238,7 @@ class RandomPlaylistForm(Form):
         # add them to the form using a loop
         for dance_type_tuple in DANCE_TYPE_CHOICES: 
             
-            if dance_type_tuple[0] != "gen":
+            if dance_type_tuple[0] not in ("Sho", "gen"):
                 # constuct field name based on dance type abbreviation (e.g. 'Cha')
                 field_name = '%s_songs' % (dance_type_tuple[0], )
                 
