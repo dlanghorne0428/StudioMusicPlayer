@@ -76,7 +76,7 @@ def user_preferences(request):
             starting_counts = dict()
             for key in DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS:
                 # skip general dances 
-                if key != 'gen':
+                if key not in ("Sho", 'gen'):
                     form_field = '%s_songs' % (key, )
                     starting_counts[key] = form_data[form_field]
             

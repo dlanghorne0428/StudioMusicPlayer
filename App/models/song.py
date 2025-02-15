@@ -29,6 +29,7 @@ DANCE_TYPE_CHOICES = [
     ("VW",  "Viennese Waltz"),
     ("Wal", "Waltz"),
     ("WCS", "West Coast Swing"),
+    ("Sho", "Showdance"),
     ("gen", "General")
     ]
 
@@ -53,6 +54,7 @@ DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS = {
     "VW":   2,
     "Wal":  2,
     "WCS":  1,
+    "Sho":  0,
     "gen":  0
     }
 
@@ -77,6 +79,7 @@ DANCE_TYPE_TEMPOS = {
     "VW":  "Fast",
     "Wal": "Slow",
     "WCS": "Mid",
+    "Sho": "Mid",
     "gen": "Mid"
     }
 
