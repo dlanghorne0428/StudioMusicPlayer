@@ -23,23 +23,23 @@ def get_playlist_data(user, owner_only=False):
             owner = user.username
             if user.has_spotify_token:
                 # get the streaming playlists owned by that user and change the page title 
-                playlists = Playlist.objects.filter(owner=user, streaming=True).order_by(Lower('title'))
+                playlists = Playlist.objects.filter(owner=user, streaming=True).order_by('-resume_index', Lower('title'))
                 page_title = 'Playlists of Spotify tracks'
                 logger.info("Listing the streaming playlists for " + user.username)
             else:
                 # get the local playlists owned by that user and change the page title 
-                playlists = Playlist.objects.filter(owner=user, streaming=False).order_by(Lower('title'))
+                playlists = Playlist.objects.filter(owner=user, streaming=False).order_by('-resume_index', Lower('title'))
                 page_title = 'Playlists of Songs on this Device' 
                 logger.info("Listing the local playlists for " + user.username)
                     
         else:
             if user.has_spotify_token:
                 # get all the playlists, ordered by owner's username then title
-                playlists = Playlist.objects.filter(streaming=True).order_by(Lower('owner__username'), Lower('title'))
+                playlists = Playlist.objects.filter(streaming=True).order_by('-resume_index', Lower('owner__username'), Lower('title'))
                 page_title = 'Playlists of Spotify tracks'
                 logger.info("Listing the streaming playlists for all users")
             else:
-                playlists = Playlist.objects.filter(streaming=False).order_by(Lower('owner__username'), Lower('title'))
+                playlists = Playlist.objects.filter(streaming=False).order_by('-resume_index', Lower('owner__username'), Lower('title'))
                 page_title = 'Playlists of Songs on this Device'              
                 logger.info("Listing the local playlists for all users")
                 
