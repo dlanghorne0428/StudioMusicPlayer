@@ -463,7 +463,23 @@ def shuffle_playlist(request, playlist_id):
 
         return redirect('App:edit_playlist', playlist_id)        
     
+
+def pause_playlist(request, playlist_id, resume_index):
+    if not (request.user.is_superuser or request.user.is_teacher):
+        logger.warning(request.user.username + " not authorized to pause playlists")
+        return render(request, 'permission_denied.html')
+    else:        
+        # get the specific playlist object from the database
+        playlist = get_object_or_404(Playlist, pk=playlist_id)
         
+        logger.info("Pausing playlist " + str(playlist) + " at index " + str(resume_index))
+        playlist.resume_index = resume_index
+        playlist.save()
+                    
+        # return to list of user playlists        
+        return redirect('App:user_playlists')           
+    
+
 def delete_playlist(request, playlist_id):
     ''' allows the superuser to edit an existing playlist. '''
     

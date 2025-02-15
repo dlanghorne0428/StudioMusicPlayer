@@ -126,7 +126,11 @@
       {% else %}
          <p class="text-info my-1">Next track played automatically</p>
       {% endif %}
-      <p class="text-center my-2"><a href="{% url 'App:user_playlists' %}">Back to Your Playlists</a></p>
+      <p class="text-center my-2">
+        <a id="id-pause-button" class="btn btn-warning btn-sm mx-4" href="{% url 'App:pause_playlist' playlist_info.id 2 %}">Pause Playlist</a>
+        <span>   </span>
+        <a class="text-center"><a href="{% url 'App:user_playlists' %}">Back to Your Playlists</a></a>
+      </p>
     </div>
   </div>
 
@@ -227,6 +231,12 @@
     
     function updateHeatNumber(index) {
         var current_heat_readable = String(index + 1);
+        var current_index_readable = String(index);
+        var pause_link_string = pause_button_elem.href;
+        var pause_link = pause_link_string.substring(0,pause_link_string.lastIndexOf("/")+1);
+        pause_link += current_index_readable;
+        /* console.log("pause: ", pause_link); */
+        pause_button_elem.href = pause_link;
         console.log("Track: ", current_heat_readable);
         track_number_elem.innerHTML = current_heat_readable;
         heat_number_elem.innerHTML = current_heat_readable;
@@ -247,6 +257,7 @@
     const feature_text_elem = document.getElementById("feature-text");
     const heat_number_elem = document.getElementById("id-heat-number");
     const track_number_elem = document.getElementById("id-track-number");
+    const pause_button_elem = document.getElementById("id-pause-button");
     const is_feature_list = JSON.parse(document.getElementById('is-feature-list-data').textContent);
     
     const volume_control = document.getElementById('volume_control');

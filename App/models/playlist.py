@@ -41,6 +41,9 @@ class Playlist(models.Model):
     # for Party or Showcase playlist, the time limit
     max_song_duration = models.TimeField(null=True, blank=True)
     
+    # indicate which song to resume if the playlist is paused, Default of zero starts at the beginning
+    resume_index = models.IntegerField(default=0)
+    
     # this field stores the preferences used when to generate this playlist
     preferences = models.JSONField(null=True, blank=True)    
     

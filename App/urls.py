@@ -31,6 +31,7 @@ urlpatterns = [
     path("playlists/create-from-json", views.create_playlist_from_json, name="create_playlist_from_json"),
     path("playlists/build-random/<int:playlist_id>", views.build_random_playlist, name="build_random_playlist"),
     path("playlists/copy/<int:playlist_id>", views.copy_playlist, name="copy_playlist"),
+    path("playlists/pause/<int:playlist_id>/<int:resume_index>", views.pause_playlist, name="pause_playlist"),
     path("playlists/delete/<int:playlist_id>", views.delete_playlist, name="delete_playlist"),
     path("playlists/edit/<int:playlist_id>", views.edit_playlist, name="edit_playlist"),
     path("playlists/edit/<int:playlist_id>/<int:start_index>", views.edit_playlist, name="edit_playlist"),
