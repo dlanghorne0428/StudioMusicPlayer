@@ -68,7 +68,7 @@
             <td>
               {% if playlist.resume_index %}
                 <a class="btn btn-danger btn-sm" href="{% url 'App:play_song_list' playlist.id playlist.resume_index %}">Resume</a>
-                <button class="btn btn-primary btn-sm" type="submit">Play</button>
+                <a class="btn btn-primary btn-sm" href="{% url 'App:play_song_list' playlist.id %}">Play</a>
               {% else %}
                 <!-- form for the user to enter the starting song number -->
                 <form class="text-center" enctype="multipart/form-data" method="POST">
