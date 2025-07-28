@@ -92,11 +92,14 @@ class SongEditForm(ModelForm):
             Row(
                 Column(
                     HTML("""<a href="{% url 'App:spotify_find_song_bpms' song_id %}" class="btn btn-info">Lookup BPM on Spotify</a>"""),                   
-                    css_class='col-6'),
+                    css_class='col-4'),
+                Column(
+                    HTML("""<a href="{% url 'App:show_tags_for_song' song_id %}" class="btn btn-info">Tags</a>"""),                   
+                    css_class='col-4'),                
                 Column(
                     Submit('find_artwork', 'Find Cover Art Online'),
                     # HTML("""<a href="#" class="btn btn-info">Find Cover Art Online</a>"""),                                       
-                    css_class='col-6'),  
+                    css_class='col-4'),  
                 css_class='border border-dark p-2',
             ),
             FormActions(

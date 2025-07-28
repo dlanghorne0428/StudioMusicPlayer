@@ -84,12 +84,12 @@ def replace_song(request, playlist_id, index, dance_type, song_id=None):
     
     if song_id is None:
         if playlists[0].streaming:
-            if dance_type == "gen":
+            if dance_type in ("Sho", "gen"):
                 songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=False).order_by('title')) 
             else:
                 songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=False, dance_type=dance_type).order_by('title'))    
         else:
-            if dance_type == "gen":
+            if dance_type in ("Sho", "gen"):
                 songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=True).order_by('title')) 
             else:
                 songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=True, dance_type=dance_type).order_by('title')) 
