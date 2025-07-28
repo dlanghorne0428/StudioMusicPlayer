@@ -55,7 +55,7 @@
     </div>
     
     <div class="col-4">
-      <p class="text-center mt-4"><a href="{% url 'App:show_songs' %}">Back to Song List</a></p>
+      <p class="text-center mt-4"><a id="back-link-id" href="{% url 'App:show_songs' %}">Back to Song List</a></p>
     </div>
     
   </div>
@@ -96,6 +96,12 @@
         }
       {% endif %}
     };
+    
+    
+    function back_click() {
+      console.log("back click called");
+      history.back()
+    }; 
     
     // flag to indicate if a message needs to be sent to the web socket.
     var send_update = true;
@@ -151,8 +157,11 @@
         },
         'ended': function(){
           console.log('Song has finished');
-          // update the socket when the song ends to indicate nothing is playing.
-          send_to_socket(false)
+          {% if wifi_enabled %}
+            // update the socket when the song ends to indicate nothing is playing.
+            send_to_socket(false);
+          {% endif %}
+          back_click()
         }
       }
     });
