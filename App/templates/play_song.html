@@ -55,7 +55,7 @@
     </div>
     
     <div class="col-4">
-      <p class="text-center mt-4"><a id="back-link-id" href="{% url 'App:show_songs' %}">Back to Song List</a></p>
+      <p class="text-center mt-4"><a id="back-link-id" href="#">Back to Song List</a></p>
     </div>
     
   </div>
@@ -170,6 +170,12 @@
         return !(e.keyCode == 32);
     };
 
+    /* Handles a click on the back link button */
+    document.getElementById('back-link-id').addEventListener('click', function( e ){
+      back_click();
+      }
+    );
+    
     /* Handles a click on the song played progress bar.*/
     document.getElementById('song-played-progress').addEventListener('click', function( e ){
       var offset = this.getBoundingClientRect();
