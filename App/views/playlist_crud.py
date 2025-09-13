@@ -332,6 +332,54 @@ def build_random_playlist(request, playlist_id):
         return redirect('App:edit_playlist', playlist.id)
 
 
+def create_group_class_playlist(request, song_id):
+    ''' create a new playlist of four songs with the same dance type as the selected song '''
+    # get the specific song object from the database
+    song = get_object_or_404(Song, pk=song_id) 
+    
+    playlist_name = "Group Class - " + song.get_dance_type_display()
+    
+    # look for an existing playlist for this dance type
+    if Playlist.objects.filter(title=playlist_name).exists():
+        playlist = Playlist.objects.filter(title=playlist_name)[0]
+        
+        # put the selected song at the top of the playlist
+        index = 0
+        playlist.replace_song(index, song)
+        index = 1
+        
+        while index < 4: 
+            # replace the next 3 songs in the playlist
+            if pick_random_song(playlist, song.dance_type, index): 
+                index = index + 1
+            else: # no songs found, quit loop early
+                break
+            
+    else:
+        # create new playlist
+        playlist = Playlist()
+        # set playlist owner to current user
+        playlist.owner = request.user 
+        playlist.title = playlist_name
+        playlist.category = 'Norm'
+        playlist.streaming = False   # for now  
+        playlist.save()
+    
+        # put the selected song at the top of the playlist
+        playlist.add_song(song)
+    
+        while playlist.number_of_songs() < 4: 
+    
+            # add three random songs of this dance type to the playlist
+            if pick_random_song(playlist, song.dance_type): 
+                pass
+            else:  # no songs found, quit loop early
+                break
+    
+    # redirect to play the newly created / updated playlist   
+    return redirect('App:play_song_list', playlist.id)   
+
+
 def add_to_playlist(request, playlist_id, song_id):
     ''' add a song to the end of a playlist '''
     # get the specific playlist object from the database
