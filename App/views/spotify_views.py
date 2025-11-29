@@ -1004,7 +1004,7 @@ def play_spotify_track(request, track_id):
                'title': track['name'],
                'artist': track['artist_name'],
                'cover_art': track['cover_art'],
-               'dance_type': 'General'}   
+               'dance_type': 'N/A',}   
               )
 
 

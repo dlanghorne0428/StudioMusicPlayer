@@ -263,7 +263,7 @@ def build_random_playlist(request, playlist_id):
         # get song_counts entered by the user from the form
         songs_remaining = dict()
         for key in DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS:
-            if key in ("Sho", "gen"):
+            if key in ("Sho", "N/A"):
                 songs_remaining[key] = 0
             else:
                 form_field = '%s_songs' % (key, )
@@ -403,7 +403,7 @@ def add_random_song_to_playlist(request, playlist_id, dance_type):
     playlist = get_object_or_404(Playlist, pk=playlist_id) 
     last_index = playlist.number_of_songs()
     
-    if dance_type == "Any" or dance_type in ("Sho", "gen"):
+    if dance_type == "Any" or dance_type in ("Sho", "N/A"):
         dance_type = None
         
     # pick a random song of the requested type and add it to playlist
@@ -596,7 +596,7 @@ def edit_playlist(request, playlist_id, start_index = 0):
                 # find the dance style of the selected song
                 dance_style = selected.song.dance_type
                 # replace with a random song and indicate it for highlighting
-                if dance_style in ("Sho", "gen"):
+                if dance_style in ("Sho", "N/A"):
                     pick_random_song(playlist, index=index)                     
                 else:
                     pick_random_song(playlist, dance_style, index) 
