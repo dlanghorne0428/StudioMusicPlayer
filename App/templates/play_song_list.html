@@ -80,6 +80,7 @@
         <span class="current-time">
           <span class="amplitude-current-minutes" amplitude-main-current-minutes="true"></span>:<span class="amplitude-current-seconds" amplitude-main-current-seconds="true"></span>
         </span>
+        <span id="id-alt-dance-type" class="alt-dance-type">Alternate: <span data-amplitude-song-info="alt_dance_type"></span></span>
         <span class="duration" id='id-duration'>
           <span id="duration-minutes">0</span>:<span id="duration-seconds">00</span>
         </span>     
@@ -211,6 +212,18 @@
     var send_update = true;    
     
     
+    // common functions to hide or show the alternate dance type element
+    function hideAlternateDanceType() {
+      console.log("hiding alternate");
+      document.getElementById("id-alt-dance-type").style.display = "none";
+    };
+
+    function showAlternateDanceType() {
+      console.log("showing alternate");
+      document.getElementById("id-alt-dance-type").style.display = "inline-block";
+    };
+    
+
     /* common function to hide a song at the given index from the "up next" list */
     function hideSongInUpNext(index_to_hide) {
       /* ensure index is valid */
@@ -302,6 +315,7 @@
           {% endif %}
           "id": "{{song.id}}",
           "dance_type": "{{song.get_dance_type_display}}",
+          "alt_dance_type": "{{song.get_alt_dance_type_display}}",
         },
       {% endfor %}
       ],
@@ -444,7 +458,15 @@
         'play': function(){
           console.log('Audio has started');
           // update the socket when the play button is hit
-          send_to_socket(Amplitude.getActiveIndex())
+          send_to_socket(Amplitude.getActiveIndex());
+          // hide or display the alternate dance type
+          var theSong = Amplitude.getActiveSongMetadata();
+          if (theSong.alt_dance_type == "N/A") {
+            hideAlternateDanceType();
+          }
+          else {
+            showAlternateDanceType();
+          }
         },
         
         'pause': function(){
