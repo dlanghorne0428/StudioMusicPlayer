@@ -8,10 +8,20 @@ body {
 
 /****** Song info  *****/
 .dance-type {
-    margin: 1rem 0;
+    margin: 1rem 0 0 0;
     font-size: 72px;
     color: Yellow;
     letter-spacing: 1.0px;
+}
+
+.alt-dance-type {
+    margin: 0 0 1rem 0;
+    font-size: 24px;
+    color: Yellow;
+    font-style: italic;
+    letter-spacing: 1.0px;
+    /* initially hide this element */
+    display: none;
 }
 
 .dance-type-smaller {

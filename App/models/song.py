@@ -9,78 +9,78 @@ import logging
 logger = logging.getLogger("django")
 
 DANCE_TYPE_CHOICES = [
-    ("Bac", "Bachata"),
-    ("Bol", "Bolero"),    
+    ("Bchat", "Bachata"),
+    ("Bolo", "Bolero"),    
     ("Cha", "Cha-Cha"), 
     ("C2S", "Country Two Step"), 
     ("ECS", "East Coast Swing"),
     ("Fox", "Foxtrot"),
     ("Hus", "Hustle"),
-    ("Jiv", "Jive"),
+    ("Jive", "Jive"),
     ("Mam", "Mambo / Salsa"),
-    ("Mer", "Merengue"),
+    ("Meren", "Merengue"),
     ("NC2", "Night Club 2-Step"),
-    ("PD",  "Paso Doble"),
-    ("Pea", "Peabody"),
-    ("Q",   "Quickstep"),
-    ("Rum", "Rumba"),    
-    ("Sam", "Samba"),
-    ("Tan", "Tango"),  
-    ("VW",  "Viennese Waltz"),
-    ("Wal", "Waltz"),
+    ("Paso",  "Paso Doble"),
+    ("Pbody", "Peabody"),
+    ("Qstep",   "Quickstep"),
+    ("Rumba", "Rumba"),    
+    ("Samba", "Samba"),
+    ("Tango", "Tango"),  
+    ("VWal",  "Viennese Waltz"),
+    ("Waltz", "Waltz"),
     ("WCS", "West Coast Swing"),
-    ("Sho", "Showdance"),
-    ("gen", "General")
+    ("Show", "Showdance"),
+    ("NoAlt", "N/A")
     ]
 
 DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS = {
-    "Bac":  1,                  
-    "Bol":  2,        
+    "Bchat":  1,                  
+    "Bolo":  2,        
     "Cha":  2, 
     "C2S":  1, 
     "ECS":  2,
     "Fox":  2,
     "Hus":  1,
-    "Jiv":  1,
+    "Jive":  1,
     "Mam":  1,     
-    "Mer":  1,     
+    "Meren":  1,     
     "NC2":  1,
-    "PD":   0,     
-    "Pea":  0,     
-    "Q":    0,
-    "Rum":  2,    
-    "Sam":  1,
-    "Tan":  2,  
-    "VW":   2,
-    "Wal":  2,
+    "Paso":   0,     
+    "Pbody":  0,     
+    "Qstep":    0,
+    "Rumba":  2,    
+    "Samba":  1,
+    "Tango":  2,  
+    "VWal":   2,
+    "Waltz":  2,
     "WCS":  1,
-    "Sho":  0,
-    "gen":  0
+    "Show":  0,
+    "N/A":  0
     }
 
 DANCE_TYPE_TEMPOS = {
-    "Bac": "Mid",                  
-    "Bol": "Slow",        
+    "Bchat": "Mid",                  
+    "Bolo": "Slow",        
     "Cha": "Mid", 
     "C2S": "Mid",  
     "ECS": "Fast",
     "Fox": "Mid",
     "Hus": "Fast",  
-    "Jiv": "Fast",
+    "Jive": "Fast",
     "Mam": "Fast",    
-    "Mer": "Mid",    
+    "Meren": "Mid",    
     "NC2": "Slow",
-    "PD":  "Mid",   
-    "Pea": "Fast",    
-    "Q":   "Fast",
-    "Rum": "Slow",    
-    "Sam": "Mid",
-    "Tan": "Mid",  
-    "VW":  "Fast",
-    "Wal": "Slow",
+    "Paso":  "Mid",   
+    "Pbody": "Fast",    
+    "Qstep":   "Fast",
+    "Rumba": "Slow",    
+    "Samba": "Mid",
+    "Tango": "Mid",  
+    "VWal":  "Fast",
+    "Waltz": "Slow",
     "WCS": "Mid",
-    "Sho": "Mid",
-    "gen": "Mid"
+    "Show": "Mid",
+    "N/A": "Mid"
     }
 
 
@@ -194,6 +194,12 @@ class Song(models.Model):
         default = 'Cha'
         )
     
+    # an alternate dance type assigned to this song
+    alt_dance_type = models.CharField(
+        max_length = 10,
+        choices = DANCE_TYPE_CHOICES,
+        default = 'NoAlt'
+        )    
     
     def spotify_uri(self):
         return "spotify:track:" + self.spotify_track_id
