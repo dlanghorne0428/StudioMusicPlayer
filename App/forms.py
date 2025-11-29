@@ -16,10 +16,17 @@ from .models.playlist import Playlist, CATEGORY_CHOICES
 
 class SongFileInputForm(ModelForm):
     '''form for uploading new music from a file.'''
+    alt_dance_type = forms.ChoiceField(
+        label = "Alternate Dance Type",
+        choices = DANCE_TYPE_CHOICES,
+        initial = "NoAlt",
+        required = True,
+    )    
+    
     class Meta:
         model = SongFileInput
         # allow user to specify file and dance_type
-        fields = ['audio_file', 'dance_type']
+        fields = ['audio_file', 'dance_type', 'alt_dance_type']
 
         
 class SpotifyTrackInputForm(ModelForm):
@@ -60,6 +67,12 @@ class SongEditForm(ModelForm):
         required = True,
     )
     
+    alt_dance_type = forms.ChoiceField(
+        label = "Alternate Dance Type",
+        choices = DANCE_TYPE_CHOICES,
+        required = True,
+    )
+    
     bpm = forms.IntegerField(
         label = 'BPM',
         widget = NumberInput(attrs={'class': 'text-center'}),
@@ -81,6 +94,7 @@ class SongEditForm(ModelForm):
                     Field('title'), 
                     Field('artist'), 
                     Field('dance_type'), 
+                    Field('alt_dance_type'),
                     Field('bpm'), 
                     css_class='col-6'),
                 Column(
@@ -114,7 +128,7 @@ class SongEditForm(ModelForm):
     class Meta:
         # obtain data from these fields of the song model
         model = Song
-        fields = ['title', 'artist', 'image', 'bpm', 'dance_type']
+        fields = ['title', 'artist', 'image', 'bpm', 'dance_type', 'alt_dance_type']
         
         
 class PlaylistInfoForm(ModelForm):
@@ -241,7 +255,7 @@ class RandomPlaylistForm(Form):
         # add them to the form using a loop
         for dance_type_tuple in DANCE_TYPE_CHOICES: 
             
-            if dance_type_tuple[0] not in ("Sho", "gen"):
+            if dance_type_tuple[0] not in ("Sho", "N/A"):
                 # constuct field name based on dance type abbreviation (e.g. 'Cha')
                 field_name = '%s_songs' % (dance_type_tuple[0], )
                 
