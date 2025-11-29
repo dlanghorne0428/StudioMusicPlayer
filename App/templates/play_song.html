@@ -40,6 +40,7 @@
         <span class="current-time">
           <span class="amplitude-current-minutes" amplitude-main-current-minutes="true"></span>:<span class="amplitude-current-seconds" amplitude-main-current-seconds="true"></span>
         </span>
+        <span id="id-alt-dance-type" class="alt-dance-type">Alternate: <span data-amplitude-song-info="alt_dance_type"></span></span>
         <span class="duration">
           <span class="amplitude-duration-minutes" amplitude-main-duration-minutes="true"></span>:<span class="amplitude-duration-seconds" amplitude-main-duration-seconds="true"></span>
         </span>
@@ -98,6 +99,19 @@
     };
     
     
+    // common functions to hide or show the alternate dance type element    
+    function hideAlternateDanceType() {
+      console.log("hiding alternate");
+      document.getElementById("id-alt-dance-type").style.display = "none";
+    };
+
+    function showAlternateDanceType() {
+      console.log("showing alternate");
+      document.getElementById("id-alt-dance-type").style.display = "inline-block";
+    };
+    
+    
+    // function to go back to the previous page in the browser histroy
     function back_click() {
       console.log("back click called");
       history.back()
@@ -126,6 +140,7 @@
           "cover_art_url": "{{default_url}}",
         {% endif %}
         "dance_type": "{{song.get_dance_type_display}}",
+        "alt_dance_type": "{{song.get_alt_dance_type_display}}",
       }],
       "callbacks": {
         'initialized': function(){
@@ -149,6 +164,14 @@
           console.log('Audio has started');
           // update the socket when the play button is hit
           send_to_socket()
+          // hide or display the alternate dance type
+          var theSong = Amplitude.getActiveSongMetadata();
+          if (theSong.alt_dance_type == "N/A") {
+            hideAlternateDanceType();
+          }
+          else {
+            showAlternateDanceType();
+          }
         },
         'pause': function(){
           console.log('Audio has paused');
