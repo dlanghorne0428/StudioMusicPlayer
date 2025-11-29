@@ -59,7 +59,7 @@
             <!-- user can filter on any of these columns --> 
             <td id='title-filter' class="text-center">{{ filter.form.title }}</td>
             <td id='artist-filter' class="text-center">{{ filter.form.artist }}</td>
-            <td id='dance-type-filter' class="text-center">{{ filter.form.dance_type }}</td>
+            <td id='dance-type-filter' class="text-center">{{ filter.form.q }}</td>
             <td></td>
             <!-- the last button is used to submit filter data -->
             <!-- name attribute cannot be submit, so javascript submit function will work -->
@@ -82,8 +82,12 @@
           {% endif %}
         </td>
         <td class="text-center">{{ song.artist }}</td>
-        <!-- display the "readable" string for the dance type -->
-        <td class="text-center">{{ song.get_dance_type_display }}</td>
+        {% if song.alt_dance_type == "NoAlt" %}
+          <!-- display the "readable" string for the dance type -->
+          <td class="text-center">{{ song.get_dance_type_display }}</td>
+        {% else %}
+          <td class="bg-info text-center">{{song.dance_type}} : {{song.alt_dance_type}}</td>
+        {% endif %}
         
         <!-- if song BPM < 0, display N/A -->
         {% if song.bpm < 0 %}
@@ -97,8 +101,8 @@
           {% if user.is_superuser or user.is_teacher %}
             <!-- only admin users or teachers can play or edit songs -->
             <a class="btn btn-primary btn-sm" href="{% url 'App:play_song' song.id %}">Play</a>
-            <a class="btn btn-info btn-sm" href="{% url 'App:create_group_class_playlist' song.id %}">Group Class</a>
             <a class="btn btn-secondary btn-sm" href="{% url 'App:update_song' song.id %}">Edit</a>            
+            <a class="btn btn-info btn-sm" href="{% url 'App:create_group_class_playlist' song.id %}">Group Class</a>
             {% if index %}
               <a class="btn btn-warning btn-sm" href="{% url 'App:replace_song' playlist_id index song.dance_type song.id %}">Select</a>
             {% else %}
