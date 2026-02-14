@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from App.models import Song
+from App.models import Song, User
 
 
 class Command(BaseCommand):
@@ -14,7 +14,10 @@ class Command(BaseCommand):
             elif s.dance_type == "Bol":
                 s.dance_type = "Bolo"
             elif s.dance_type == "Jiv":
-                s.dance_type = "Jive"       
+                s.dance_type = "Jive"   
+            elif s.dance_type == "Mam":
+                s.dance_type = "Salsa"
+                s.alt_dance_type = "Mambo"
             elif s.dance_type == "Mer":
                 s.dance_type = "Meren"   
             elif s.dance_type == "PD":
@@ -67,4 +70,9 @@ class Command(BaseCommand):
                 
             s.save()
             
+        users = User.objects.all()
+        print('Clearing user playlist preferences')
+        for u in users:
+            u.preferences = None
+            u.save()
         
