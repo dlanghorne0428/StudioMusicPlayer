@@ -249,6 +249,10 @@ def update_song(request, song_id):
     
     import webbrowser
     
+    if not request.user.is_authenticated:
+        logger.warning("User is not authenticated - redirect to login page")
+        return redirect('login')
+    
     # must be an admin user or teacher to edit songs
     if not (request.user.is_superuser or request.user.is_teacher):
         logger.warning(request.user.username + " not authorized to update songs")
@@ -312,6 +316,10 @@ def update_song(request, song_id):
 def delete_song(request, song_id):
     ''' allows the superuser to remove a song from the database. 
         the music file and cover art are also deleted .'''
+
+    if not request.user.is_authenticated:
+        logger.warning("User is not authenticated - redirect to login page")
+        return redirect('login')
     
     # must be an admin user to delete songs
     if not request.user.is_superuser:
@@ -354,7 +362,10 @@ def playlists_with_song(request, song_id):
     ''' allows a user to find all of their playlists containing a specific song.
         a superuser can look at all playlists for that song.'''
         
-    
+    if not request.user.is_authenticated:
+        logger.warning("User is not authenticated - redirect to login page")
+        return redirect('login')
+        
     # must be an admin user or teacher to find song in playlists
     if not (request.user.is_superuser or request.user.is_teacher):
         logger.warning(request.user.username + " not authorized to lookup song in playlists")
@@ -400,6 +411,10 @@ def playlists_without_song(request, song_id):
     ''' allows a user to add a song to the end of any of their playlists that don't already have that song.
         a superuser add to any playlist.'''
     
+    if not request.user.is_authenticated:
+        logger.warning("User is not authenticated - redirect to login page")
+        return redirect('login')
+        
     # must be an admin user or teacher to access playlists
     if not (request.user.is_superuser or request.user.is_teacher):
         logger.warning(request.user.username + " not authorized to access playlists")

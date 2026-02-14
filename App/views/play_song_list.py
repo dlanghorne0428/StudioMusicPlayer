@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
 
 import os
@@ -14,6 +14,10 @@ logger = logging.getLogger("django")
 
 def play_song_list(request, playlist_id, start_index=0):
     ''' Play the selected playlist.'''
+    
+    if not request.user.is_authenticated:
+        logger.warning("User is not authenticated - redirect to login page")
+        return redirect('login')
     
     # only admin users or teachers can play songs
     if not (request.user.is_superuser or request.user.is_teacher):
