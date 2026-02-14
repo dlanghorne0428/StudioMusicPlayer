@@ -6,7 +6,7 @@ from django.views.generic import CreateView, TemplateView
 
 from App.forms import RandomPlaylistForm, TeacherSignUpForm
 from App.models import User
-from App.models.song import DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS
+from App.models.song import DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS, DEFAULT_PLAYLIST_LENGTH
 
 import logging
 logger = logging.getLogger("django")
@@ -31,14 +31,14 @@ def user_preferences(request):
             'prevent_back_to_back_styles': True,
             'prevent_back_to_back_tempos': True,
             'counts'                     : DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS,
-            'playlist_length'            : 25,
+            'playlist_length'            : DEFAULT_PLAYLIST_LENGTH,
         }
     else:
         preferences = user.preferences
         if 'counts' not in preferences:
             logger.warning("Adding default count fields to " + user.username + " preferences")
             preferences['counts'] = DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS
-            preferences['playlist_length'] = 25
+            preferences['playlist_length'] = DEFAULT_PLAYLIST_LENGTH
         if 'percentages' in preferences:
             del preferences['percentages']
         
@@ -76,7 +76,7 @@ def user_preferences(request):
             starting_counts = dict()
             for key in DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS:
                 # skip general dances 
-                if key not in ("Sho", 'N/A'):
+                if key not in ("Show", 'NoAlt'):
                     form_field = '%s_songs' % (key, )
                     starting_counts[key] = form_data[form_field]
             

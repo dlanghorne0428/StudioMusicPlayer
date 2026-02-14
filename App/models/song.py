@@ -9,6 +9,7 @@ import logging
 logger = logging.getLogger("django")
 
 DANCE_TYPE_CHOICES = [
+    ("ArTan", "Argentine Tango"),
     ("Bchat", "Bachata"),
     ("Bolo", "Bolero"),    
     ("Cha", "Cha-Cha"), 
@@ -17,13 +18,14 @@ DANCE_TYPE_CHOICES = [
     ("Fox", "Foxtrot"),
     ("Hus", "Hustle"),
     ("Jive", "Jive"),
-    ("Mam", "Mambo / Salsa"),
+    ("Mambo", "Mambo"),
     ("Meren", "Merengue"),
     ("NC2", "Night Club 2-Step"),
     ("Paso",  "Paso Doble"),
     ("Pbody", "Peabody"),
     ("Qstep",   "Quickstep"),
-    ("Rumba", "Rumba"),    
+    ("Rumba", "Rumba"),  
+    ("Salsa", "Salsa"),
     ("Samba", "Samba"),
     ("Tango", "Tango"),  
     ("VWal",  "Viennese Waltz"),
@@ -33,32 +35,36 @@ DANCE_TYPE_CHOICES = [
     ("NoAlt", "N/A")
     ]
 
+DEFAULT_PLAYLIST_LENGTH = 50
 DANCE_TYPE_DEFAULT_PLAYLIST_COUNTS = {
-    "Bchat":  1,                  
-    "Bolo":  2,        
-    "Cha":  2, 
-    "C2S":  1, 
-    "ECS":  2,
-    "Fox":  2,
-    "Hus":  1,
-    "Jive":  1,
-    "Mam":  1,     
-    "Meren":  1,     
-    "NC2":  1,
+    "ArTan": 0,
+    "Bchat":  3,                  
+    "Bolo":  3,        
+    "Cha":  4, 
+    "C2S":  2, 
+    "ECS":  4,
+    "Fox":  3,
+    "Hus":  3,
+    "Jive":  0,
+    "Mambo":  0,     
+    "Meren":  2,     
+    "NC2":  3,
     "Paso":   0,     
     "Pbody":  0,     
-    "Qstep":    0,
-    "Rumba":  2,    
-    "Samba":  1,
-    "Tango":  2,  
+    "Qstep":    2,
+    "Rumba":  4,
+    "Salsa": 3,
+    "Samba":  3,
+    "Tango":  3,  
     "VWal":   2,
-    "Waltz":  2,
-    "WCS":  1,
+    "Waltz":  3,
+    "WCS":  3,
     "Show":  0,
-    "N/A":  0
+    "NoAlt":  0
     }
 
 DANCE_TYPE_TEMPOS = {
+    "ArTan": "Slow",  
     "Bchat": "Mid",                  
     "Bolo": "Slow",        
     "Cha": "Mid", 
@@ -67,20 +73,21 @@ DANCE_TYPE_TEMPOS = {
     "Fox": "Mid",
     "Hus": "Fast",  
     "Jive": "Fast",
-    "Mam": "Fast",    
+    "Mambo": "Fast",    
     "Meren": "Mid",    
     "NC2": "Slow",
     "Paso":  "Mid",   
     "Pbody": "Fast",    
     "Qstep":   "Fast",
-    "Rumba": "Slow",    
+    "Rumba": "Slow", 
+    "Salsa": "Fast",  
     "Samba": "Mid",
     "Tango": "Mid",  
     "VWal":  "Fast",
     "Waltz": "Slow",
     "WCS": "Mid",
     "Show": "Mid",
-    "N/A": "Mid"
+    "NoAlt": "Mid"
     }
 
 

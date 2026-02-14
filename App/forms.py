@@ -255,7 +255,7 @@ class RandomPlaylistForm(Form):
         # add them to the form using a loop
         for dance_type_tuple in DANCE_TYPE_CHOICES: 
             
-            if dance_type_tuple[0] not in ("Sho", "N/A"):
+            if dance_type_tuple[0] not in ("Show", "NoAlt"):
                 # constuct field name based on dance type abbreviation (e.g. 'Cha')
                 field_name = '%s_songs' % (dance_type_tuple[0], )
                 
@@ -295,76 +295,80 @@ class RandomPlaylistForm(Form):
                         data_bs_placement="right",
                         title="Checking this box prevents the playlist from having two consecutive fast songs or two consecutive slow songs.",                        
                     ), 
+                    Div('save_preferences'),
                     # left-justify the second column, keep it toward the middle of the form
                     css_class='text-start px-4 col-6'),
                 # align the bottom of the two columns in this row
-                css_class='align-items-end' 
+                css_class='align-items-middle' 
             ),
-            # second row has one column with two titles
+            # second row has one column with instructions
             Row(
                 Column(
                     HTML("<h4 class='text-center'>Select Number of Songs for each dance style</h4>"),
-                    HTML("<h6 class='text-center'>Values must add up to the total.</h6>"),
-                    # song count data should take 9/12 of the window
                     css_class='col-12 text-center',
                 ), 
             ),
             # next row has columns for numeric inputs
             Row(
                 Column(
-                    # first column is split into five sub-columns to set number of songs for each dance type
+                    # first column is split into six sub-columns to set number of songs for each dance type
                     Row(
-                        Column(Field(field_names[0], active=True, css_class='text-center'),
-                               Field(field_names[1], active=True, css_class='text-center'),
-                               Field(field_names[2], active=True, css_class='text-center'),
-                               Field(field_names[3], active=True, css_class='text-center'), 
-                               # each sub-column takes 2/12 of the enclosing column, first sub-column is offset 1/12
-                               css_class="col-2 offset-1"),
-                        Column(Field(field_names[4], active=True, css_class='text-center'),
-                               Field(field_names[5], active=True, css_class='text-center'),
-                               Field(field_names[6], active=True, css_class='text-center'),
-                               Field(field_names[7], active=True, css_class='text-center'),
-                               css_class='col-2'),     
-                        Column(Field(field_names[8], active=True, css_class='text-center'),
-                               Field(field_names[9], active=True, css_class='text-center'),
-                               Field(field_names[10], active=True, css_class='text-center'),
-                               Field(field_names[11], active=True, css_class='text-center'), 
-                               css_class="col-2"), 
-                        Column(Field(field_names[12], active=True, css_class='text-center'),
-                               Field(field_names[13], active=True, css_class='text-center'),
-                               Field(field_names[14], active=True, css_class='text-center'),
-                               Field(field_names[15], active=True, css_class='text-center'), 
-                               css_class="col-2"),    
-                        Column(Field(field_names[16], active=True, css_class='text-center'),
-                               Field(field_names[17], active=True, css_class='text-center'),
-                               Field(field_names[18], active=True, css_class='text-center'),
-                               Field(field_names[19], active=True, css_class='text-center'), 
-                               css_class="col-2"), 
-                        # put a dark border around the five subcolumns
+                        Column(
+                            Field(field_names[0], active=True, css_class='text-center'),
+                            Field(field_names[6], active=True, css_class='text-center'),
+                            Field(field_names[12], active=True, css_class='text-center'),
+                            # each sub-column takes 2/12 of the enclosing column
+                            css_class="col-2"),
+                        Column(
+                            Field(field_names[1], active=True, css_class='text-center'),
+                            Field(field_names[7], active=True, css_class='text-center'),
+                            Field(field_names[13], active=True, css_class='text-center'),
+                            Field(field_names[18], active=True, css_class='text-center'),
+                            css_class='col-2'),     
+                        Column(
+                            Field(field_names[2], active=True, css_class='text-center'),
+                            Field(field_names[8], active=True, css_class='text-center'),
+                            Field(field_names[14], active=True, css_class='text-center'),
+                            Field(field_names[19], active=True, css_class='text-center'),
+                            css_class="col-2"), 
+                        Column(
+                            Field(field_names[3], active=True, css_class='text-center'),
+                            Field(field_names[9], active=True, css_class='text-center'),
+                            Field(field_names[15], active=True, css_class='text-center'),
+                            Field(field_names[20], active=True, css_class='text-center'),
+                            css_class="col-2"),    
+                        Column(
+                            Field(field_names[4], active=True, css_class='text-center'),
+                            Field(field_names[10], active=True, css_class='text-center'),
+                            Field(field_names[16], active=True, css_class='text-center'),
+                            Field(field_names[21], active=True, css_class='text-center'),
+                            css_class="col-2"),
+                        Column(
+                            Field(field_names[5], active=True, css_class='text-center'), 
+                            Field(field_names[11], active=True, css_class='text-center'),
+                            Field(field_names[17], active=True, css_class='text-center'),
+                            css_class="col-2"),                         
+                        # put a dark border around the six subcolumns
                         css_class='col-12 pt-2 border border-dark',
                         # establish an ID for javascript to use
                         css_id='enter-songs-per-dance-style'
                     ),
-                    # this row for an error message is centered under the five subcolumns
+                    # this row for instructions and an error message is centered under the subcolumns
                     Row(
+                        HTML("<h6 class='text-center my-2'>Values must add up to the total number of songs.</h6>"),
                         # establish an ID so Javascript can modify this error text
                         HTML("<p hidden id='count-error'>Current total is <span id='count-total'></span></p>"),
                     ),
                     css_class='text-center'
                 ),
             ),
-            # this row has a save checkbox, it is centered in the entire window and has a top margin
-            Row(
-                Column('save_preferences'),
-                css_class = 'col-12 text-center mt-3'
-            ),
-            
+
             # submit and cancel buttons
             FormActions(
                 Submit('continue', 'Continue'),
                 Submit('cancel', 'Cancel'),
                 # provide a small margin in the y-direction, top and bottom
-                css_class="my-1"
+                css_class="mt-2"
             )
         )    
     
