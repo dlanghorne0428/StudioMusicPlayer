@@ -47,6 +47,10 @@ def show_tags(request):
 def delete_tag(request, tag_id):
     ''' allows the superuser to remove a tag from the database.'''
     
+    if not request.user.is_authenticated:
+        logger.warning("User is not authenticated - redirect to login page")
+        return redirect('login')
+    
     # must be an admin user to delete songs
     if not request.user.is_superuser:
         logger.warning(request.user.username + " not authorized to delete tags")

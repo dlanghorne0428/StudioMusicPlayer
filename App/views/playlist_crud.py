@@ -26,6 +26,10 @@ logger = logging.getLogger("django")
 def create_playlist(request, random=None):
     ''' allows the superuser or teacher to create a new playlist. '''
     
+    if not request.user.is_authenticated:
+        logger.warning("User is not authenticated - redirect to login page")
+        return redirect('login')
+
     if not (request.user.is_superuser or request.user.is_teacher):
         logger.warning(request.user.username + " not authorized to create playlists")
         return render(request, 'permission_denied.html')
@@ -96,6 +100,10 @@ def create_playlist(request, random=None):
 
 def create_playlist_from_json(request, json_filename="../../../Desktop/spring_showcase.json"):
     
+    if not request.user.is_authenticated:
+        logger.warning("User is not authenticated - redirect to login page")
+        return redirect('login')
+
     if not (request.user.is_superuser or request.user.is_teacher):
         logger.warning(request.user.username + " not authorized to create playlists")
         return render(request, 'permission_denied.html')
@@ -193,6 +201,10 @@ def pick_random_song(playlist, dance_type=None, index=None):
 
 def build_random_playlist(request, playlist_id):
     ''' generates a random list of songs and adds them to the playlist '''
+    if not request.user.is_authenticated:
+        logger.warning("User is not authenticated - redirect to login page")
+        return redirect('login')
+
     if not (request.user.is_superuser or request.user.is_teacher):
         return render(request, 'permission_denied.html')
     
@@ -415,6 +427,10 @@ def add_random_song_to_playlist(request, playlist_id, dance_type):
 
 def copy_playlist(request, playlist_id):
     ''' allows the superuser to edit an existing playlist. '''    
+    if not request.user.is_authenticated:
+        logger.warning("User is not authenticated - redirect to login page")
+        return redirect('login')
+        
     if not (request.user.is_superuser or request.user.is_teacher):
         logger.warning(request.user.username + " not authorized to copy playlists")
         return render(request, 'permission_denied.html')    
@@ -452,6 +468,10 @@ def copy_playlist(request, playlist_id):
 def replace_playlist_songs(request, playlist_id):
     ''' allows the superuser to replace all songs in existing playlist. 
         the dance type order will remain the same.'''    
+    if not request.user.is_authenticated:
+        logger.warning("User is not authenticated - redirect to login page")
+        return redirect('login')
+        
     if not (request.user.is_superuser or request.user.is_teacher):
         logger.warning(request.user.username + " not authorized to copy playlists")
         return render(request, 'permission_denied.html')    
@@ -481,6 +501,10 @@ def replace_playlist_songs(request, playlist_id):
 def shuffle_playlist(request, playlist_id):
     ''' allows the superuser to replace all songs in existing playlist. 
         the dance type order will remain the same.'''    
+    if not request.user.is_authenticated:
+        logger.warning("User is not authenticated - redirect to login page")
+        return redirect('login')
+        
     if not (request.user.is_superuser or request.user.is_teacher):
         logger.warning(request.user.username + " not authorized to copy playlists")
         return render(request, 'permission_denied.html')    
@@ -513,6 +537,10 @@ def shuffle_playlist(request, playlist_id):
     
 
 def pause_playlist(request, playlist_id, resume_index):
+    if not request.user.is_authenticated:
+        logger.warning("User is not authenticated - redirect to login page")
+        return redirect('login')
+        
     if not (request.user.is_superuser or request.user.is_teacher):
         logger.warning(request.user.username + " not authorized to pause playlists")
         return render(request, 'permission_denied.html')
@@ -529,8 +557,11 @@ def pause_playlist(request, playlist_id, resume_index):
     
 
 def delete_playlist(request, playlist_id):
-    ''' allows the superuser to edit an existing playlist. '''
-    
+    ''' allows the superuser to edit an existing playlist. '''    
+    if not request.user.is_authenticated:
+        logger.warning("User is not authenticated - redirect to login page")
+        return redirect('login')
+
     if not (request.user.is_superuser or request.user.is_teacher):
         logger.warning(request.user.username + " not authorized to delete playlists")
         return render(request, 'permission_denied.html')
@@ -551,7 +582,10 @@ def delete_playlist(request, playlist_id):
  
 def edit_playlist(request, playlist_id, start_index = 0):
     ''' allows the superuser to edit an existing playlist. '''
-    
+    if not request.user.is_authenticated:
+        logger.warning("User is not authenticated - redirect to login page")
+        return redirect('login')
+        
     if not (request.user.is_superuser or request.user.is_teacher):
         logger.warning(request.user.username + " not authorized to edit playlists")
         return render(request, 'permission_denied.html')
