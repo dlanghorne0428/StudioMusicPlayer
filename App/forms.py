@@ -95,33 +95,27 @@ class SongEditForm(ModelForm):
                     Field('artist'), 
                     Field('dance_type'), 
                     Field('alt_dance_type'),
+                    css_class='col-3'),
+                Column(
+                    HTML("""<img src="{{cover_art}}" style="width:70%;"/>"""),
+                    Field('image', css_class='mb-1 px-5'),                      
+                    css_class='col-6'),
+                Column(
                     Field('bpm'), 
-                    css_class='col-6'),
-                Column(
-                    HTML("""<img src="{{cover_art}}" style="width:65%;"/>"""),
-                    Field('image'),                                      
-                    css_class='col-6'),
-                css_class='align-items-end border border-dark p-2',
-            ),
-            Row(
-                Column(
-                    HTML("""<a href="{% url 'App:spotify_find_song_bpms' song_id %}" class="btn btn-info">Lookup BPM on Spotify</a>"""),                   
-                    css_class='col-4'),
-                Column(
-                    HTML("""<a href="{% url 'App:show_tags_for_song' song_id %}" class="btn btn-info">Tags</a>"""),                   
-                    css_class='col-4'),                
-                Column(
-                    Submit('find_artwork', 'Find Cover Art Online'),
-                    # HTML("""<a href="#" class="btn btn-info">Find Cover Art Online</a>"""),                                       
-                    css_class='col-4'),  
-                css_class='border border-dark p-2',
+                    HTML("""<div class="d-grid gap-5 col-10 mx-auto my-4">
+                      <a href="{% url 'App:spotify_find_song_bpms' song_id %}" class="btn btn-info">Lookup BPM on Spotify</a>
+                      <a href="{% url 'App:show_tags_for_song' song_id %}" class="btn btn-info">Tags</a>
+                    </div>"""),                    
+                    Submit('find_artwork', 'Find Cover Art Online', css_class='btn btn-info mt-4 px-4'),
+                    css_class='col-3'),
+                css_class='align-items-start border border-dark p-2',
             ),
             FormActions(
                 # submit button and cancel link in the form of a button
-                Submit('save', 'Save changes'),
-                HTML("""<a href="{%  url 'App:show_songs' %}" class="btn btn-secondary">Cancel</a>"""),                
+                Submit('save', 'Save changes', css_class='btn btn-sm'),
+                HTML("""<a href="{%  url 'App:show_songs' %}" class="btn btn-secondary btn-sm">Cancel</a>"""),  
                 # add some y-margin around the buttons.
-                css_class="my-3"
+                css_class="my-2"
             )
         )
         
