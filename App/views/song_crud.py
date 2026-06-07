@@ -180,7 +180,8 @@ def add_song(request):
                 title = metadata['title'][0]            
             flac_data = mutagen.flac.FLAC(audio_file_path)
 
-            pict = flac_data.pictures[0].data
+            if flac_data:
+                pict = flac_data.pictures[0].data
 
             logger.debug(artist +  ' ' + str(title))            
             
@@ -198,6 +199,7 @@ def add_song(request):
         new_song.title = title
         new_song.artist = artist
         new_song.dance_type = song_instance.dance_type
+        new_song.alt_dance_type = song_instance.alt_dance_type
         new_song.tempo = tempo
         
         # determine name for the image file based on the name of the audio file
@@ -268,6 +270,7 @@ def update_song(request, song_id):
         log_msg += "title: " + song.title + ' '
         log_msg += "artist: " + song.artist + ' '
         log_msg += "dance_type: " + song.dance_type + ' '
+        log_msg += "alt_dance_type: " + song.alt_dance_type + ' '
         logger.info(log_msg)
         if song.image_link is None:
             print('Song image: ' + str(song.image))

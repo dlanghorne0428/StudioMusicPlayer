@@ -140,6 +140,11 @@ class SongFileInput(models.Model):
         choices = DANCE_TYPE_CHOICES,
         default = 'Cha'
         )
+    alt_dance_type = models.CharField(
+        max_length = 10,
+        choices = DANCE_TYPE_CHOICES,
+        default = 'NoAlt'
+        )    
     
     def __str__(self):
         return self.audio_file.url + ": " + self.dance_type
