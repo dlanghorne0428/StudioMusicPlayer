@@ -13,7 +13,7 @@ def home(request):
 
 def about(request):
     ''' The current about page for this app.'''    
-    return render(request,"about.html", {'version': '1.4', 'date': '23 May 2023'})
+    return render(request,"about.html", {'version': '2026.6', 'date': '7 June 2026'})
 
 def playing(request):
     return render(request,"playing.html", {'user': request.user, 'studio_name': "Dancin' Dance Studio"})
