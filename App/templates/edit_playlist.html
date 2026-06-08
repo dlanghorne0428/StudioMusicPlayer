@@ -90,8 +90,12 @@
         </td>
         <td class="text-center">{{ s.song.artist }}</td>
         
-        <!-- display the "readable" string for the dance type -->
-        <td class="text-center">{{ s.song.get_dance_type_display }}</td>
+        {% if s.song.alt_dance_type == "NoAlt" %}
+          <!-- display the "readable" string for the dance type -->
+          <td class="text-center">{{ s.song.get_dance_type_display }}</td>
+        {% else %}          <!-- display the "abbreviated" strings for two dance types -->
+          <td class="bg-info text-center">{{s.song.dance_type}} : {{s.song.alt_dance_type}}</td>
+        {% endif %}
         
         {% if playlist.category != 'Norm' %}
         <!-- display Yes if song is featured, No if not -->
