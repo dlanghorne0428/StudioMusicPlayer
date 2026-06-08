@@ -150,13 +150,13 @@
   <div class="col-12 dropdown my-2">
     <!-- link to add random song to current playlist-->
     <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" 
-        data-bs-toggle="dropdown">Add Random Song       
+        data-bs-toggle="dropdown">Select Song to Add      
     </button>
     <!-- create a menu of dance types, with a wildcard on top -->  
     <ul class="dropdown-menu">
-      <li><a class="dropdown-item" href="{% url 'App:add_random_song_to_playlist' playlist.id "Any" %}">----------</a></li>
+      <li><a class="dropdown-item" href="{% url 'App:replace_song' playlist.id songs|length "Any" %}">----------</a></li>
       {% for dt in dance_types %}
-        <li><a class="dropdown-item" href="{% url 'App:add_random_song_to_playlist' playlist.id dt.0 %}">{{dt.1}}</a></li>
+        <li><a class="dropdown-item" href="{% url 'App:replace_song' playlist.id songs|length dt.0 %}">{{dt.1}}</a></li>
       {% endfor %}
     </ul>
   </div>
