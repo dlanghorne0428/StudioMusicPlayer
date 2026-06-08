@@ -113,10 +113,13 @@ class Playlist(models.Model):
             
         
     def replace_song(self, index, new_song):
-        # get the selected index in the playlist
-        target = SongInPlaylist.objects.get(playlist=self, order=index)
-        target.song = new_song
-        target.save()
+        if index >= self.songs.count():
+            self.add_song(new_song)
+        else:
+            # get the selected index in the playlist
+            target = SongInPlaylist.objects.get(playlist=self, order=index)
+            target.song = new_song
+            target.save()
         
         
     def swap_songs(self, index1, index2):
