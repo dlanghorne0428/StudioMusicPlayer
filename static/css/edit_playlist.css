@@ -16,7 +16,7 @@
 #table-header-sticky {
   position: -webkit-sticky; /* Safari */
   position: sticky;
-  top: 205px;           /* value based on heights of header form and row with play/clear buttons */
+  top: 158px;           /* value based on heights of header form and row with play/clear buttons */
 }
 
 /* this hides the dropdown menu buttons in the table body when scrolling behind other elements */
