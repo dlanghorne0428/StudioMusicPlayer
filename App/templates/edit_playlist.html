@@ -123,14 +123,9 @@
             <button class="btn btn-sm btn-outline-dark dropdown-toggle d-xl-none d-sm-inline" type="button" 
                   data-bs-toggle="dropdown">Change</button>
             <ul class="dropdown-menu">
-              <!-- allow the user to replace a song with another random song of the same dance style --> 
+              <!-- allow the user to select a replacement song of the same dance style--> 
               <li><a class="dropdown-item" 
-                     href="?{% param_replace cmd="replace-random" index=forloop.counter0 %}">Replace-Random</a>
-              </li>
-              
-              <!-- allow the user to select a replacement song --> 
-              <li><a class="dropdown-item" 
-                     href="?{% param_replace cmd="replace-select" index=forloop.counter0 %}">Replace-Select</a>
+                     href="?{% param_replace cmd="replace-select" index=forloop.counter0 %}">Replace</a>
               </li>     
               
               <!-- allow the user delete a song and move all other songs up one slot -->
