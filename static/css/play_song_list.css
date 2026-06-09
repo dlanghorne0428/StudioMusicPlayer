@@ -15,8 +15,8 @@ body {
 }
 
 .alt-dance-type {
-    margin: 0 0 1rem 0;
-    font-size: 24px;
+    margin: 0 0 0 0;
+    font-size: 36px;
     color: Yellow;
     font-style: italic;
     letter-spacing: 1.0px;
@@ -198,7 +198,7 @@ div.control-container:after {
     content: "";
     display: table;
     clear: both; 
-Í}
+}
 
 /****** Mute Button *****/
 div.control-container div.amplitude-mute {
@@ -295,5 +295,14 @@ div.song-meta-container span.song-container-secondary {
     line-height: 36px;
     color: white;
     letter-spacing: 0.7px;
-    display: block; 
+    #display: block; 
+}
+
+div.song-meta-container span.song-container-alternate {
+    font-size: 24px;
+#    line-height: 24px;
+    color: LightGreen;
+    font-style: italic;
+    letter-spacing: 0.7px;
+    #display: block; 
 }
