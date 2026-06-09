@@ -52,7 +52,7 @@ def create_playlist(request, random=None):
             submit_title = 'Continue'
         else:
             separator = '-'
-            page_title = 'Create Empty Playlist'
+            page_title = 'Create New Playlist'
             submit_title = 'Save'
             
         # use a default title based on number of playlists currently owned by this user
@@ -88,8 +88,9 @@ def create_playlist(request, random=None):
                 # redirect to populate with random songs
                 return redirect('App:build_random_playlist', new_playlist.id)
             else:
+                return redirect('App:edit_playlist', new_playlist.id)
                 # return to list of user's playlists   
-                return redirect('App:user_playlists')
+                # return redirect('App:user_playlists')
         else: 
             # display error on form
             return render(request, 'create_playlist.html', {

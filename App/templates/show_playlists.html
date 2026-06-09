@@ -23,6 +23,11 @@
     <h3 class="text-center text-danger">{{ error }}</h3>
   {% endif %}
   
+  <!-- link to create a playlist -->
+  <div class="text-center my-2">
+    <a class="btn btn-primary" href="{% url 'App:create_playlist' %}">New Playlist</a>
+  </div>
+  
   <!--- next row is the table -->
   <div class="col-12 border border-dark px-0">
   <table class="table table-bordered table-sm">
@@ -100,7 +105,6 @@
   
   <!-- link to create a playlist, including 1 as a parameter indicates random playlist -->
   <div class="text-center my-2">
-    <a class="btn btn-primary" href="{% url 'App:create_playlist' %}">Create Empty Playlist</a>
     <a class="btn btn-primary" href="{% url 'App:create_playlist' 1 %}">Create Random Playlist</a>
     <a class="btn btn-primary" href="{% url 'App:create_playlist_from_json'  %}">Create Showcase Playlist</a>
   </div>
