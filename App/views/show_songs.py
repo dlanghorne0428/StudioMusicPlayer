@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.core.paginator import Paginator
 from django.conf import settings
+from django.db.models import Q
 
 # imported our models
 from App.models.song import Song
@@ -86,20 +87,21 @@ def replace_song(request, playlist_id, index, dance_type, song_id=None):
     
     if playlists[0].streaming:
         if dance_type in ("Show", "NoAlt"):
-            songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=False).order_by('title')) 
+            songs = Song.objects.filter(spotify_track_id__isnull=False).order_by('title') 
         else:
-            songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=False, dance_type=dance_type).order_by('title'))    
+            songs = Song.objects.filter(Q(spotify_track_id__isnull=False, dance_type=dance_type) | Q(alt_dance_type=dance_type))
+            songs= songs.order_by('title')  
     else:
         if dance_type in ("Show", "NoAlt"):
-            songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=True).order_by('title')) 
+            songs = Song.objects.filter(spotify_track_id__isnull=True).order_by('title') 
         else:
-            songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=True, dance_type=dance_type).order_by('title'))     
+            songs = Song.objects.filter(Q(spotify_track_id__isnull=True, dance_type=dance_type) | Q(alt_dance_type=dance_type))
+            songs= songs.order_by('title')
     
     if song_id is None:
         # render the template
         return render(request, 'show_songs.html', {
-            'filter': songs,
-            'songs': songs.qs,
+            'songs': songs,
             'playlist_id': playlist_id,
             'streaming': streaming,
             'index': index + 1,
