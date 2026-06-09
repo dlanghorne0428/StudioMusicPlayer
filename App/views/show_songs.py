@@ -5,7 +5,7 @@ from django.conf import settings
 # imported our models
 from App.models.song import Song
 from App.filters import SongFilter
-from App.models.playlist import Playlist
+from App.models.playlist import Playlist, SongInPlaylist
 
 import logging
 logger = logging.getLogger("django")
@@ -81,22 +81,21 @@ def replace_song(request, playlist_id, index, dance_type, song_id=None):
         return redirect('login')
     
     playlists = Playlist.objects.filter(pk=playlist_id)
+    page_title = "Playlist " + playlists[0].title + ": Select new song for item " + str(index + 1)
+    streaming = False    
+    
+    if playlists[0].streaming:
+        if dance_type in ("Show", "NoAlt"):
+            songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=False).order_by('title')) 
+        else:
+            songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=False, dance_type=dance_type).order_by('title'))    
+    else:
+        if dance_type in ("Show", "NoAlt"):
+            songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=True).order_by('title')) 
+        else:
+            songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=True, dance_type=dance_type).order_by('title'))     
     
     if song_id is None:
-        if playlists[0].streaming:
-            if dance_type in ("Show", "NoAlt"):
-                songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=False).order_by('title')) 
-            else:
-                songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=False, dance_type=dance_type).order_by('title'))    
-        else:
-            if dance_type in ("Show", "NoAlt"):
-                songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=True).order_by('title')) 
-            else:
-                songs = SongFilter(request.GET, queryset=Song.objects.filter(spotify_track_id__isnull=True, dance_type=dance_type).order_by('title')) 
-            
-        page_title = "Playlist " + playlists[0].title + ": Select new song for item " + str(index + 1)
-        streaming = False
-    
         # render the template
         return render(request, 'show_songs.html', {
             'filter': songs,
@@ -109,7 +108,22 @@ def replace_song(request, playlist_id, index, dance_type, song_id=None):
     
     else:
         new_song = Song.objects.get(pk=song_id)
-        playlists[0].replace_song(index - 1, new_song)
+        if SongInPlaylist.objects.filter(song=new_song, playlist=playlists[0]).exists():
+            error = "Song already in playlist - try again"
+            logger.warning(error)
+            
+            # re-render the template
+            return render(request, 'show_songs.html', {
+                'filter': songs,
+                'songs': songs.qs,
+                'playlist_id': playlist_id,
+                'streaming': streaming,
+                'index': index + 1,
+                'page_title': page_title,
+                'error': error
+                })                        
+        else:
+            playlists[0].replace_song(index - 1, new_song)
         return redirect ("App:edit_playlist", playlists[0].id, index-1)
 
 

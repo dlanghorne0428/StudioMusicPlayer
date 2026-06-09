@@ -22,7 +22,10 @@
       </div>
     {% elif index %}
       <div class="text-center my-2">
-        <a class="btn btn-secondary" href="{% url 'App:edit_playlist' playlist_id %}">Cancel Replacement</a>  
+        <a class="btn btn-secondary" href="{% url 'App:edit_playlist' playlist_id %}">Cancel Replacement</a>
+        {% if error %}
+          <p class="text-warning">{{error}}</p>
+        {% endif %}
       </div>
     {% else %}
       <div class="text-center my-2">
