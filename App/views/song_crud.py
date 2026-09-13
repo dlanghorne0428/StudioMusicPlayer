@@ -390,7 +390,8 @@ def playlists_with_song(request, song_id):
         if (request.user == m.playlist.owner) or (request.user.is_superuser):
             playlists.append(m.playlist)
             indices.append(m.order)
-            print(m.playlist, m.order)
+            #print(m.playlist, m.order)
+            logger.info(str(song) + ' found in playlist ' + str(m.playlist) + ' at position ' + str(m.order + 1))
 
     error = None
     
