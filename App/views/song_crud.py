@@ -380,6 +380,9 @@ def playlists_with_song(request, song_id):
     # find the playlists that use this song
     matches = SongInPlaylist.objects.filter(song=song)
     
+    # pass the path to the default cover art
+    default_url = settings.STATIC_URL + "img/default.png"    
+
     # build a list of matching playlists owned by the user or all if superuser
     playlists = list()
     indices = list()
@@ -406,6 +409,7 @@ def playlists_with_song(request, song_id):
     return render(request, 'show_song_and_playlists.html', {
                 'song': song, 'playlists_and_indices': playlists_and_indices,
                 'page_title': "Find song in playlist",
+                'default_url': default_url,
                 'finding': True,
                 'error': error})
 
@@ -426,6 +430,9 @@ def playlists_without_song(request, song_id):
     # find this song
     song = get_object_or_404(Song, pk=song_id)
     logger.debug('Selected Song: ' + str(song))
+    
+    # pass the path to the default cover art
+    default_url = settings.STATIC_URL + "img/default.png"    
     
     # build a list of playlists owned by the user or all if superuser
     if request.user.is_superuser:
@@ -462,4 +469,5 @@ def playlists_without_song(request, song_id):
     return render(request, 'show_song_and_playlists.html', {
                 'song': song, 'playlists_and_indices': playlists_and_indices, 
                 'page_title': "Add song to end of playlist",
+                'default_url': default_url,
                 'error': error})
