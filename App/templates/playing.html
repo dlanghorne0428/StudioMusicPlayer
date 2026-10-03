@@ -26,42 +26,34 @@
         </div>
     </div>
     
-    <div hidden id="id-now-playing-section" class="row border border-success">
-        <div class="text-center">
-            <h1 class="div-title my-2" >Now Playing</h1>
-            <h3 class="my-2 dance-type" id="id-dance-type-playing"></h3>
-            <p class= "my-1 song-title" id="id-song-title-playing"></p>
-            <p class= "mb-2 song-artist" id="id-song-artist-playing"></p>
-        </div>
-    
-        <div>
-            <button id="id-hate-song-playing" class="thumb-button left-thumb btn-secondary">
-                <img height=24 src={% static 'img/hand-thumbs-down.svg' %}>
-            </button>
-            <!-- the filled buttons are initially hidden and disabled so they can't be clicked -->
-            <button hidden id="id-hated-song-playing" class="thumb-button left-thumb btn-outline-dark">
-                <img disabled height=24 src={% static 'img/hand-thumbs-down-fill.svg' %}>
-            </button>
+    <div hidden id="id-recently-played-section" class="row border border-success text-center">
+        <h1 class="div-title mt-2 text-info" >Recently Played</h1>   
+        
+                
+        <div id="id-previous-2-section" class="col-12 text-center">
+            <h3 class="my-1 dance-type text-secondary" id="id-dance-type-previous-2"></h3>
+            <p class= "my-0 song-title text-secondary" id="id-song-title-previous-2"></p>
+            <p class= "my-0 song-artist text-secondary" id="id-song-artist-previous-2"></p>  
+            <div>
+                <button id="id-hate-previous-2" class="thumb-button left-thumb btn-secondary">
+                    <img height=24 src={% static 'img/hand-thumbs-down.svg' %}>
+                </button>
+                <!-- the filled buttons are initially hidden and disabled so they can't be clicked -->
+                <button hidden id="id-hated-previous-2" class="thumb-button left-thumb btn-outline-dark">
+                    <img disabled height=24 src={% static 'img/hand-thumbs-down-fill.svg' %}>
+                </button>
+            </div>
+        
+            <div>
+                <button id="id-like-previous-2" class="thumb-button right-thumb btn-secondary">
+                    <img height=24 src={% static 'img/hand-thumbs-up.svg' %}>
+                </button>
+                <button hidden id="id-liked-previous-2" class="thumb-button right-thumb btn-outline-dark">
+                    <img disabled height=24 src={% static 'img/hand-thumbs-up-fill.svg' %}>
+                </button>
+            </div>
         </div>
         
-        <div>
-            <button id="id-like-song-playing" class="thumb-button right-thumb btn-secondary">
-                <img height=24 src={% static 'img/hand-thumbs-up.svg' %}>
-            </button>
-            <button hidden id="id-liked-song-playing" class="thumb-button right-thumb btn-outline-dark">
-                <img disabled height=24 src={% static 'img/hand-thumbs-up-fill.svg' %}>
-            </button>
-        </div>
-    </div>
-    
-    <div hidden id="id-up-next-section" class="row border border-success text-center">
-        <h1 class="div-title my-1" >Up Next</h1>
-        <h3 class="my-1 dance-type text-warning" id="id-dance-type-up-next-1"></h3>
-        <h3 class="mb-2 dance-type text-warning" id="id-dance-type-up-next-2"></h3>
-    </div>
-    
-    <div hidden id="id-recently-played-section" class="row border border-success text-center">
-        <h1 class="div-title mt-2 text-info" >Recently Played</h1>        
         <div id="id-previous-1-section" class="col-12 border-bottom border-success text-center">
             <h3 class="my-1 dance-type text-secondary" id="id-dance-type-previous-1"></h3>
             <p class= "my-0 song-title text-secondary" id="id-song-title-previous-1"></p>
@@ -86,31 +78,42 @@
                 </button>
             </div>
         </div>
+    </div>
+    
+    <div hidden id="id-now-playing-section" class="row border border-success">
+        <div class="text-center">
+            <h1 class="div-title my-2" >Now Playing</h1>
+            <h3 class="my-2 dance-type" id="id-dance-type-playing"></h3>
+            <p class= "my-1 song-title" id="id-song-title-playing"></p>
+            <p class= "mb-2 song-artist" id="id-song-artist-playing"></p>
+        </div>
+    
+        <div>
+            <button id="id-hate-song-playing" class="thumb-button left-thumb btn-outline-dark">
+                <img height=24 src={% static 'img/hand-thumbs-down.svg' %}>
+            </button>
+            <!-- the filled buttons are initially hidden and disabled so they can't be clicked -->
+            <button hidden id="id-hated-song-playing" class="thumb-button left-thumb btn-outline-dark">
+                <img disabled height=24 src={% static 'img/hand-thumbs-down-fill.svg' %}>
+            </button>
+        </div>
         
-        <div id="id-previous-2-section" class="col-12 text-center">
-            <h3 class="my-1 dance-type text-secondary" id="id-dance-type-previous-2"></h3>
-            <p class= "my-0 song-title text-secondary" id="id-song-title-previous-2"></p>
-            <p class= "my-0 song-artist text-secondary" id="id-song-artist-previous-2"></p>  
-            <div>
-                <button id="id-hate-previous-2" class="thumb-button left-thumb btn-secondary">
-                    <img height=24 src={% static 'img/hand-thumbs-down.svg' %}>
-                </button>
-                <!-- the filled buttons are initially hidden and disabled so they can't be clicked -->
-                <button hidden id="id-hated-previous-2" class="thumb-button left-thumb btn-outline-dark">
-                    <img disabled height=24 src={% static 'img/hand-thumbs-down-fill.svg' %}>
-                </button>
-            </div>
-        
-            <div>
-                <button id="id-like-previous-2" class="thumb-button right-thumb btn-secondary">
-                    <img height=24 src={% static 'img/hand-thumbs-up.svg' %}>
-                </button>
-                <button hidden id="id-liked-previous-2" class="thumb-button right-thumb btn-outline-dark">
-                    <img disabled height=24 src={% static 'img/hand-thumbs-up-fill.svg' %}>
-                </button>
-            </div>
+        <div>
+            <button id="id-like-song-playing" class="thumb-button right-thumb btn-outline-dark">
+                <img height=24 src={% static 'img/hand-thumbs-up.svg' %}>
+            </button>
+            <button hidden id="id-liked-song-playing" class="thumb-button right-thumb btn-outline-dark">
+                <img disabled height=24 src={% static 'img/hand-thumbs-up-fill.svg' %}>
+            </button>
         </div>
     </div>
+    
+    <div hidden id="id-up-next-section" class="row border border-success text-center">
+        <h1 class="div-title my-1" >Up Next</h1>
+        <h3 class="my-1 dance-type text-warning" id="id-dance-type-up-next-1"></h3>
+        <h3 class="mb-2 dance-type text-warning" id="id-dance-type-up-next-2"></h3>
+    </div>
+    
     
     <div hidden class="row" id="id-no-music-section">   
         <div class="col-12 border border-success">
